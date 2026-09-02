@@ -341,6 +341,41 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_auction_order: {
+        Args: {
+          _auction_id: string
+          _note?: string
+          _payment_method?: Database["public"]["Enums"]["payment_method"]
+          _shipping_address?: string
+          _shipping_name?: string
+          _shipping_phone?: string
+        }
+        Returns: {
+          auction_id: string | null
+          card_id: string
+          created_at: string
+          id: string
+          note: string | null
+          paid_at: string | null
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          shipped_at: string | null
+          shipping_address: string | null
+          shipping_name: string | null
+          shipping_phone: string | null
+          slip_url: string | null
+          status: Database["public"]["Enums"]["order_status"]
+          total_amount: number
+          tracking_number: string | null
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "orders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
