@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import taletailsLogo from "@/assets/taletails-logo.jpg.asset.json";
+import taletailsLogo from "@/assets/taletails-logo.jpg";
 import { useAuth } from "@/lib/auth";
 
 const SITE_URL = "https://taletails-test.lovable.app";

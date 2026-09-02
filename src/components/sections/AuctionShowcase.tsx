@@ -14,7 +14,7 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import taletailsLogo from "@/assets/taletails-logo.jpg.asset.json";
+import taletailsLogo from "@/assets/taletails-logo.jpg";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { Auction } from "@/data/auctions";

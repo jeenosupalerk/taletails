@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
-import taletailsLogo from "@/assets/taletails-logo.jpg.asset.json";
+import taletailsLogo from "@/assets/taletails-logo.jpg";
 import { Button } from "@/components/ui/button";
 import { getActiveBanners } from "@/data/banners";
 import { cn } from "@/lib/utils";
