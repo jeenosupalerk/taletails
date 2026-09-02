@@ -1,0 +1,14 @@
+REVOKE ALL ON FUNCTION public.create_auction_order(uuid, payment_method, text, text, text, text) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.create_auction_order(uuid, payment_method, text, text, text, text) TO authenticated;
+REVOKE ALL ON FUNCTION public.purchase_fixed_price_card(uuid, payment_method, text, text, text, text) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.purchase_fixed_price_card(uuid, payment_method, text, text, text, text) TO authenticated;
+REVOKE ALL ON FUNCTION public.pass_auction_to_next_bidder(uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.pass_auction_to_next_bidder(uuid) TO authenticated;
+REVOKE ALL ON FUNCTION public.has_role(uuid, app_role) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.has_role(uuid, app_role) TO authenticated;
+REVOKE ALL ON FUNCTION public.is_banned(uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.is_banned(uuid) TO authenticated;
+REVOKE ALL ON FUNCTION public.handle_new_bid() FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.handle_new_user() FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.sync_card_status_from_order() FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.set_updated_at() FROM PUBLIC, anon, authenticated;
