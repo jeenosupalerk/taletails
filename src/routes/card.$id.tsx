@@ -120,7 +120,7 @@ function CardDetailPage() {
     claimWin.mutate(auction.id, {
       onSuccess: (order) => {
         toast.success("คุณชนะการประมูล! กำลังไปหน้าชำระเงิน");
-        void navigate({ to: "/order/$id", params: { id: order.id } });
+        void navigate({ to: "/checkout/$id", params: { id: order.id } });
       },
       onError: (e) => toast.error(e.message),
     });
@@ -183,7 +183,7 @@ function CardDetailPage() {
     buyNow.mutate(card.id, {
       onSuccess: (order) => {
         toast.success("จองการ์ดสำเร็จ กำลังไปหน้าชำระเงิน");
-        void navigate({ to: "/order/$id", params: { id: order.id } });
+        void navigate({ to: "/checkout/$id", params: { id: order.id } });
       },
       onError: (e) => toast.error(e.message),
     });
