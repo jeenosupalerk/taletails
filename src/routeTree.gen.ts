@@ -10,33 +10,227 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuctionsRouteImport } from './routes/auctions'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as MarketRouteImport } from './routes/market'
+import { Route as MarketplaceRouteImport } from './routes/marketplace'
+import { Route as NewsRouteImport } from './routes/news'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as VaultRouteImport } from './routes/vault'
+import { Route as WishlistRouteImport } from './routes/wishlist'
+import { Route as AuctionIdRouteImport } from './routes/auction.$id'
+import { Route as MarketIndexRouteImport } from './routes/market.index'
+import { Route as MarketIdRouteImport } from './routes/market.$id'
+import { Route as NewsIdRouteImport } from './routes/news.$id'
+import { Route as ProductIdRouteImport } from './routes/product.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuctionsRoute = AuctionsRouteImport.update({
+  id: '/auctions',
+  path: '/auctions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutRoute = CheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketRoute = MarketRouteImport.update({
+  id: '/market',
+  path: '/market',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketplaceRoute = MarketplaceRouteImport.update({
+  id: '/marketplace',
+  path: '/marketplace',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewsRoute = NewsRouteImport.update({
+  id: '/news',
+  path: '/news',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VaultRoute = VaultRouteImport.update({
+  id: '/vault',
+  path: '/vault',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WishlistRoute = WishlistRouteImport.update({
+  id: '/wishlist',
+  path: '/wishlist',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuctionIdRoute = AuctionIdRouteImport.update({
+  id: '/auction/$id',
+  path: '/auction/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketIndexRoute = MarketIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => MarketRoute,
+} as any)
+const MarketIdRoute = MarketIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => MarketRoute,
+} as any)
+const NewsIdRoute = NewsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => NewsRoute,
+} as any)
+const ProductIdRoute = ProductIdRouteImport.update({
+  id: '/product/$id',
+  path: '/product/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auctions': typeof AuctionsRoute
+  '/auth': typeof AuthRoute
+  '/checkout': typeof CheckoutRoute
+  '/market': typeof MarketRouteWithChildren
+  '/marketplace': typeof MarketplaceRoute
+  '/news': typeof NewsRouteWithChildren
+  '/profile': typeof ProfileRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/vault': typeof VaultRoute
+  '/wishlist': typeof WishlistRoute
+  '/auction/$id': typeof AuctionIdRoute
+  '/market/$id': typeof MarketIdRoute
+  '/news/$id': typeof NewsIdRoute
+  '/product/$id': typeof ProductIdRoute
+  '/market/': typeof MarketIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auctions': typeof AuctionsRoute
+  '/auth': typeof AuthRoute
+  '/checkout': typeof CheckoutRoute
+  '/marketplace': typeof MarketplaceRoute
+  '/news': typeof NewsRouteWithChildren
+  '/profile': typeof ProfileRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/vault': typeof VaultRoute
+  '/wishlist': typeof WishlistRoute
+  '/auction/$id': typeof AuctionIdRoute
+  '/market/$id': typeof MarketIdRoute
+  '/news/$id': typeof NewsIdRoute
+  '/product/$id': typeof ProductIdRoute
+  '/market': typeof MarketIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auctions': typeof AuctionsRoute
+  '/auth': typeof AuthRoute
+  '/checkout': typeof CheckoutRoute
+  '/market': typeof MarketRouteWithChildren
+  '/marketplace': typeof MarketplaceRoute
+  '/news': typeof NewsRouteWithChildren
+  '/profile': typeof ProfileRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/vault': typeof VaultRoute
+  '/wishlist': typeof WishlistRoute
+  '/auction/$id': typeof AuctionIdRoute
+  '/market/$id': typeof MarketIdRoute
+  '/news/$id': typeof NewsIdRoute
+  '/product/$id': typeof ProductIdRoute
+  '/market/': typeof MarketIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auctions'
+    | '/auth'
+    | '/checkout'
+    | '/market'
+    | '/marketplace'
+    | '/news'
+    | '/profile'
+    | '/sitemap.xml'
+    | '/vault'
+    | '/wishlist'
+    | '/auction/$id'
+    | '/market/$id'
+    | '/news/$id'
+    | '/product/$id'
+    | '/market/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auctions'
+    | '/auth'
+    | '/checkout'
+    | '/marketplace'
+    | '/news'
+    | '/profile'
+    | '/sitemap.xml'
+    | '/vault'
+    | '/wishlist'
+    | '/auction/$id'
+    | '/market/$id'
+    | '/news/$id'
+    | '/product/$id'
+    | '/market'
+  id:
+    | '__root__'
+    | '/'
+    | '/auctions'
+    | '/auth'
+    | '/checkout'
+    | '/market'
+    | '/marketplace'
+    | '/news'
+    | '/profile'
+    | '/sitemap.xml'
+    | '/vault'
+    | '/wishlist'
+    | '/auction/$id'
+    | '/market/$id'
+    | '/news/$id'
+    | '/product/$id'
+    | '/market/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuctionsRoute: typeof AuctionsRoute
+  AuthRoute: typeof AuthRoute
+  CheckoutRoute: typeof CheckoutRoute
+  MarketRoute: typeof MarketRouteWithChildren
+  MarketplaceRoute: typeof MarketplaceRoute
+  NewsRoute: typeof NewsRouteWithChildren
+  ProfileRoute: typeof ProfileRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  VaultRoute: typeof VaultRoute
+  WishlistRoute: typeof WishlistRoute
+  AuctionIdRoute: typeof AuctionIdRoute
+  ProductIdRoute: typeof ProductIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +242,151 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auctions': {
+      id: '/auctions'
+      path: '/auctions'
+      fullPath: '/auctions'
+      preLoaderRoute: typeof AuctionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout': {
+      id: '/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/market': {
+      id: '/market'
+      path: '/market'
+      fullPath: '/market'
+      preLoaderRoute: typeof MarketRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/marketplace': {
+      id: '/marketplace'
+      path: '/marketplace'
+      fullPath: '/marketplace'
+      preLoaderRoute: typeof MarketplaceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/news': {
+      id: '/news'
+      path: '/news'
+      fullPath: '/news'
+      preLoaderRoute: typeof NewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/vault': {
+      id: '/vault'
+      path: '/vault'
+      fullPath: '/vault'
+      preLoaderRoute: typeof VaultRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/wishlist': {
+      id: '/wishlist'
+      path: '/wishlist'
+      fullPath: '/wishlist'
+      preLoaderRoute: typeof WishlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auction/$id': {
+      id: '/auction/$id'
+      path: '/auction/$id'
+      fullPath: '/auction/$id'
+      preLoaderRoute: typeof AuctionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/market/': {
+      id: '/market/'
+      path: '/'
+      fullPath: '/market/'
+      preLoaderRoute: typeof MarketIndexRouteImport
+      parentRoute: typeof MarketRoute
+    }
+    '/market/$id': {
+      id: '/market/$id'
+      path: '/$id'
+      fullPath: '/market/$id'
+      preLoaderRoute: typeof MarketIdRouteImport
+      parentRoute: typeof MarketRoute
+    }
+    '/news/$id': {
+      id: '/news/$id'
+      path: '/$id'
+      fullPath: '/news/$id'
+      preLoaderRoute: typeof NewsIdRouteImport
+      parentRoute: typeof NewsRoute
+    }
+    '/product/$id': {
+      id: '/product/$id'
+      path: '/product/$id'
+      fullPath: '/product/$id'
+      preLoaderRoute: typeof ProductIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface MarketRouteChildren {
+  MarketIdRoute: typeof MarketIdRoute
+  MarketIndexRoute: typeof MarketIndexRoute
+}
+
+const MarketRouteChildren: MarketRouteChildren = {
+  MarketIdRoute: MarketIdRoute,
+  MarketIndexRoute: MarketIndexRoute,
+}
+
+const MarketRouteWithChildren =
+  MarketRoute._addFileChildren(MarketRouteChildren)
+
+interface NewsRouteChildren {
+  NewsIdRoute: typeof NewsIdRoute
+}
+
+const NewsRouteChildren: NewsRouteChildren = {
+  NewsIdRoute: NewsIdRoute,
+}
+
+const NewsRouteWithChildren = NewsRoute._addFileChildren(NewsRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuctionsRoute: AuctionsRoute,
+  AuthRoute: AuthRoute,
+  CheckoutRoute: CheckoutRoute,
+  MarketRoute: MarketRouteWithChildren,
+  MarketplaceRoute: MarketplaceRoute,
+  NewsRoute: NewsRouteWithChildren,
+  ProfileRoute: ProfileRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
+  VaultRoute: VaultRoute,
+  WishlistRoute: WishlistRoute,
+  AuctionIdRoute: AuctionIdRoute,
+  ProductIdRoute: ProductIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
