@@ -277,6 +277,7 @@ export function useSubmitPayment(orderId: string) {
         slipUrl = path;
       }
 
+      // Marking the order paid triggers the DB sync that flips the card to "sold".
       const { error } = await supabase
         .from("orders")
         .update({
@@ -286,6 +287,8 @@ export function useSubmitPayment(orderId: string) {
           shipping_phone: input.shipping.phone,
           shipping_address: input.shipping.address,
           note: input.shipping.note ?? null,
+          status: "paid",
+          paid_at: new Date().toISOString(),
         })
         .eq("id", orderId);
       if (error) throw new Error(error.message);
@@ -293,6 +296,9 @@ export function useSubmitPayment(orderId: string) {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["order", orderId] });
+      void queryClient.invalidateQueries({ queryKey: ["card"] });
+      void queryClient.invalidateQueries({ queryKey: ["cards", "marketplace"] });
     },
   });
 }
+
