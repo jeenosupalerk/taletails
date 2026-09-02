@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 import { SectionHeading } from "@/components/site/SectionHeading";
 import { getFeaturedProducts, type Product } from "@/data/products";
+import { useMarketplaceCards } from "@/hooks/useSupabaseCatalog";
 import { thb } from "@/lib/cart";
 import { useWatchlist } from "@/lib/watchlist";
 
@@ -77,7 +78,9 @@ export function ProductGridCard({ product }: { product: Product }) {
 }
 
 export function FeaturedMarketplace({ showHeading = true }: { showHeading?: boolean }) {
-  const featured = getFeaturedProducts();
+  const { data: liveCards } = useMarketplaceCards();
+  // Live Supabase rows when available, curated demo listings otherwise.
+  const featured = liveCards && liveCards.length > 0 ? liveCards : getFeaturedProducts();
 
   return (
     <section id="marketplace" className="border-y border-border bg-card/30">
