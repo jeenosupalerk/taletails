@@ -85,7 +85,7 @@ function CardDetailPage() {
   useAuctionRealtime(auction?.id);
   const bidsQuery = useBids(auction?.id);
 
-  const countdown = useCountdown(auction?.end_time ?? new Date().toISOString());
+  const countdown = useCountdown(auction?.end_time ?? FAR_FUTURE);
   const closed =
     !!auction && (auction.status !== "active" || (!!countdown && countdown.isFinished));
 
