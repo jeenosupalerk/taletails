@@ -11,7 +11,7 @@ import {
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import taletailsLogo from "@/assets/taletails-logo.jpg.asset.json";
+import taletailsLogo from "@/assets/taletails-logo.jpg";
 import { BackButton } from "@/components/site/BackButton";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { Button } from "@/components/ui/button";

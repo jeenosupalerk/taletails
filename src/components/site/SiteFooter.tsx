@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 
-import taletailsLogo from "@/assets/taletails-logo.jpg.asset.json";
+import taletailsLogo from "@/assets/taletails-logo.jpg";
 
 const columns = [
   {

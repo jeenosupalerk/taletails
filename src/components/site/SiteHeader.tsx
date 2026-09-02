@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Search, ShoppingBag, X } from "lucide-react";
 import { useState } from "react";
 
-import taletailsLogo from "@/assets/taletails-logo.jpg.asset.json";
+import taletailsLogo from "@/assets/taletails-logo.jpg";
 import { NotificationsMenu } from "@/components/site/NotificationsMenu";
 import { ThemeToggle } from "@/components/site/ThemeToggle";
 import { WatchlistMenu } from "@/components/site/WatchlistMenu";
