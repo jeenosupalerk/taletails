@@ -33,6 +33,8 @@ import { thb } from "@/lib/cart";
 import { cn } from "@/lib/utils";
 
 const SITE_URL = "https://taletails-test.lovable.app";
+/** Stable placeholder so the countdown hook is not re-armed on every render. */
+const FAR_FUTURE = "2999-01-01T00:00:00.000Z";
 const title = "รายละเอียดการ์ด — Taletails";
 const description =
   "ดูรายละเอียดการ์ดสะสม เกรด ใบรับรอง ราคาประมูลแบบเรียลไทม์ และซื้อขาดได้ทันทีบน Taletails";
