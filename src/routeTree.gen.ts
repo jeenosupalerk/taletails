@@ -21,6 +21,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as VaultRouteImport } from './routes/vault'
 import { Route as WishlistRouteImport } from './routes/wishlist'
 import { Route as AuctionIdRouteImport } from './routes/auction.$id'
+import { Route as CardIdRouteImport } from './routes/card.$id'
 import { Route as MarketIndexRouteImport } from './routes/market.index'
 import { Route as MarketIdRouteImport } from './routes/market.$id'
 import { Route as NewsIdRouteImport } from './routes/news.$id'
@@ -86,6 +87,11 @@ const AuctionIdRoute = AuctionIdRouteImport.update({
   path: '/auction/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CardIdRoute = CardIdRouteImport.update({
+  id: '/card/$id',
+  path: '/card/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MarketIndexRoute = MarketIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -120,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/vault': typeof VaultRoute
   '/wishlist': typeof WishlistRoute
   '/auction/$id': typeof AuctionIdRoute
+  '/card/$id': typeof CardIdRoute
   '/market/$id': typeof MarketIdRoute
   '/news/$id': typeof NewsIdRoute
   '/product/$id': typeof ProductIdRoute
@@ -137,6 +144,7 @@ export interface FileRoutesByTo {
   '/vault': typeof VaultRoute
   '/wishlist': typeof WishlistRoute
   '/auction/$id': typeof AuctionIdRoute
+  '/card/$id': typeof CardIdRoute
   '/market/$id': typeof MarketIdRoute
   '/news/$id': typeof NewsIdRoute
   '/product/$id': typeof ProductIdRoute
@@ -156,6 +164,7 @@ export interface FileRoutesById {
   '/vault': typeof VaultRoute
   '/wishlist': typeof WishlistRoute
   '/auction/$id': typeof AuctionIdRoute
+  '/card/$id': typeof CardIdRoute
   '/market/$id': typeof MarketIdRoute
   '/news/$id': typeof NewsIdRoute
   '/product/$id': typeof ProductIdRoute
@@ -176,6 +185,7 @@ export interface FileRouteTypes {
     | '/vault'
     | '/wishlist'
     | '/auction/$id'
+    | '/card/$id'
     | '/market/$id'
     | '/news/$id'
     | '/product/$id'
@@ -193,6 +203,7 @@ export interface FileRouteTypes {
     | '/vault'
     | '/wishlist'
     | '/auction/$id'
+    | '/card/$id'
     | '/market/$id'
     | '/news/$id'
     | '/product/$id'
@@ -211,6 +222,7 @@ export interface FileRouteTypes {
     | '/vault'
     | '/wishlist'
     | '/auction/$id'
+    | '/card/$id'
     | '/market/$id'
     | '/news/$id'
     | '/product/$id'
@@ -230,6 +242,7 @@ export interface RootRouteChildren {
   VaultRoute: typeof VaultRoute
   WishlistRoute: typeof WishlistRoute
   AuctionIdRoute: typeof AuctionIdRoute
+  CardIdRoute: typeof CardIdRoute
   ProductIdRoute: typeof ProductIdRoute
 }
 
@@ -319,6 +332,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuctionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/card/$id': {
+      id: '/card/$id'
+      path: '/card/$id'
+      fullPath: '/card/$id'
+      preLoaderRoute: typeof CardIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/market/': {
       id: '/market/'
       path: '/'
@@ -386,6 +406,7 @@ const rootRouteChildren: RootRouteChildren = {
   VaultRoute: VaultRoute,
   WishlistRoute: WishlistRoute,
   AuctionIdRoute: AuctionIdRoute,
+  CardIdRoute: CardIdRoute,
   ProductIdRoute: ProductIdRoute,
 }
 export const routeTree = rootRouteImport
