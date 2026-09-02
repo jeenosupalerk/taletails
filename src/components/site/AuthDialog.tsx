@@ -25,7 +25,7 @@ export function AuthDialog({ trigger }: { trigger: ReactNode }) {
         <DialogHeader>
           <div className="mb-2 flex items-center gap-2.5">
             <img
-              src={taletailsLogo.url}
+              src={taletailsLogo}
               alt=""
               width={36}
               height={36}

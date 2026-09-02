@@ -5,7 +5,7 @@ import { PageShell } from "@/components/site/PageShell";
 import { getFeaturedProducts } from "@/data/products";
 
 const SITE_URL = "https://taletails-test.lovable.app";
-const OG_IMAGE = `${SITE_URL}/__l5e/assets-v1/1b01c2e5-590f-4edc-b959-1f98c6e02830/taletails-logo.jpg`;
+const OG_IMAGE = `${SITE_URL}/taletails-logo.jpg`;
 
 const title = "ตลาดซื้อขาย — Taletails";
 const description =

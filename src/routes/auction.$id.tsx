@@ -191,7 +191,7 @@ function AuctionRoom() {
               </div>
 
               <img
-                src={taletailsLogo.url}
+                src={taletailsLogo}
                 alt=""
                 width={96}
                 height={96}

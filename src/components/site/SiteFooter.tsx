@@ -26,7 +26,7 @@ export function SiteFooter() {
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.4fr_repeat(3,1fr)] lg:px-8">
         <div>
           <Link to="/" className="flex items-center gap-2.5">
-            <img src={taletailsLogo.url} alt="" width={32} height={32} className="h-8 w-8 rounded-lg object-cover" loading="lazy" />
+            <img src={taletailsLogo} alt="" width={32} height={32} className="h-8 w-8 rounded-lg object-cover" loading="lazy" />
             <span className="font-display text-lg font-bold">
               Tale<span className="text-gradient-ember">tails</span>
             </span>

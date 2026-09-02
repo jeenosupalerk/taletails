@@ -29,7 +29,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 border-b border-border/80 bg-header shadow-header dark:backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
         <Link to="/" className="flex shrink-0 items-center gap-2.5">
-          <img src={taletailsLogo.url} alt="โลโก้ Taletails Collectibles — ตลาดและประมูลการ์ดสะสม" width={36} height={36} className="h-9 w-9 rounded-lg object-cover" />
+          <img src={taletailsLogo} alt="โลโก้ Taletails Collectibles — ตลาดและประมูลการ์ดสะสม" width={36} height={36} className="h-9 w-9 rounded-lg object-cover" />
           <span className="font-display text-lg font-bold tracking-tight">
             Tale<span className="text-gradient-ember">tails</span>
           </span>

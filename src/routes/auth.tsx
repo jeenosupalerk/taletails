@@ -11,7 +11,7 @@ import taletailsLogo from "@/assets/taletails-logo.jpg";
 import { useAuth } from "@/lib/auth";
 
 const SITE_URL = "https://taletails-test.lovable.app";
-const OG_IMAGE = `${SITE_URL}${taletailsLogo.url}`;
+const OG_IMAGE = `${SITE_URL}${taletailsLogo}`;
 
 const title = "เข้าสู่ระบบ / สมัครสมาชิก | Taletails";
 const description = "เข้าสู่ระบบ Taletails เพื่อประมูลการ์ดสะสม ติดตามรายการโปรด และจัดการคอลเลกชันของคุณ";
@@ -237,7 +237,7 @@ function AuthPage() {
           <div className="-mt-14 mb-6 flex justify-center">
             <div className="h-20 w-20 overflow-hidden rounded-full border-4 border-card bg-card shadow-lg">
               <img
-                src={taletailsLogo.url}
+                src={taletailsLogo}
                 alt="Taletails"
                 className="h-full w-full object-cover"
               />

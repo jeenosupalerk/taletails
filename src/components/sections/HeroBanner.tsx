@@ -34,7 +34,7 @@ export function HeroBanner() {
         <div className="min-w-0">
           <div className="inline-flex items-center gap-2 rounded-full bg-background/70 px-3 py-1.5 backdrop-blur">
             <img
-              src={taletailsLogo.url}
+              src={taletailsLogo}
               alt=""
               width={22}
               height={22}
@@ -111,7 +111,7 @@ export function HeroBanner() {
 
           {/* mascot */}
           <img
-            src={taletailsLogo.url}
+            src={taletailsLogo}
             alt="มาสคอตจิ้งจอก Taletails"
             width={96}
             height={96}

@@ -50,7 +50,7 @@ export function HeroCarousel() {
                 <div className="w-full p-6 sm:p-10 lg:p-14">
                   <div className="flex items-center gap-2">
                     <img
-                      src={taletailsLogo.url}
+                      src={taletailsLogo}
                       alt=""
                       width={28}
                       height={28}
