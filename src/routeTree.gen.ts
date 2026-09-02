@@ -25,6 +25,7 @@ import { Route as CardIdRouteImport } from './routes/card.$id'
 import { Route as MarketIndexRouteImport } from './routes/market.index'
 import { Route as MarketIdRouteImport } from './routes/market.$id'
 import { Route as NewsIdRouteImport } from './routes/news.$id'
+import { Route as OrderIdRouteImport } from './routes/order.$id'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -107,6 +108,11 @@ const NewsIdRoute = NewsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => NewsRoute,
 } as any)
+const OrderIdRoute = OrderIdRouteImport.update({
+  id: '/order/$id',
+  path: '/order/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProductIdRoute = ProductIdRouteImport.update({
   id: '/product/$id',
   path: '/product/$id',
@@ -129,6 +135,7 @@ export interface FileRoutesByFullPath {
   '/card/$id': typeof CardIdRoute
   '/market/$id': typeof MarketIdRoute
   '/news/$id': typeof NewsIdRoute
+  '/order/$id': typeof OrderIdRoute
   '/product/$id': typeof ProductIdRoute
   '/market/': typeof MarketIndexRoute
 }
@@ -147,6 +154,7 @@ export interface FileRoutesByTo {
   '/card/$id': typeof CardIdRoute
   '/market/$id': typeof MarketIdRoute
   '/news/$id': typeof NewsIdRoute
+  '/order/$id': typeof OrderIdRoute
   '/product/$id': typeof ProductIdRoute
   '/market': typeof MarketIndexRoute
 }
@@ -167,6 +175,7 @@ export interface FileRoutesById {
   '/card/$id': typeof CardIdRoute
   '/market/$id': typeof MarketIdRoute
   '/news/$id': typeof NewsIdRoute
+  '/order/$id': typeof OrderIdRoute
   '/product/$id': typeof ProductIdRoute
   '/market/': typeof MarketIndexRoute
 }
@@ -188,6 +197,7 @@ export interface FileRouteTypes {
     | '/card/$id'
     | '/market/$id'
     | '/news/$id'
+    | '/order/$id'
     | '/product/$id'
     | '/market/'
   fileRoutesByTo: FileRoutesByTo
@@ -206,6 +216,7 @@ export interface FileRouteTypes {
     | '/card/$id'
     | '/market/$id'
     | '/news/$id'
+    | '/order/$id'
     | '/product/$id'
     | '/market'
   id:
@@ -225,6 +236,7 @@ export interface FileRouteTypes {
     | '/card/$id'
     | '/market/$id'
     | '/news/$id'
+    | '/order/$id'
     | '/product/$id'
     | '/market/'
   fileRoutesById: FileRoutesById
@@ -243,6 +255,7 @@ export interface RootRouteChildren {
   WishlistRoute: typeof WishlistRoute
   AuctionIdRoute: typeof AuctionIdRoute
   CardIdRoute: typeof CardIdRoute
+  OrderIdRoute: typeof OrderIdRoute
   ProductIdRoute: typeof ProductIdRoute
 }
 
@@ -360,6 +373,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NewsIdRouteImport
       parentRoute: typeof NewsRoute
     }
+    '/order/$id': {
+      id: '/order/$id'
+      path: '/order/$id'
+      fullPath: '/order/$id'
+      preLoaderRoute: typeof OrderIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/product/$id': {
       id: '/product/$id'
       path: '/product/$id'
@@ -407,6 +427,7 @@ const rootRouteChildren: RootRouteChildren = {
   WishlistRoute: WishlistRoute,
   AuctionIdRoute: AuctionIdRoute,
   CardIdRoute: CardIdRoute,
+  OrderIdRoute: OrderIdRoute,
   ProductIdRoute: ProductIdRoute,
 }
 export const routeTree = rootRouteImport
