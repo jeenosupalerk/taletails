@@ -1,0 +1,236 @@
+import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
+import {
+  ChevronRight,
+  CreditCard,
+  Hammer,
+  Headphones,
+  Heart,
+  LogOut,
+  MapPin,
+  Moon,
+  Package,
+  Settings,
+  Sun,
+  User,
+} from "lucide-react";
+import type { ReactNode } from "react";
+
+import { PageShell } from "@/components/site/PageShell";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { useTheme } from "@/hooks/useTheme";
+import { useAuth } from "@/lib/auth";
+
+const SITE_URL = "https://taletails-test.lovable.app";
+const title = "บัญชีของฉัน | Taletails";
+const description =
+  "จัดการโปรไฟล์ ติดตามคำสั่งซื้อ รายการโปรด และตั้งค่าบัญชีของคุณบน Taletails";
+
+export const Route = createFileRoute("/profile")({
+  head: () => ({
+    meta: [
+      { title },
+      { name: "description", content: description },
+      { property: "og:title", content: title },
+      { property: "og:description", content: description },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+    links: [{ rel: "canonical", href: `${SITE_URL}/profile` }],
+  }),
+  component: ProfilePage,
+});
+
+function ProfilePage() {
+  const { user, isAuthenticated, logout } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    logout();
+    void router.navigate({ to: "/auth" });
+  };
+
+  return (
+    <PageShell title="บัญชีของฉัน" description="จัดการบัญชีและกิจกรรมของคุณ">
+      <section className="mx-auto max-w-2xl px-4 py-6 pb-28 sm:px-6 lg:px-8">
+        {!isAuthenticated || !user ? (
+          <div className="surface-panel flex flex-col items-center gap-4 px-6 py-14 text-center">
+            <User className="h-10 w-10 text-primary" />
+            <div>
+              <p className="font-semibold">ยังไม่ได้เข้าสู่ระบบ</p>
+              <p className="text-sm text-muted-foreground">
+                เข้าสู่ระบบเพื่อดูข้อมูลบัญชีและกิจกรรมของคุณ
+              </p>
+            </div>
+            <Button
+              asChild
+              className="h-11 rounded-xl bg-gradient-ember font-semibold text-primary-foreground"
+            >
+              <Link to="/auth">เข้าสู่ระบบ / สมัครสมาชิก</Link>
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-5">
+            {/* Header */}
+            <div className="surface-panel p-5">
+              <div className="flex items-center gap-4">
+                <Avatar className="h-16 w-16 rounded-full border-2 border-primary/20">
+                  <AvatarFallback className="bg-gradient-ember text-lg font-bold text-primary-foreground">
+                    {initials(user.name)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1">
+                  <h2 className="truncate text-lg font-bold">{user.name}</h2>
+                  <p className="truncate text-sm text-muted-foreground">{user.email}</p>
+                </div>
+              </div>
+
+              <div className="mt-5 flex items-center justify-between rounded-2xl bg-primary/10 p-4">
+                <div>
+                  <p className="text-xs font-medium text-primary/80">TaleTails Points</p>
+                  <p className="text-xl font-bold text-primary">1,250</p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-9 rounded-lg px-3 text-sm font-semibold text-primary hover:bg-primary/10"
+                >
+                  ดูประวัติแต้ม
+                </Button>
+              </div>
+            </div>
+
+            {/* My Activities */}
+            <MenuGroup title="กิจกรรมของฉัน">
+              <MenuItem
+                to="/auctions"
+                icon={<Hammer className="h-5 w-5" />}
+                label="ประวัติการประมูล"
+                suffix={<Badge className="h-5 min-w-5 rounded-full bg-destructive px-1.5 text-[10px] text-destructive-foreground">2</Badge>}
+              />
+              <MenuItem
+                to="/checkout"
+                icon={<Package className="h-5 w-5" />}
+                label="คำสั่งซื้อของฉัน"
+              />
+              <MenuItem
+                to="/wishlist"
+                icon={<Heart className="h-5 w-5" />}
+                label="รายการโปรด"
+              />
+            </MenuGroup>
+
+            {/* Account Settings */}
+            <MenuGroup title="ตั้งค่าบัญชี">
+              <MenuItem
+                to="/checkout"
+                icon={<MapPin className="h-5 w-5" />}
+                label="ที่อยู่สำหรับจัดส่ง"
+              />
+              <MenuItem
+                to="/checkout"
+                icon={<CreditCard className="h-5 w-5" />}
+                label="ช่องทางการชำระเงิน"
+              />
+              <MenuItem
+                to="/auth"
+                icon={<Settings className="h-5 w-5" />}
+                label="ตั้งค่าบัญชีและรหัสผ่าน"
+              />
+              <ThemeRow />
+            </MenuGroup>
+
+            {/* Help & Logout */}
+            <MenuGroup title="ช่วยเหลือ">
+              <MenuItem
+                to="/news"
+                icon={<Headphones className="h-5 w-5" />}
+                label="ศูนย์ช่วยเหลือ / ติดต่อเรา"
+              />
+            </MenuGroup>
+
+            <Button
+              variant="ghost"
+              onClick={handleLogout}
+              className="h-11 w-full justify-center gap-2 rounded-2xl text-sm font-semibold text-destructive hover:bg-destructive/10"
+            >
+              <LogOut className="h-5 w-5" />
+              ออกจากระบบ
+            </Button>
+          </div>
+        )}
+      </section>
+    </PageShell>
+  );
+}
+
+function MenuGroup({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="surface-panel overflow-hidden p-1">
+      <p className="px-3 pb-1 pt-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+        {title}
+      </p>
+      <div className="divide-y divide-border">{children}</div>
+    </div>
+  );
+}
+
+function MenuItem({
+  to,
+  icon,
+  label,
+  suffix,
+}: {
+  to: string;
+  icon: ReactNode;
+  label: string;
+  suffix?: ReactNode;
+}) {
+  return (
+    <Link
+      to={to}
+      className="flex h-11 items-center justify-between gap-3 rounded-xl px-3 transition-colors hover:bg-secondary/60"
+    >
+      <div className="flex items-center gap-3">
+        <span className="text-muted-foreground">{icon}</span>
+        <span className="text-sm font-medium">{label}</span>
+      </div>
+      <div className="flex items-center gap-2">
+        {suffix}
+        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+      </div>
+    </Link>
+  );
+}
+
+function ThemeRow() {
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === "dark";
+
+  return (
+    <div className="flex h-11 items-center justify-between gap-3 rounded-xl px-3">
+      <div className="flex items-center gap-3">
+        <span className="text-muted-foreground">
+          {isDark ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+        </span>
+        <span className="text-sm font-medium">{isDark ? "โหมดมืด" : "โหมดสว่าง"}</span>
+      </div>
+      <Switch
+        checked={isDark}
+        onCheckedChange={toggleTheme}
+        aria-label={isDark ? "สลับเป็นโหมดสว่าง" : "สลับเป็นโหมดมืด"}
+      />
+    </div>
+  );
+}
+
+function initials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "TT";
+  if (parts.length === 1) return (parts[0]?.slice(0, 2) ?? "TT").toUpperCase();
+  const first = parts[0]?.[0] ?? "";
+  const last = parts[parts.length - 1]?.[0] ?? "";
+  return `${first}${last}`.toUpperCase();
+}

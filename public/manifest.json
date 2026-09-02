@@ -1,0 +1,26 @@
+{
+  "name": "Taletails",
+  "short_name": "Taletails",
+  "description": "Taletails — ประมูลการ์ดสะสมสด ตลาดซื้อขายการ์ดที่ยืนยันแล้ว และห้องนิรภัยเก็บการ์ด",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FFFDF9",
+  "theme_color": "#FF6A00",
+  "orientation": "portrait",
+  "lang": "th-TH",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
