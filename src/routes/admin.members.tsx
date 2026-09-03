@@ -112,25 +112,23 @@ function AdminMembersPage() {
                 <Button
                   variant={roles.data?.[m.id]?.seller ? "ghost" : "secondary"}
                   className="h-10 rounded-xl px-3 text-xs"
-                  disabled={toggleSeller.isPending}
+                  disabled={toggleRole.isPending}
                   onClick={() =>
-                    toggleSeller.mutate(
-                      { userId: m.id, seller: !roles.data?.[m.id]?.seller },
-                      {
-                        onSuccess: () =>
-                          toast.success(
-                            roles.data?.[m.id]?.seller
-                              ? "ยกเลิกสิทธิ์เปิดร้านแล้ว"
-                              : "อนุญาตให้เปิดร้านแล้ว",
-                          ),
-                        onError: (e) =>
-                          toast.error(e instanceof Error ? e.message : "ไม่สำเร็จ"),
-                      },
-                    )
+                    setRole(m.id, "seller", !roles.data?.[m.id]?.seller, "ร้านค้า")
                   }
                 >
                   <Store className="h-3.5 w-3.5" />
                   {roles.data?.[m.id]?.seller ? "ยกเลิกสิทธิ์ร้านค้า" : "อนุญาตเปิดร้าน"}
+                </Button>
+
+                <Button
+                  variant={roles.data?.[m.id]?.admin ? "ghost" : "secondary"}
+                  className="h-10 rounded-xl px-3 text-xs"
+                  disabled={toggleRole.isPending}
+                  onClick={() => setRole(m.id, "admin", !roles.data?.[m.id]?.admin, "แอดมิน")}
+                >
+                  <UserCog className="h-3.5 w-3.5" />
+                  {roles.data?.[m.id]?.admin ? "ยกเลิกสิทธิ์แอดมิน" : "ตั้งเป็นแอดมิน"}
                 </Button>
 
                 <Button
