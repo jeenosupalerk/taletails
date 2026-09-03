@@ -154,13 +154,18 @@ function AdminOrdersPage() {
                   </Button>
                 )}
                 {o.status === "pending" && (
-                  <Button
-                    className="h-10 w-full justify-center rounded-xl px-3 text-xs sm:w-auto"
-                    onClick={() => act(o.id, { status: "paid" }, "ยืนยันการชำระเงินแล้ว")}
-                  >
-                    <CheckCircle2 className="h-3.5 w-3.5" />
-                    ยืนยันชำระเงิน
-                  </Button>
+                  <ConfirmDialog
+                    title="ยืนยันการชำระเงิน"
+                    description={`ยืนยันว่าได้รับเงินสำหรับคำสั่งซื้อ #${o.id.slice(0, 8)} แล้ว? ระบบจะแจ้งลูกค้าอัตโนมัติ`}
+                    confirmLabel="ยืนยันชำระเงิน"
+                    onConfirm={() => act(o.id, { status: "paid" }, "ยืนยันการชำระเงินแล้ว")}
+                    trigger={
+                      <Button className="h-10 w-full justify-center rounded-xl px-3 text-xs sm:w-auto">
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        ยืนยันชำระเงิน
+                      </Button>
+                    }
+                  />
                 )}
                 {o.status === "paid" && (
                   <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
@@ -192,14 +197,23 @@ function AdminOrdersPage() {
                   </span>
                 )}
                 {(o.status === "pending" || o.status === "paid") && (
-                  <Button
-                    variant="ghost"
-                    className="h-10 rounded-xl px-3 text-xs text-destructive"
-                    onClick={() => act(o.id, { status: "cancelled" }, "ยกเลิกคำสั่งซื้อแล้ว")}
-                  >
-                    <XCircle className="h-3.5 w-3.5" />
-                    ยกเลิก
-                  </Button>
+                  <ConfirmDialog
+                    title="ยืนยันการยกเลิกคำสั่งซื้อ"
+                    description={`ต้องการยกเลิกคำสั่งซื้อ #${o.id.slice(0, 8)} หรือไม่? การ์ดจะกลับมาพร้อมขายอีกครั้ง`}
+                    confirmLabel="ยกเลิกคำสั่งซื้อ"
+                    cancelLabel="ไม่ยกเลิก"
+                    tone="destructive"
+                    onConfirm={() => act(o.id, { status: "cancelled" }, "ยกเลิกคำสั่งซื้อแล้ว")}
+                    trigger={
+                      <Button
+                        variant="ghost"
+                        className="h-10 rounded-xl px-3 text-xs text-destructive"
+                      >
+                        <XCircle className="h-3.5 w-3.5" />
+                        ยกเลิก
+                      </Button>
+                    }
+                  />
                 )}
               </div>
             </li>

@@ -240,20 +240,29 @@ function AdminNewsPage() {
                 <Pencil className="h-3.5 w-3.5" />
                 แก้ไข
               </Button>
-              <Button
-                variant="ghost"
-                className="h-10 rounded-xl px-3 text-xs text-destructive"
+              <ConfirmDialog
+                title="ยืนยันการลบข่าว"
+                description={`ต้องการลบข่าว "${a.title}" หรือไม่? การลบไม่สามารถย้อนกลับได้`}
+                confirmLabel="ลบข่าว"
+                tone="destructive"
                 disabled={remove.isPending}
-                onClick={() =>
+                onConfirm={() =>
                   remove.mutate(a.id, {
                     onSuccess: () => toast.success("ลบข่าวแล้ว"),
                     onError: (e) => toast.error(e instanceof Error ? e.message : "ลบไม่สำเร็จ"),
                   })
                 }
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-                ลบ
-              </Button>
+                trigger={
+                  <Button
+                    variant="ghost"
+                    className="h-10 rounded-xl px-3 text-xs text-destructive"
+                    disabled={remove.isPending}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    ลบ
+                  </Button>
+                }
+              />
             </li>
           ))}
         </ul>
