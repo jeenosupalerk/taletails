@@ -109,22 +109,30 @@ export function useMyCards(enabled = true) {
   });
 }
 
-/** Grants or revokes the seller role for a member (admin only). */
-export function useToggleSellerRole() {
+export type ManagedRole = "seller" | "admin" | "customer";
+
+/** Grants or revokes a role for a member (admin only). */
+export function useToggleRole() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ userId, seller }: { userId: string; seller: boolean }) => {
-      if (seller) {
-        const { error } = await supabase
-          .from("user_roles")
-          .insert({ user_id: userId, role: "seller" });
+    mutationFn: async ({
+      userId,
+      role,
+      granted,
+    }: {
+      userId: string;
+      role: ManagedRole;
+      granted: boolean;
+    }) => {
+      if (granted) {
+        const { error } = await supabase.from("user_roles").insert({ user_id: userId, role });
         if (error && !error.message.includes("duplicate")) throw new Error(error.message);
       } else {
         const { error } = await supabase
           .from("user_roles")
           .delete()
           .eq("user_id", userId)
-          .eq("role", "seller");
+          .eq("role", role);
         if (error) throw new Error(error.message);
       }
       return true;
@@ -132,6 +140,7 @@ export function useToggleSellerRole() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["admin", "member-roles"] });
       void queryClient.invalidateQueries({ queryKey: ["is-seller"] });
+      void queryClient.invalidateQueries({ queryKey: ["is-admin"] });
     },
   });
 }

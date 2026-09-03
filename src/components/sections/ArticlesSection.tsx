@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
 
 import { SectionHeading } from "@/components/site/SectionHeading";
-import { getLatestArticles, type Article } from "@/data/articles";
+import { type Article } from "@/data/articles";
+import { usePublishedArticles } from "@/hooks/useArticles";
 
 const dateFormatter = new Intl.DateTimeFormat("th-TH", {
   day: "numeric",
@@ -42,7 +43,7 @@ function ArticleCard({ article }: { article: Article }) {
 }
 
 export function ArticlesSection({ showHeading = true }: { showHeading?: boolean }) {
-  const latest = getLatestArticles();
+  const { articles: latest } = usePublishedArticles();
 
   return (
     <section id="news" className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">

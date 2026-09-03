@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ChevronDown, Loader2, ShieldBan, ShieldCheck, Store } from "lucide-react";
+import { ChevronDown, Loader2, ShieldBan, ShieldCheck, Store, UserCog } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -10,7 +10,8 @@ import {
   useMemberBids,
   useSellerRoleMap,
   useToggleBan,
-  useToggleSellerRole,
+  useToggleRole,
+  type ManagedRole,
 } from "@/hooks/useAdmin";
 import { thb } from "@/lib/cart";
 
@@ -22,10 +23,19 @@ function AdminMembersPage() {
   const members = useAdminMembers();
   const ban = useToggleBan();
   const roles = useSellerRoleMap();
-  const toggleSeller = useToggleSellerRole();
+  const toggleRole = useToggleRole();
   const [q, setQ] = useState("");
   const [openId, setOpenId] = useState<string | null>(null);
   const bids = useMemberBids(openId ?? undefined);
+
+  const setRole = (userId: string, role: ManagedRole, granted: boolean, label: string) =>
+    toggleRole.mutate(
+      { userId, role, granted },
+      {
+        onSuccess: () => toast.success(granted ? `ให้สิทธิ์${label}แล้ว` : `ยกเลิกสิทธิ์${label}แล้ว`),
+        onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "ไม่สำเร็จ"),
+      },
+    );
 
   const rows = (members.data ?? []).filter((m) => {
     const t = q.trim().toLowerCase();
@@ -102,25 +112,23 @@ function AdminMembersPage() {
                 <Button
                   variant={roles.data?.[m.id]?.seller ? "ghost" : "secondary"}
                   className="h-10 rounded-xl px-3 text-xs"
-                  disabled={toggleSeller.isPending}
+                  disabled={toggleRole.isPending}
                   onClick={() =>
-                    toggleSeller.mutate(
-                      { userId: m.id, seller: !roles.data?.[m.id]?.seller },
-                      {
-                        onSuccess: () =>
-                          toast.success(
-                            roles.data?.[m.id]?.seller
-                              ? "ยกเลิกสิทธิ์เปิดร้านแล้ว"
-                              : "อนุญาตให้เปิดร้านแล้ว",
-                          ),
-                        onError: (e) =>
-                          toast.error(e instanceof Error ? e.message : "ไม่สำเร็จ"),
-                      },
-                    )
+                    setRole(m.id, "seller", !roles.data?.[m.id]?.seller, "ร้านค้า")
                   }
                 >
                   <Store className="h-3.5 w-3.5" />
                   {roles.data?.[m.id]?.seller ? "ยกเลิกสิทธิ์ร้านค้า" : "อนุญาตเปิดร้าน"}
+                </Button>
+
+                <Button
+                  variant={roles.data?.[m.id]?.admin ? "ghost" : "secondary"}
+                  className="h-10 rounded-xl px-3 text-xs"
+                  disabled={toggleRole.isPending}
+                  onClick={() => setRole(m.id, "admin", !roles.data?.[m.id]?.admin, "แอดมิน")}
+                >
+                  <UserCog className="h-3.5 w-3.5" />
+                  {roles.data?.[m.id]?.admin ? "ยกเลิกสิทธิ์แอดมิน" : "ตั้งเป็นแอดมิน"}
                 </Button>
 
                 <Button

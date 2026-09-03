@@ -28,6 +28,7 @@ const TABS = [
   { to: "/admin", label: "การ์ดทั้งหมด" },
   { to: "/admin/orders", label: "คำสั่งซื้อ" },
   { to: "/admin/members", label: "สมาชิก" },
+  { to: "/admin/news", label: "ข่าวสาร" },
 ] as const;
 
 function AdminLayout() {
