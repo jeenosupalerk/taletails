@@ -107,18 +107,18 @@ function AuctionsPage() {
             เลือกรายการเพื่อสลับขึ้นไปยังห้องประมูลด้านบนได้ทันที
           </p>
 
-          <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="no-scrollbar -mx-4 mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-4 pt-1 pb-6 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
             {liveAuctions.map((auction) => (
               <button
                 key={auction.id}
                 type="button"
                 onClick={() => select(auction.id)}
                 aria-pressed={auction.id === active?.id}
-                className={`group overflow-hidden rounded-3xl border bg-card text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-glow ${
+                className={`group w-[78%] shrink-0 snap-start overflow-hidden rounded-3xl border bg-card text-left shadow-[0_16px_40px_-24px_hsl(var(--foreground)/0.35)] transition-all duration-300 hover:-translate-y-1 hover:shadow-glow sm:w-[300px] ${
                   auction.id === active?.id ? "border-primary shadow-glow" : "border-border"
                 }`}
               >
-                <div className="relative aspect-[4/5] overflow-hidden bg-gradient-vault">
+                <div className="relative aspect-[4/3] overflow-hidden bg-gradient-vault">
                   <img
                     src={auction.imageUrl}
                     alt={`${auction.cardName} — ${auction.grade}`}
@@ -127,7 +127,7 @@ function AuctionsPage() {
                     loading="lazy"
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <span className="absolute top-3 right-3 rounded-full border border-accent/40 bg-background/85 px-2.5 py-1 font-display text-xs font-bold text-accent">
+                  <span className="absolute top-3 right-3 rounded-full border border-accent/40 bg-background/85 px-2.5 py-1 font-display text-[11px] font-bold text-accent">
                     {auction.grade}
                   </span>
                   <div className="absolute right-3 bottom-3 left-3">
@@ -135,28 +135,33 @@ function AuctionsPage() {
                   </div>
                 </div>
 
-                <div className="p-4">
-                  <h3 className="truncate font-display text-base font-semibold group-hover:text-primary">
+                <div className="p-3.5">
+                  <h3 className="truncate font-display text-sm font-semibold group-hover:text-primary">
                     {auction.cardName}
                   </h3>
-                  <p className="mt-0.5 truncate text-xs text-muted-foreground">{auction.setName}</p>
+                  <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+                    {auction.setName}
+                  </p>
 
-                  <div className="mt-4">
-                    <p className="text-[11px] tracking-wide text-muted-foreground">ราคาปัจจุบัน</p>
-                    <p className="font-display text-xl font-bold text-primary">
-                      {thb.format(auction.currentBid)}
-                    </p>
+                  <div className="mt-3 flex items-end justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-[10px] tracking-wide text-muted-foreground">
+                        ราคาปัจจุบัน
+                      </p>
+                      <p className="truncate font-display text-lg leading-tight font-bold text-primary">
+                        {thb.format(auction.currentBid)}
+                      </p>
+                    </div>
+                    <Button
+                      asChild
+                      className="h-10 shrink-0 rounded-xl bg-gradient-ember px-4 font-semibold text-primary-foreground shadow-glow transition-opacity hover:opacity-90"
+                    >
+                      <span>
+                        <Gavel className="h-4 w-4" />
+                        เสนอราคา
+                      </span>
+                    </Button>
                   </div>
-
-                  <Button
-                    asChild
-                    className="mt-4 h-11 w-full rounded-xl bg-gradient-ember font-semibold text-primary-foreground shadow-glow transition-opacity hover:opacity-90"
-                  >
-                    <span>
-                      <Gavel className="h-4 w-4" />
-                      เสนอราคา
-                    </span>
-                  </Button>
                 </div>
               </button>
             ))}
