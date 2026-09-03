@@ -67,7 +67,9 @@ const OTP_LENGTH = 6;
 
 function AuthPage() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { refresh } = useAuth();
+  const sendOtp = useServerFn(requestEmailOtp);
+  const checkOtp = useServerFn(verifyEmailOtp);
   const [mode, setMode] = useState<"login" | "register">("login");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -75,66 +77,103 @@ function AuthPage() {
   const [rememberMe, setRememberMe] = useState(false);
   const [otpStep, setOtpStep] = useState(false);
   const [otpEmail, setOtpEmail] = useState("");
-  const [pendingName, setPendingName] = useState("");
+  const [otpPurpose, setOtpPurpose] = useState<"register" | "login">("register");
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""));
   const otpRefs = useRef<Array<HTMLInputElement | null>>([]);
 
-  const simulateAuth = async (message: string, description?: string) => {
-    setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setIsLoading(false);
-    toast.success(message, {
-      description: description ?? "ระบบจำลอง — ยังไม่ได้เชื่อมต่อ API จริง",
-    });
+  const errText = (error: unknown) =>
+    error instanceof Error ? error.message : "เกิดข้อผิดพลาด กรุณาลองใหม่";
+
+  const startOtp = async (email: string, purpose: "register" | "login", username?: string) => {
+    await sendOtp({ data: { email, purpose, ...(username ? { username } : {}) } });
+    setOtpEmail(email);
+    setOtpPurpose(purpose);
+    setOtp(Array(OTP_LENGTH).fill(""));
+    setOtpStep(true);
+    toast.success("ส่งรหัส OTP แล้ว", { description: `เราได้ส่งรหัส 6 หลักไปที่ ${email}` });
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
+    const email = String(form.get("email") ?? "").trim().toLowerCase();
+    const password = String(form.get("password") ?? "");
 
     if (mode === "register") {
-      const password = String(form.get("password") ?? "");
       const confirm = String(form.get("confirmPassword") ?? "");
       if (password !== confirm) {
         toast.error("รหัสผ่านไม่ตรงกัน", { description: "กรุณายืนยันรหัสผ่านให้ตรงกัน" });
         return;
       }
-      const email = String(form.get("email") ?? "");
       const firstName = String(form.get("firstName") ?? "").trim();
       const lastName = String(form.get("lastName") ?? "").trim();
-      setPendingName(`${firstName} ${lastName}`.trim() || (email.split("@")[0] ?? ""));
+      const phone = String(form.get("phone") ?? "").trim();
+      const username = `${firstName} ${lastName}`.trim() || (email.split("@")[0] ?? "");
+
       setIsLoading(true);
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      setIsLoading(false);
-      setOtpEmail(email);
-      setOtp(Array(OTP_LENGTH).fill(""));
-      setOtpStep(true);
-      toast.success("ส่งรหัส OTP แล้ว (จำลอง)", {
-        description: `เราได้ส่งรหัส 6 หลักไปที่ ${email}`,
-      });
+      try {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { username, phone } },
+        });
+        if (error && !/already registered|already been registered/i.test(error.message)) {
+          throw new Error(error.message);
+        }
+        await startOtp(email, "register", username);
+      } catch (error) {
+        toast.error("สมัครสมาชิกไม่สำเร็จ", { description: errText(error) });
+      } finally {
+        setIsLoading(false);
+      }
       return;
     }
 
-    const email = String(form.get("email") ?? "");
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setIsLoading(false);
-    login({ name: email.split("@")[0] || "สมาชิก Taletails", email });
-    toast.success("เข้าสู่ระบบ (จำลอง)", {
-      description: "ระบบจำลอง — ยังไม่ได้เชื่อมต่อ API จริง",
-    });
-    void router.navigate({ to: "/profile" });
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        if (/email not confirmed/i.test(error.message)) {
+          await startOtp(email, "register");
+          return;
+        }
+        throw new Error(
+          /invalid login credentials/i.test(error.message)
+            ? "อีเมลหรือรหัสผ่านไม่ถูกต้อง"
+            : error.message,
+        );
+      }
+      await refresh();
+      toast.success("เข้าสู่ระบบสำเร็จ");
+      void router.navigate({ to: "/profile" });
+    } catch (error) {
+      toast.error("เข้าสู่ระบบไม่สำเร็จ", { description: errText(error) });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleSocialLogin = async (provider: string) => {
+  const handleOtpLogin = async () => {
+    const input = document.getElementById("auth-email") as HTMLInputElement | null;
+    const email = (input?.value ?? "").trim().toLowerCase();
+    if (!email) {
+      toast.error("กรุณากรอกอีเมลก่อนขอรหัส OTP");
+      return;
+    }
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setIsLoading(false);
-    login({ name: provider, email: `${provider.toLowerCase()}@taletails.app` });
-    toast.success(`เข้าสู่ระบบด้วย ${provider} (จำลอง)`, {
-      description: "ระบบจำลอง — ยังไม่ได้เชื่อมต่อ API จริง",
+    try {
+      await startOtp(email, "login");
+    } catch (error) {
+      toast.error("ขอรหัส OTP ไม่สำเร็จ", { description: errText(error) });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSocialLogin = (provider: string) => {
+    toast.info(`ยังไม่ได้เปิดใช้งาน ${provider}`, {
+      description: "กรุณาเปิดใช้งานผู้ให้บริการนี้ใน Supabase Auth ก่อน แล้วแจ้งให้เชื่อมต่อได้เลย",
     });
-    void router.navigate({ to: "/profile" });
   };
 
   const setOtpDigit = (index: number, value: string) => {
@@ -154,15 +193,33 @@ function AuthPage() {
       return;
     }
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setIsLoading(false);
-    login({ name: pendingName || "สมาชิก Taletails", email: otpEmail });
-    setOtpStep(false);
-    setMode("login");
-    toast.success("สมัครสมาชิกสำเร็จ (จำลอง)", {
-      description: "ยืนยันอีเมลเรียบร้อย เข้าสู่ระบบได้เลย",
-    });
-    void router.navigate({ to: "/profile" });
+    try {
+      const { tokenHash } = await checkOtp({ data: { email: otpEmail, code: otp.join("") } });
+      const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: "email" });
+      if (error) throw new Error(error.message);
+      await refresh();
+      setOtpStep(false);
+      setMode("login");
+      toast.success(otpPurpose === "register" ? "สมัครสมาชิกสำเร็จ" : "เข้าสู่ระบบสำเร็จ", {
+        description: "ยืนยันอีเมลเรียบร้อยแล้ว",
+      });
+      void router.navigate({ to: "/profile" });
+    } catch (error) {
+      toast.error("ยืนยันรหัสไม่สำเร็จ", { description: errText(error) });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setIsLoading(true);
+    try {
+      await startOtp(otpEmail, otpPurpose);
+    } catch (error) {
+      toast.error("ส่งรหัสใหม่ไม่สำเร็จ", { description: errText(error) });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const goBack = () => {
