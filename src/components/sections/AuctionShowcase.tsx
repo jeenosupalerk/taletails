@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import type { Auction } from "@/data/auctions";
 import { timeAgo, useBidHistory } from "@/hooks/useBidHistory";
 import { pad, useCountdown } from "@/hooks/useCountdown";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { thb } from "@/lib/cart";
 import { useWatchlist } from "@/lib/watchlist";
 
@@ -53,6 +54,7 @@ export function AuctionShowcase({ auction }: { auction: Auction }) {
     return () => window.clearInterval(id);
   }, []);
 
+  const requireAuth = useRequireAuth();
   const gallery = auction.images?.length ? auction.images : [auction.imageUrl];
   const minNext = auction.currentBid + 50;
   const urgent = !!c && !c.isFinished && c.totalMs < 3 * 60 * 60 * 1000;
@@ -70,6 +72,7 @@ export function AuctionShowcase({ auction }: { auction: Auction }) {
       ];
 
   const submit = () => {
+    if (!requireAuth("กรุณาเข้าสู่ระบบก่อนเสนอราคา")) return;
     if (bid < minNext) {
       toast.error(`ต้องเสนออย่างน้อย ${thb.format(minNext)}`);
       return;
