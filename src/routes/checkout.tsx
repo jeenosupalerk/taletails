@@ -327,7 +327,7 @@ function CheckoutPage() {
       </main>
 
       {lines.length > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 px-4 pt-3 pb-4 backdrop-blur">
+        <div className="fixed inset-x-0 bottom-[calc(64px+max(0.75rem,env(safe-area-inset-bottom)))] z-40 px-4 lg:bottom-0 lg:border-t lg:border-border lg:bg-card/95 lg:pt-3 lg:pb-4 lg:backdrop-blur">
           <div className="mx-auto max-w-3xl">
             <Button
               onClick={submit}
