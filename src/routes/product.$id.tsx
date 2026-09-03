@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { getProductById, getRelatedProducts, type Product } from "@/data/products";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { thb, useCart } from "@/lib/cart";
 
 const SITE_URL = "https://taletails-test.lovable.app";
