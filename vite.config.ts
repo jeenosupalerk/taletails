@@ -12,4 +12,20 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  vite: {
+    // Pre-bundle these up front so Vite does not discover them mid-session and
+    // trigger a dependency re-optimization reload, which shows up in the browser
+    // as "Importing a module script failed." with a blank screen.
+    optimizeDeps: {
+      include: [
+        "@tanstack/router-core",
+        "@tanstack/router-core/isServer",
+        "@tanstack/router-core/ssr/client",
+        "@tanstack/react-router",
+        "@tanstack/react-query",
+        "seroval",
+        "sonner",
+      ],
+    },
+  },
 });
