@@ -3,6 +3,7 @@ import { Heart, X } from "lucide-react";
 
 import { PageShell } from "@/components/site/PageShell";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { thb } from "@/lib/cart";
 import { useWatchlist } from "@/lib/watchlist";
 

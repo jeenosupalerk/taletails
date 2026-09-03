@@ -21,6 +21,7 @@ import { PageShell } from "@/components/site/PageShell";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Switch } from "@/components/ui/switch";
 import { useIsAdmin, useIsSeller } from "@/hooks/useAdmin";
 import { useTheme } from "@/hooks/useTheme";
