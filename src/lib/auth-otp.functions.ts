@@ -116,8 +116,17 @@ export const requestEmailOtp = createServerFn({ method: "POST" })
     });
 
     if (!res.ok) {
-      console.error("[otp] resend failed", res.status, await res.text());
-      throw new Error("ส่งอีเมลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+      const errorBody = await res.text();
+      console.error("[otp] resend failed", res.status, errorBody);
+      if (
+        res.status === 403 &&
+        /only send testing emails|verify a domain|validation_error/i.test(errorBody)
+      ) {
+        throw new Error(
+          "ระบบอีเมลยังใช้โหมดทดสอบ จึงส่ง OTP ไปยังอีเมลนี้ไม่ได้ กรุณาตั้งค่าโดเมนผู้ส่งอีเมลก่อน",
+        );
+      }
+      throw new Error("ส่งอีเมล OTP ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
     }
 
     return { ok: true as const, email: data.email };

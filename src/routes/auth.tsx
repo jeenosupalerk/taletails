@@ -121,14 +121,18 @@ function AuthPage() {
       const username = `${firstName} ${lastName}`.trim() || (email.split("@")[0] ?? "");
 
       setIsLoading(true);
+      let accountCreated = false;
       try {
         await register({
           data: { email, password, ...(username ? { username } : {}), ...(phone ? { phone } : {}) },
         });
+        accountCreated = true;
         await startOtp(email, "register", username);
 
       } catch (error) {
-        toast.error("สมัครสมาชิกไม่สำเร็จ", { description: errText(error) });
+        toast.error(accountCreated ? "สร้างบัญชีแล้ว แต่ส่ง OTP ไม่สำเร็จ" : "สมัครสมาชิกไม่สำเร็จ", {
+          description: errText(error),
+        });
       } finally {
         setIsLoading(false);
       }
