@@ -376,8 +376,12 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                       className="h-10 w-full rounded-xl text-xs sm:w-auto sm:flex-1"
                     />
                   )}
-                  <Button asChild variant="secondary" className="h-10 flex-1 rounded-xl px-3 text-xs sm:flex-none">
-                    <Link to="/card/$id" params={{ id: c.id }}>
+                  <Button
+                    asChild
+                    variant="secondary"
+                    className="h-10 flex-1 rounded-xl px-3 text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:flex-none"
+                  >
+                    <Link to="/card/$id" params={{ id: c.id }} data-action="view" title="ดูหน้าขาย (V)">
                       ดูหน้าขาย
                     </Link>
                   </Button>
@@ -399,7 +403,9 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                           variant="ghost"
                           size="icon"
                           aria-label="ลบการ์ด"
-                          className="h-10 w-10 shrink-0 rounded-xl text-destructive"
+                          title="ลบการ์ด (Delete)"
+                          data-action="delete"
+                          className="h-10 w-10 shrink-0 rounded-xl text-destructive focus-visible:ring-2 focus-visible:ring-destructive focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -411,6 +417,33 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
             );
           })}
         </ul>
+
+        {pageCount > 1 && (
+          <nav className="flex items-center justify-between gap-2" aria-label="แบ่งหน้ารายการสินค้า">
+            <Button
+              variant="secondary"
+              className="h-10 rounded-xl px-3 text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              disabled={safePage === 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              <ChevronLeft className="h-4 w-4" />
+              ก่อนหน้า
+            </Button>
+            <span className="text-xs text-muted-foreground">
+              หน้า {safePage} / {pageCount} • ทั้งหมด {total} รายการ
+            </span>
+            <Button
+              variant="secondary"
+              className="h-10 rounded-xl px-3 text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              disabled={safePage === pageCount}
+              onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
+            >
+              ถัดไป
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </nav>
+        )}
+        </>
       )}
     </div>
   );
