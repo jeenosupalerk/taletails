@@ -287,35 +287,39 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
             return (
               <li
                 key={c.id}
-                className="flex flex-wrap items-center gap-4 rounded-2xl border border-border bg-card p-3 sm:p-4"
+                className="rounded-2xl border border-border bg-card p-3 sm:p-4"
               >
-                <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-secondary">
-                  {c.images?.[0] && (
-                    <img src={c.images[0]} alt={c.name} className="h-full w-full object-cover" />
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-display text-sm font-semibold">{c.name}</p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {[c.set_name, c.grade, c.condition].filter(Boolean).join(" • ") || "—"}
-                  </p>
-                  <p className="mt-1 flex items-center gap-2 text-xs">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5">
-                      {c.sale_type === "auction" ? (
-                        <Gavel className="h-3 w-3" />
-                      ) : (
-                        <Tag className="h-3 w-3" />
-                      )}
-                      {c.sale_type === "auction" ? "ประมูล" : "ราคาปกติ"}
-                    </span>
-                    <span className="text-muted-foreground">{STATUS_LABEL[c.status]}</span>
+                <div className="flex items-start gap-3">
+                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-secondary">
+                    {c.images?.[0] && (
+                      <img src={c.images[0]} alt={c.name} className="h-full w-full object-cover" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-display text-sm font-semibold">{c.name}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {[c.set_name, c.grade, c.condition].filter(Boolean).join(" • ") || "—"}
+                    </p>
+                    <p className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5">
+                        {c.sale_type === "auction" ? (
+                          <Gavel className="h-3 w-3" />
+                        ) : (
+                          <Tag className="h-3 w-3" />
+                        )}
+                        {c.sale_type === "auction" ? "ประมูล" : "ราคาปกติ"}
+                      </span>
+                      <span className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-muted-foreground">
+                        {STATUS_LABEL[c.status]}
+                      </span>
+                    </p>
+                  </div>
+                  <p className="shrink-0 font-display text-sm font-semibold">
+                    {thb.format(auction?.current_price ?? c.price)}
                   </p>
                 </div>
 
-                <div className="text-right">
-                  <p className="font-display text-sm font-semibold">
-                    {thb.format(auction?.current_price ?? c.price)}
-                  </p>
+                <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-dashed border-border pt-3">
                   {auction && (
                     <Input
                       type="datetime-local"
@@ -332,13 +336,10 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                           },
                         )
                       }
-                      className="mt-1.5 h-10 w-[13.5rem] rounded-xl text-xs"
+                      className="h-10 w-full rounded-xl text-xs sm:w-auto sm:flex-1"
                     />
                   )}
-                </div>
-
-                <div className="flex gap-1.5">
-                  <Button asChild variant="secondary" className="h-10 rounded-xl px-3 text-xs">
+                  <Button asChild variant="secondary" className="h-10 flex-1 rounded-xl px-3 text-xs sm:flex-none">
                     <Link to="/card/$id" params={{ id: c.id }}>
                       ดูหน้าขาย
                     </Link>
@@ -348,7 +349,7 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                       variant="ghost"
                       size="icon"
                       aria-label="ลบการ์ด"
-                      className="h-10 w-10 rounded-xl text-destructive"
+                      className="h-10 w-10 shrink-0 rounded-xl text-destructive"
                       onClick={() =>
                         del.mutate(c.id, {
                           onSuccess: () => toast.success("ลบการ์ดแล้ว"),
