@@ -10,7 +10,8 @@ import {
   useMemberBids,
   useSellerRoleMap,
   useToggleBan,
-  useToggleSellerRole,
+  useToggleRole,
+  type ManagedRole,
 } from "@/hooks/useAdmin";
 import { thb } from "@/lib/cart";
 
