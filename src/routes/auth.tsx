@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { StatusDialog } from "@/components/ui/status-dialog";
 import { useAuth } from "@/lib/auth";
 import { registerWithPassword, requestEmailOtp, verifyEmailOtp } from "@/lib/auth-otp.functions";
+import { requestPasswordResetOtp, resetPasswordWithOtp } from "@/lib/auth-reset.functions";
 
 const SITE_URL = "https://taletails-test.lovable.app";
 const OG_IMAGE = `${SITE_URL}${taletailsLogo}`;
