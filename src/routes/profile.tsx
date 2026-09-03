@@ -10,6 +10,7 @@ import {
   Moon,
   Package,
   Settings,
+  Store,
   Sun,
   User,
 } from "lucide-react";
@@ -20,6 +21,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { useIsSeller } from "@/hooks/useAdmin";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/lib/auth";
 
@@ -45,6 +47,7 @@ export const Route = createFileRoute("/profile")({
 
 function ProfilePage() {
   const { user, isAuthenticated, logout } = useAuth();
+  const { isSeller } = useIsSeller();
   const router = useRouter();
 
   const handleLogout = () => {
@@ -101,6 +104,16 @@ function ProfilePage() {
                 </Button>
               </div>
             </div>
+
+            {isSeller && (
+              <MenuGroup title="สำหรับผู้ขาย">
+                <MenuItem
+                  to="/shop"
+                  icon={<Store className="h-5 w-5" />}
+                  label="ร้านของฉัน"
+                />
+              </MenuGroup>
+            )}
 
             {/* My Activities */}
             <MenuGroup title="กิจกรรมของฉัน">
