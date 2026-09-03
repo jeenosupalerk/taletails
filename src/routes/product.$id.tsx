@@ -90,7 +90,7 @@ function ProductPage() {
       title={product.cardName}
       description={`${product.setName} • ${product.grade}`}
     >
-      <div className="mx-auto max-w-5xl px-4 pt-8 pb-32 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-5xl px-4 pt-8 pb-44 sm:px-6 lg:px-8 lg:pb-32">
         {/* แกลเลอรี */}
         <div className="surface-panel overflow-hidden p-4">
           <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl border border-border bg-secondary/40">
