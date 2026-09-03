@@ -183,3 +183,50 @@ export const verifyEmailOtp = createServerFn({ method: "POST" })
 
     return { tokenHash: hashed };
   });
+
+/**
+ * Creates the account server-side with the Admin API so Supabase's built-in
+ * confirmation e-mail (which is heavily rate limited) is never triggered.
+ * The e-mail is verified afterwards through our own Resend OTP.
+ */
+export const registerWithPassword = createServerFn({ method: "POST" })
+  .inputValidator((input: { email: string; password: string; username?: string; phone?: string }) => ({
+    email: normalizeEmail(input.email),
+    password: String(input.password ?? ""),
+    username: input.username ? String(input.username).slice(0, 80) : undefined,
+    phone: input.phone ? String(input.phone).slice(0, 40) : undefined,
+  }))
+  .handler(async ({ data }) => {
+    if (data.password.length < 6) throw new Error("รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const existing = await supabaseAdmin
+      .from("users")
+      .select("id")
+      .eq("email", data.email)
+      .maybeSingle();
+
+    if (existing.data) return { ok: true as const, created: false as const };
+
+    const created = await supabaseAdmin.auth.admin.createUser({
+      email: data.email,
+      password: data.password,
+      email_confirm: true,
+      user_metadata: {
+        ...(data.username ? { username: data.username } : {}),
+        ...(data.phone ? { phone: data.phone } : {}),
+      },
+    });
+
+    if (created.error) {
+      const message = created.error.message ?? "";
+      if (/already been registered|already exists/i.test(message)) {
+        return { ok: true as const, created: false as const };
+      }
+      console.error("[auth] createUser failed", message);
+      throw new Error("สมัครสมาชิกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+    }
+
+    return { ok: true as const, created: true as const };
+  });
