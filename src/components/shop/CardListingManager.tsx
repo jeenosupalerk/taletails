@@ -1,5 +1,15 @@
 import { Link } from "@tanstack/react-router";
-import { Gavel, ImagePlus, Loader2, Plus, Tag, Trash2 } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Gavel,
+  ImagePlus,
+  Loader2,
+  PackageOpen,
+  Plus,
+  Tag,
+  Trash2,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -7,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -45,6 +56,8 @@ const EMPTY: NewCardInput = {
   files: [],
 };
 
+const PAGE_SIZE = 8;
+
 const STATUS_LABEL: Record<string, string> = {
   available: "พร้อมขาย",
   locked: "ถูกจอง",
@@ -54,12 +67,31 @@ const STATUS_LABEL: Record<string, string> = {
 export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "shop" }) {
   const [form, setForm] = useState<NewCardInput>(EMPTY);
   const [open, setOpen] = useState(false);
+  const [page, setPage] = useState(1);
   const adminCards = useAdminCards(scope === "admin");
   const myCards = useMyCards(scope === "shop");
   const cards = scope === "shop" ? myCards : adminCards;
   const create = useCreateCard();
   const del = useDeleteCard();
   const setEnd = useUpdateAuctionEndTime();
+
+  const items = cards.data ?? [];
+  const total = items.length;
+  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const safePage = Math.min(page, pageCount);
+  const pageItems = items.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+  const onRowKeyDown = (e: React.KeyboardEvent<HTMLLIElement>) => {
+    const target = e.target as HTMLElement;
+    if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
+    const key = e.key.toLowerCase();
+    if (key === "v") {
+      e.currentTarget.querySelector<HTMLElement>('[data-action="view"]')?.click();
+    } else if (e.key === "Delete" || e.key === "Backspace") {
+      e.preventDefault();
+      e.currentTarget.querySelector<HTMLElement>('[data-action="delete"]')?.click();
+    }
+  };
 
   const set = <K extends keyof NewCardInput>(key: K, value: NewCardInput[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
@@ -274,21 +306,59 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
       )}
 
       {cards.isLoading ? (
-        <div className="grid place-items-center py-16">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </div>
-      ) : (cards.data ?? []).length === 0 ? (
-        <p className="rounded-3xl border border-dashed border-border py-16 text-center text-sm text-muted-foreground">
-          {scope === "shop" ? "ยังไม่มีสินค้าในร้านของคุณ" : "ยังไม่มีการ์ดในระบบ"}
-        </p>
+        <ul className="space-y-3" aria-busy="true" aria-label="กำลังโหลดรายการสินค้า">
+          {Array.from({ length: PAGE_SIZE }).map((_, i) => (
+            <li key={i} className="rounded-2xl border border-border bg-card p-3 sm:p-4">
+              <div className="flex items-start gap-3">
+                <Skeleton className="h-16 w-16 shrink-0 rounded-xl" />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="h-3 w-2/3" />
+                  <div className="flex gap-1.5 pt-1">
+                    <Skeleton className="h-5 w-20 rounded-full" />
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                  </div>
+                </div>
+                <Skeleton className="h-4 w-16 shrink-0" />
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2 border-t border-dashed border-border pt-3">
+                <Skeleton className="h-10 flex-1 rounded-xl" />
+                <Skeleton className="h-10 w-10 rounded-xl" />
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : total === 0 ? (
+        <section className="flex flex-col items-center gap-3 rounded-3xl border border-dashed border-border px-6 py-14 text-center">
+          <span className="grid h-14 w-14 place-items-center rounded-2xl bg-secondary text-muted-foreground">
+            <PackageOpen className="h-6 w-6" />
+          </span>
+          <h3 className="font-display text-base font-semibold">
+            {scope === "shop" ? "ยังไม่มีสินค้าในร้านของคุณ" : "ยังไม่มีการ์ดในระบบ"}
+          </h3>
+          <p className="max-w-sm text-sm text-muted-foreground">
+            เริ่มต้นด้วยการลงการ์ดใบแรก เลือกได้ว่าจะขายราคาปกติหรือเปิดประมูล
+          </p>
+          <Button className="h-11 rounded-xl" onClick={() => setOpen(true)}>
+            <Plus className="h-4 w-4" />
+            สร้างรายการใหม่
+          </Button>
+        </section>
       ) : (
+        <>
+        <p className="text-xs text-muted-foreground">
+          เลือกการ์ดด้วยปุ่ม Tab แล้วกด <kbd className="rounded bg-secondary px-1.5 py-0.5">V</kbd> เพื่อดูหน้าขาย หรือ{" "}
+          <kbd className="rounded bg-secondary px-1.5 py-0.5">Delete</kbd> เพื่อลบ
+        </p>
         <ul className="space-y-3">
-          {(cards.data ?? []).map((c) => {
+          {pageItems.map((c) => {
             const auction = c.auctions?.[0];
             return (
               <li
                 key={c.id}
-                className="rounded-2xl border border-border bg-card p-3 sm:p-4"
+                tabIndex={0}
+                onKeyDown={onRowKeyDown}
+                className="rounded-2xl border border-border bg-card p-3 outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:p-4"
               >
                 <div className="flex items-start gap-3">
                   <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-secondary">
@@ -340,8 +410,12 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                       className="h-10 w-full rounded-xl text-xs sm:w-auto sm:flex-1"
                     />
                   )}
-                  <Button asChild variant="secondary" className="h-10 flex-1 rounded-xl px-3 text-xs sm:flex-none">
-                    <Link to="/card/$id" params={{ id: c.id }}>
+                  <Button
+                    asChild
+                    variant="secondary"
+                    className="h-10 flex-1 rounded-xl px-3 text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:flex-none"
+                  >
+                    <Link to="/card/$id" params={{ id: c.id }} data-action="view" title="ดูหน้าขาย (V)">
                       ดูหน้าขาย
                     </Link>
                   </Button>
@@ -363,7 +437,9 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                           variant="ghost"
                           size="icon"
                           aria-label="ลบการ์ด"
-                          className="h-10 w-10 shrink-0 rounded-xl text-destructive"
+                          title="ลบการ์ด (Delete)"
+                          data-action="delete"
+                          className="h-10 w-10 shrink-0 rounded-xl text-destructive focus-visible:ring-2 focus-visible:ring-destructive focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -375,6 +451,33 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
             );
           })}
         </ul>
+
+        {pageCount > 1 && (
+          <nav className="flex items-center justify-between gap-2" aria-label="แบ่งหน้ารายการสินค้า">
+            <Button
+              variant="secondary"
+              className="h-10 rounded-xl px-3 text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              disabled={safePage === 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              <ChevronLeft className="h-4 w-4" />
+              ก่อนหน้า
+            </Button>
+            <span className="text-xs text-muted-foreground">
+              หน้า {safePage} / {pageCount} • ทั้งหมด {total} รายการ
+            </span>
+            <Button
+              variant="secondary"
+              className="h-10 rounded-xl px-3 text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              disabled={safePage === pageCount}
+              onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
+            >
+              ถัดไป
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </nav>
+        )}
+        </>
       )}
     </div>
   );
