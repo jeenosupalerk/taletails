@@ -21,7 +21,9 @@ export interface DbArticle {
 const SELECT =
   "id, title, category_tag, excerpt, content, thumbnail_url, is_published, published_at, created_at";
 
-export function toArticle(row: DbArticle): Article & { excerpt?: string; content?: string } {
+export function toArticle(
+  row: DbArticle,
+): Article & { excerpt?: string | undefined; content?: string | undefined } {
   return {
     id: row.id,
     title: row.title,
