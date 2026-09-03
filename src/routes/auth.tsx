@@ -428,7 +428,147 @@ function AuthPage() {
             </div>
           </div>
 
-          {otpStep ? (
+          {forgotStep === "email" ? (
+            <form onSubmit={handleRequestReset} className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="forgot-email">อีเมล</Label>
+                <div className="relative">
+                  <Mail className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="forgot-email"
+                    type="email"
+                    autoComplete="email"
+                    placeholder="you@example.com"
+                    required
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    disabled={isLoading}
+                    className="h-11 rounded-xl border-border bg-secondary/40 pl-10"
+                  />
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="h-11 w-full rounded-xl bg-gradient-ember font-semibold text-primary-foreground shadow-glow hover:opacity-90 disabled:opacity-70"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>กำลังส่งรหัส...</span>
+                  </>
+                ) : (
+                  "ส่งรหัสยืนยัน"
+                )}
+              </Button>
+
+              <button
+                type="button"
+                onClick={() => setForgotStep(null)}
+                disabled={isLoading}
+                className="w-full text-center text-sm font-medium text-primary transition-colors hover:underline disabled:opacity-50"
+              >
+                กลับไปหน้าเข้าสู่ระบบ
+              </button>
+            </form>
+          ) : forgotStep === "code" ? (
+            <form onSubmit={handleResetPassword} className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="forgot-code">รหัสยืนยัน 6 หลัก</Label>
+                <Input
+                  id="forgot-code"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  required
+                  value={forgotCode}
+                  onChange={(e) => setForgotCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  disabled={isLoading}
+                  className="h-11 rounded-xl border-border bg-secondary/40 text-center font-display text-lg tracking-[0.4em]"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="forgot-password">รหัสผ่านใหม่</Label>
+                <div className="relative">
+                  <Lock className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="forgot-password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    placeholder="อย่างน้อย 6 ตัวอักษร"
+                    required
+                    minLength={6}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    disabled={isLoading}
+                    className="h-11 rounded-xl border-border bg-secondary/40 pr-10 pl-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    disabled={isLoading}
+                    aria-label={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
+                    className="absolute top-1/2 right-3 -translate-y-1/2 rounded-md p-1 text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="forgot-confirm">ยืนยันรหัสผ่านใหม่</Label>
+                <div className="relative">
+                  <Lock className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="forgot-confirm"
+                    type={showConfirm ? "text" : "password"}
+                    autoComplete="new-password"
+                    required
+                    minLength={6}
+                    value={confirmNewPassword}
+                    onChange={(e) => setConfirmNewPassword(e.target.value)}
+                    disabled={isLoading}
+                    className="h-11 rounded-xl border-border bg-secondary/40 pr-10 pl-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirm((v) => !v)}
+                    disabled={isLoading}
+                    aria-label={showConfirm ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
+                    className="absolute top-1/2 right-3 -translate-y-1/2 rounded-md p-1 text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+                  >
+                    {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="h-11 w-full rounded-xl bg-gradient-ember font-semibold text-primary-foreground shadow-glow hover:opacity-90 disabled:opacity-70"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>กำลังตั้งรหัสผ่านใหม่...</span>
+                  </>
+                ) : (
+                  "ตั้งรหัสผ่านใหม่"
+                )}
+              </Button>
+
+              <button
+                type="button"
+                onClick={() => void handleRequestReset({ preventDefault: () => {} } as React.FormEvent<HTMLFormElement>)}
+                disabled={isLoading}
+                className="w-full text-center text-sm font-medium text-primary transition-colors hover:underline disabled:opacity-50"
+              >
+                ส่งรหัสอีกครั้ง
+              </button>
+            </form>
+          ) : otpStep ? (
             <form onSubmit={handleVerifyOtp} className="space-y-5">
               <div className="flex justify-between gap-2">
                 {otp.map((digit, i) => (
