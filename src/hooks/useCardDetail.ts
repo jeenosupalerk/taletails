@@ -187,6 +187,8 @@ export interface OrderRow {
   shipping_phone: string | null;
   shipping_address: string | null;
   note: string | null;
+  payment_due_at: string;
+  tracking_number: string | null;
   created_at: string;
 }
 
@@ -234,7 +236,7 @@ export function useOrder(orderId: string) {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id, user_id, card_id, auction_id, total_amount, payment_method, slip_url, status, shipping_name, shipping_phone, shipping_address, note, created_at, cards:card_id (id, name, set_name, grade, images, price)",
+          "id, user_id, card_id, auction_id, total_amount, payment_method, slip_url, status, shipping_name, shipping_phone, shipping_address, note, payment_due_at, tracking_number, created_at, cards:card_id (id, name, set_name, grade, images, price)",
         )
         .eq("id", orderId)
         .maybeSingle();
