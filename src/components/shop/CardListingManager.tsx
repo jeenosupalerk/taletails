@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { Gavel, ImagePlus, Loader2, Plus, Tag, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -18,14 +18,11 @@ import {
   useAdminCards,
   useCreateCard,
   useDeleteCard,
+  useMyCards,
   useUpdateAuctionEndTime,
   type NewCardInput,
 } from "@/hooks/useAdmin";
 import { thb } from "@/lib/cart";
-
-export const Route = createFileRoute("/admin/")({
-  component: AdminCardsPage,
-});
 
 const EMPTY: NewCardInput = {
   name: "",
