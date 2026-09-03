@@ -177,14 +177,22 @@ function ProfilePage() {
               />
             </MenuGroup>
 
-            <Button
-              variant="ghost"
-              onClick={handleLogout}
-              className="h-11 w-full justify-center gap-2 rounded-2xl text-sm font-semibold text-destructive hover:bg-destructive/10"
-            >
-              <LogOut className="h-5 w-5" />
-              ออกจากระบบ
-            </Button>
+            <ConfirmDialog
+              title="ออกจากระบบ"
+              description="ต้องการออกจากระบบบัญชีนี้หรือไม่?"
+              confirmLabel="ออกจากระบบ"
+              tone="destructive"
+              onConfirm={handleLogout}
+              trigger={
+                <Button
+                  variant="ghost"
+                  className="h-11 w-full justify-center gap-2 rounded-2xl text-sm font-semibold text-destructive hover:bg-destructive/10"
+                >
+                  <LogOut className="h-5 w-5" />
+                  ออกจากระบบ
+                </Button>
+              }
+            />
           </div>
         )}
       </section>
