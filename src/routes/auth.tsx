@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import taletailsLogo from "@/assets/taletails-logo.jpg";
 import { supabase } from "@/integrations/supabase/client";
+import { StatusDialog } from "@/components/ui/status-dialog";
 import { useAuth } from "@/lib/auth";
 import { requestEmailOtp, verifyEmailOtp } from "@/lib/auth-otp.functions";
 
@@ -83,6 +84,11 @@ function AuthPage() {
   const [otpPurpose, setOtpPurpose] = useState<"register" | "login">("register");
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""));
   const otpRefs = useRef<Array<HTMLInputElement | null>>([]);
+  const [resultOpen, setResultOpen] = useState(false);
+  const [result, setResult] = useState<{ title: string; description: string }>({
+    title: "",
+    description: "",
+  });
 
   const errText = (error: unknown) =>
     error instanceof Error ? error.message : "เกิดข้อผิดพลาด กรุณาลองใหม่";
@@ -147,8 +153,11 @@ function AuthPage() {
         );
       }
       await refresh();
-      toast.success("เข้าสู่ระบบสำเร็จ");
-      void router.navigate({ to: "/profile" });
+      setResult({
+        title: "เข้าสู่ระบบสำเร็จ",
+        description: `ยินดีต้อนรับกลับมา ${email}`,
+      });
+      setResultOpen(true);
     } catch (error) {
       toast.error("เข้าสู่ระบบไม่สำเร็จ", { description: errText(error) });
     } finally {
@@ -203,10 +212,11 @@ function AuthPage() {
       await refresh();
       setOtpStep(false);
       setMode("login");
-      toast.success(otpPurpose === "register" ? "สมัครสมาชิกสำเร็จ" : "เข้าสู่ระบบสำเร็จ", {
-        description: "ยืนยันอีเมลเรียบร้อยแล้ว",
+      setResult({
+        title: otpPurpose === "register" ? "สมัครสมาชิกสำเร็จ" : "เข้าสู่ระบบสำเร็จ",
+        description: `ยืนยันอีเมล ${otpEmail} เรียบร้อยแล้ว`,
       });
-      void router.navigate({ to: "/profile" });
+      setResultOpen(true);
     } catch (error) {
       toast.error("ยืนยันรหัสไม่สำเร็จ", { description: errText(error) });
     } finally {
@@ -566,6 +576,18 @@ function AuthPage() {
           )}
         </div>
       </main>
+
+      <StatusDialog
+        open={resultOpen}
+        onOpenChange={setResultOpen}
+        tone="success"
+        title={result.title}
+        description={result.description}
+        actionLabel="ไปที่โปรไฟล์"
+        onAction={() => void router.navigate({ to: "/profile" })}
+        secondaryLabel="กลับหน้าแรก"
+        onSecondary={() => void router.navigate({ to: "/" })}
+      />
     </div>
   );
 }

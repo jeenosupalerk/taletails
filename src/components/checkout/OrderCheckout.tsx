@@ -20,6 +20,7 @@ import { useAuthUserId, useOrder, useSubmitPayment } from "@/hooks/useCardDetail
 import { thb } from "@/lib/cart";
 import { cn } from "@/lib/utils";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { StatusDialog } from "@/components/ui/status-dialog";
 
 type Method = "slip" | "qr_promptpay";
 
@@ -39,6 +40,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [done, setDone] = useState(false);
+  const [paidOpen, setPaidOpen] = useState(false);
 
   useEffect(() => {
     if (!file) return setPreview(null);
@@ -66,7 +68,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
       {
         onSuccess: () => {
           setDone(true);
-          toast.success("ชำระเงินสำเร็จ — บันทึกคำสั่งซื้อแล้ว");
+          setPaidOpen(true);
         },
         onError: (e) => toast.error(e.message),
       },
@@ -283,6 +285,24 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
           </>
         )}
       </main>
+
+      <StatusDialog
+        open={paidOpen}
+        onOpenChange={setPaidOpen}
+        tone="success"
+        title="ส่งข้อมูลการชำระเงินแล้ว"
+        description={
+          method === "slip"
+            ? "เราได้รับสลิปของคุณแล้ว ทีมงานจะตรวจสอบและยืนยันภายใน 24 ชั่วโมง"
+            : "เราได้รับแจ้งการชำระผ่าน QR PromptPay แล้ว ระบบจะยืนยันให้โดยเร็วที่สุด"
+        }
+        actionLabel="ดูสถานะคำสั่งซื้อ"
+        onAction={() => void navigate({ to: "/order/$id", params: { id: orderId } })}
+        secondaryLabel="เลือกซื้อต่อ"
+        onSecondary={() => void navigate({ to: "/marketplace" })}
+      >
+        {order ? <p>ยอดชำระ {thb.format(Number(order.total_amount ?? 0))}</p> : null}
+      </StatusDialog>
     </div>
   );
 }
