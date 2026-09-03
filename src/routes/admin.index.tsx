@@ -65,11 +65,18 @@ function AdminCardsPage() {
     setForm((f) => ({ ...f, [key]: value }));
 
   const submit = () => {
-    if (!form.name.trim()) return toast.error("กรุณากรอกชื่อการ์ด");
-    if (form.saleType === "fixed_price" && !Number(form.price))
-      return toast.error("กรุณากรอกราคาขาย");
-    if (form.saleType === "auction" && !form.endTime)
-      return toast.error("กรุณาระบุวันเวลาปิดประมูล");
+    if (!form.name.trim()) {
+      toast.error("กรุณากรอกชื่อการ์ด");
+      return;
+    }
+    if (form.saleType === "fixed_price" && !Number(form.price)) {
+      toast.error("กรุณากรอกราคาขาย");
+      return;
+    }
+    if (form.saleType === "auction" && !form.endTime) {
+      toast.error("กรุณาระบุวันเวลาปิดประมูล");
+      return;
+    }
 
     create.mutate(form, {
       onSuccess: () => {
