@@ -1,11 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ChevronDown, Loader2, ShieldBan, ShieldCheck } from "lucide-react";
+import { ChevronDown, Loader2, ShieldBan, ShieldCheck, Store } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useAdminMembers, useMemberBids, useToggleBan } from "@/hooks/useAdmin";
+import {
+  useAdminMembers,
+  useMemberBids,
+  useSellerRoleMap,
+  useToggleBan,
+  useToggleSellerRole,
+} from "@/hooks/useAdmin";
 import { thb } from "@/lib/cart";
 
 export const Route = createFileRoute("/admin/members")({
@@ -15,6 +21,8 @@ export const Route = createFileRoute("/admin/members")({
 function AdminMembersPage() {
   const members = useAdminMembers();
   const ban = useToggleBan();
+  const roles = useSellerRoleMap();
+  const toggleSeller = useToggleSellerRole();
   const [q, setQ] = useState("");
   const [openId, setOpenId] = useState<string | null>(null);
   const bids = useMemberBids(openId ?? undefined);
@@ -60,6 +68,20 @@ function AdminMembersPage() {
                     )}
                   </p>
                   <p className="truncate text-xs text-muted-foreground">{m.email}</p>
+                  {(roles.data?.[m.id]?.seller || roles.data?.[m.id]?.admin) && (
+                    <p className="mt-0.5 flex gap-1.5 text-[11px] font-semibold">
+                      {roles.data?.[m.id]?.admin && (
+                        <span className="rounded-full bg-primary/15 px-2 py-0.5 text-primary">
+                          แอดมิน
+                        </span>
+                      )}
+                      {roles.data?.[m.id]?.seller && (
+                        <span className="rounded-full bg-secondary px-2 py-0.5 text-muted-foreground">
+                          ร้านค้า
+                        </span>
+                      )}
+                    </p>
+                  )}
                   <p className="text-[11px] text-muted-foreground">
                     สมัคร {new Date(m.created_at).toLocaleDateString("th-TH")}
                     {m.phone ? ` • ${m.phone}` : ""}
@@ -75,6 +97,30 @@ function AdminMembersPage() {
                   <ChevronDown
                     className={`h-3.5 w-3.5 transition-transform ${openId === m.id ? "rotate-180" : ""}`}
                   />
+                </Button>
+
+                <Button
+                  variant={roles.data?.[m.id]?.seller ? "ghost" : "secondary"}
+                  className="h-10 rounded-xl px-3 text-xs"
+                  disabled={toggleSeller.isPending}
+                  onClick={() =>
+                    toggleSeller.mutate(
+                      { userId: m.id, seller: !roles.data?.[m.id]?.seller },
+                      {
+                        onSuccess: () =>
+                          toast.success(
+                            roles.data?.[m.id]?.seller
+                              ? "ยกเลิกสิทธิ์เปิดร้านแล้ว"
+                              : "อนุญาตให้เปิดร้านแล้ว",
+                          ),
+                        onError: (e) =>
+                          toast.error(e instanceof Error ? e.message : "ไม่สำเร็จ"),
+                      },
+                    )
+                  }
+                >
+                  <Store className="h-3.5 w-3.5" />
+                  {roles.data?.[m.id]?.seller ? "ยกเลิกสิทธิ์ร้านค้า" : "อนุญาตเปิดร้าน"}
                 </Button>
 
                 <Button

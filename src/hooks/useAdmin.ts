@@ -24,6 +24,37 @@ export function useIsAdmin() {
   return { userId, isAdmin: query.data === true, isLoading: !userId || query.isLoading };
 }
 
+/**
+ * True when the signed-in user may run a shop ("ร้านของฉัน"):
+ * an admin-approved seller role, or an admin.
+ */
+export function useIsSeller() {
+  const userId = useAuthUserId();
+  const query = useQuery({
+    queryKey: ["is-seller", userId],
+    enabled: Boolean(userId),
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId!);
+      if (error) throw error;
+      const roles = (data ?? []).map((r) => r.role);
+      return {
+        isSeller: roles.includes("seller") || roles.includes("admin"),
+        isAdmin: roles.includes("admin"),
+      };
+    },
+  });
+  return {
+    userId,
+    isSeller: query.data?.isSeller === true,
+    isAdmin: query.data?.isAdmin === true,
+    isLoading: Boolean(userId) && query.isLoading,
+  };
+}
+
 /* ------------------------------- cards ---------------------------------- */
 
 export interface AdminCardRow {
@@ -40,19 +71,85 @@ export interface AdminCardRow {
   auctions?: { id: string; end_time: string; current_price: number; status: string }[];
 }
 
-export function useAdminCards() {
+const CARD_SELECT =
+  "id, name, set_name, grade, condition, images, price, sale_type, status, created_at, auctions (id, end_time, current_price, status)";
+
+export function useAdminCards(enabled = true) {
   return useQuery({
     queryKey: ["admin", "cards"],
+    enabled,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("cards")
-        .select(
-          "id, name, set_name, grade, condition, images, price, sale_type, status, created_at, auctions (id, end_time, current_price, status)",
-        )
+        .select(CARD_SELECT)
         .order("created_at", { ascending: false })
         .limit(100);
       if (error) throw error;
       return (data ?? []) as unknown as AdminCardRow[];
+    },
+  });
+}
+
+/** Cards belonging to the signed-in seller ("ร้านของฉัน"). */
+export function useMyCards(enabled = true) {
+  const userId = useAuthUserId();
+  return useQuery({
+    queryKey: ["shop", "cards", userId],
+    enabled: enabled && Boolean(userId),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("cards")
+        .select(CARD_SELECT)
+        .eq("seller_id", userId!)
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return (data ?? []) as unknown as AdminCardRow[];
+    },
+  });
+}
+
+/** Grants or revokes the seller role for a member (admin only). */
+export function useToggleSellerRole() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ userId, seller }: { userId: string; seller: boolean }) => {
+      if (seller) {
+        const { error } = await supabase
+          .from("user_roles")
+          .insert({ user_id: userId, role: "seller" });
+        if (error && !error.message.includes("duplicate")) throw new Error(error.message);
+      } else {
+        const { error } = await supabase
+          .from("user_roles")
+          .delete()
+          .eq("user_id", userId)
+          .eq("role", "seller");
+        if (error) throw new Error(error.message);
+      }
+      return true;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["admin", "member-roles"] });
+      void queryClient.invalidateQueries({ queryKey: ["is-seller"] });
+    },
+  });
+}
+
+/** Seller-role map for the member list. */
+export function useSellerRoleMap() {
+  return useQuery({
+    queryKey: ["admin", "member-roles"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("user_roles").select("user_id, role");
+      if (error) throw error;
+      const map: Record<string, { seller: boolean; admin: boolean }> = {};
+      for (const row of data ?? []) {
+        const entry = (map[row.user_id] ??= { seller: false, admin: false });
+        if (row.role === "seller") entry.seller = true;
+        if (row.role === "admin") entry.admin = true;
+      }
+      return map;
     },
   });
 }

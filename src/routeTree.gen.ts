@@ -18,6 +18,7 @@ import { Route as MarketRouteImport } from './routes/market'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
 import { Route as NewsRouteImport } from './routes/news'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as VaultRouteImport } from './routes/vault'
 import { Route as WishlistRouteImport } from './routes/wishlist'
@@ -77,6 +78,11 @@ const NewsRoute = NewsRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShopRoute = ShopRouteImport.update({
+  id: '/shop',
+  path: '/shop',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -165,6 +171,7 @@ export interface FileRoutesByFullPath {
   '/marketplace': typeof MarketplaceRoute
   '/news': typeof NewsRouteWithChildren
   '/profile': typeof ProfileRoute
+  '/shop': typeof ShopRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/vault': typeof VaultRoute
   '/wishlist': typeof WishlistRoute
@@ -189,6 +196,7 @@ export interface FileRoutesByTo {
   '/marketplace': typeof MarketplaceRoute
   '/news': typeof NewsRouteWithChildren
   '/profile': typeof ProfileRoute
+  '/shop': typeof ShopRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/vault': typeof VaultRoute
   '/wishlist': typeof WishlistRoute
@@ -216,6 +224,7 @@ export interface FileRoutesById {
   '/marketplace': typeof MarketplaceRoute
   '/news': typeof NewsRouteWithChildren
   '/profile': typeof ProfileRoute
+  '/shop': typeof ShopRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/vault': typeof VaultRoute
   '/wishlist': typeof WishlistRoute
@@ -244,6 +253,7 @@ export interface FileRouteTypes {
     | '/marketplace'
     | '/news'
     | '/profile'
+    | '/shop'
     | '/sitemap.xml'
     | '/vault'
     | '/wishlist'
@@ -268,6 +278,7 @@ export interface FileRouteTypes {
     | '/marketplace'
     | '/news'
     | '/profile'
+    | '/shop'
     | '/sitemap.xml'
     | '/vault'
     | '/wishlist'
@@ -294,6 +305,7 @@ export interface FileRouteTypes {
     | '/marketplace'
     | '/news'
     | '/profile'
+    | '/shop'
     | '/sitemap.xml'
     | '/vault'
     | '/wishlist'
@@ -321,6 +333,7 @@ export interface RootRouteChildren {
   MarketplaceRoute: typeof MarketplaceRoute
   NewsRoute: typeof NewsRouteWithChildren
   ProfileRoute: typeof ProfileRoute
+  ShopRoute: typeof ShopRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   VaultRoute: typeof VaultRoute
   WishlistRoute: typeof WishlistRoute
@@ -394,6 +407,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shop': {
+      id: '/shop'
+      path: '/shop'
+      fullPath: '/shop'
+      preLoaderRoute: typeof ShopRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sitemap.xml': {
@@ -563,6 +583,7 @@ const rootRouteChildren: RootRouteChildren = {
   MarketplaceRoute: MarketplaceRoute,
   NewsRoute: NewsRouteWithChildren,
   ProfileRoute: ProfileRoute,
+  ShopRoute: ShopRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   VaultRoute: VaultRoute,
   WishlistRoute: WishlistRoute,
