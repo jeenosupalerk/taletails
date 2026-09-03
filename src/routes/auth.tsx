@@ -529,9 +529,10 @@ function AuthPage() {
                     <button
                       type="button"
                       disabled={isLoading}
+                      onClick={() => void handleOtpLogin()}
                       className="text-sm font-medium text-primary transition-colors hover:underline disabled:opacity-50"
                     >
-                      ลืมรหัสผ่าน?
+                      เข้าสู่ระบบด้วยรหัส OTP
                     </button>
                   </div>
                 )}
