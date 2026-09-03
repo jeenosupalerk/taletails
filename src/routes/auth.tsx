@@ -274,6 +274,14 @@ function AuthPage() {
   };
 
   const goBack = () => {
+    if (forgotStep === "code") {
+      setForgotStep("email");
+      return;
+    }
+    if (forgotStep === "email") {
+      setForgotStep(null);
+      return;
+    }
     if (otpStep) {
       setOtpStep(false);
       return;
