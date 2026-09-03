@@ -111,27 +111,45 @@ function AdminMembersPage() {
                   />
                 </Button>
 
-                <Button
-                  variant={roles.data?.[m.id]?.seller ? "ghost" : "secondary"}
-                  className="h-10 w-full justify-center rounded-xl px-3 text-xs sm:w-auto"
+                <ConfirmDialog
+                  title={roles.data?.[m.id]?.seller ? "ยกเลิกสิทธิ์ร้านค้า" : "อนุญาตให้เปิดร้าน"}
+                  description={`ยืนยันการเปลี่ยนสิทธิ์ร้านค้าของ ${m.full_name ?? m.email ?? "สมาชิกนี้"} หรือไม่?`}
+                  confirmLabel="ยืนยัน"
+                  tone={roles.data?.[m.id]?.seller ? "destructive" : "default"}
                   disabled={toggleRole.isPending}
-                  onClick={() =>
+                  onConfirm={() =>
                     setRole(m.id, "seller", !roles.data?.[m.id]?.seller, "ร้านค้า")
                   }
-                >
-                  <Store className="h-3.5 w-3.5" />
-                  {roles.data?.[m.id]?.seller ? "ยกเลิกสิทธิ์ร้านค้า" : "อนุญาตเปิดร้าน"}
-                </Button>
+                  trigger={
+                    <Button
+                      variant={roles.data?.[m.id]?.seller ? "ghost" : "secondary"}
+                      className="h-10 w-full justify-center rounded-xl px-3 text-xs sm:w-auto"
+                      disabled={toggleRole.isPending}
+                    >
+                      <Store className="h-3.5 w-3.5" />
+                      {roles.data?.[m.id]?.seller ? "ยกเลิกสิทธิ์ร้านค้า" : "อนุญาตเปิดร้าน"}
+                    </Button>
+                  }
+                />
 
-                <Button
-                  variant={roles.data?.[m.id]?.admin ? "ghost" : "secondary"}
-                  className="h-10 w-full justify-center rounded-xl px-3 text-xs sm:w-auto"
+                <ConfirmDialog
+                  title={roles.data?.[m.id]?.admin ? "ยกเลิกสิทธิ์แอดมิน" : "ตั้งเป็นแอดมิน"}
+                  description={`สิทธิ์แอดมินเข้าถึงข้อมูลทั้งระบบได้ ยืนยันเปลี่ยนสิทธิ์ของ ${m.full_name ?? m.email ?? "สมาชิกนี้"} หรือไม่?`}
+                  confirmLabel="ยืนยัน"
+                  tone={roles.data?.[m.id]?.admin ? "destructive" : "default"}
                   disabled={toggleRole.isPending}
-                  onClick={() => setRole(m.id, "admin", !roles.data?.[m.id]?.admin, "แอดมิน")}
-                >
-                  <UserCog className="h-3.5 w-3.5" />
-                  {roles.data?.[m.id]?.admin ? "ยกเลิกสิทธิ์แอดมิน" : "ตั้งเป็นแอดมิน"}
-                </Button>
+                  onConfirm={() => setRole(m.id, "admin", !roles.data?.[m.id]?.admin, "แอดมิน")}
+                  trigger={
+                    <Button
+                      variant={roles.data?.[m.id]?.admin ? "ghost" : "secondary"}
+                      className="h-10 w-full justify-center rounded-xl px-3 text-xs sm:w-auto"
+                      disabled={toggleRole.isPending}
+                    >
+                      <UserCog className="h-3.5 w-3.5" />
+                      {roles.data?.[m.id]?.admin ? "ยกเลิกสิทธิ์แอดมิน" : "ตั้งเป็นแอดมิน"}
+                    </Button>
+                  }
+                />
 
                 <Button
                   variant={m.is_banned ? "secondary" : "ghost"}

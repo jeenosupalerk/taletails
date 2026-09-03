@@ -175,9 +175,11 @@ function AdminOrdersPage() {
                       value={tracking[o.id] ?? ""}
                       onChange={(e) => setTracking((t) => ({ ...t, [o.id]: e.target.value }))}
                     />
-                    <Button
-                      className="h-10 rounded-xl px-3 text-xs"
-                      onClick={() => {
+                    <ConfirmDialog
+                      title="ยืนยันการจัดส่ง"
+                      description={`บันทึกการจัดส่งด้วยเลขพัสดุ "${(tracking[o.id] ?? "").trim() || "-"}" และแจ้งลูกค้าหรือไม่?`}
+                      confirmLabel="ส่งของ"
+                      onConfirm={() => {
                         const t = (tracking[o.id] ?? "").trim();
                         if (!t) {
                           toast.error("กรุณากรอกเลขพัสดุ");
@@ -185,10 +187,13 @@ function AdminOrdersPage() {
                         }
                         act(o.id, { status: "shipped", trackingNumber: t }, "บันทึกการจัดส่งแล้ว");
                       }}
-                    >
-                      <Truck className="h-3.5 w-3.5" />
-                      กดส่งของ
-                    </Button>
+                      trigger={
+                        <Button className="h-10 rounded-xl px-3 text-xs">
+                          <Truck className="h-3.5 w-3.5" />
+                          กดส่งของ
+                        </Button>
+                      }
+                    />
                   </div>
                 )}
                 {o.tracking_number && (
