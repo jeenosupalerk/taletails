@@ -121,15 +121,11 @@ function AuthPage() {
 
       setIsLoading(true);
       try {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { data: { username, phone } },
+        await register({
+          data: { email, password, ...(username ? { username } : {}), ...(phone ? { phone } : {}) },
         });
-        if (error && !/already registered|already been registered/i.test(error.message)) {
-          throw new Error(error.message);
-        }
         await startOtp(email, "register", username);
+
       } catch (error) {
         toast.error("สมัครสมาชิกไม่สำเร็จ", { description: errText(error) });
       } finally {
