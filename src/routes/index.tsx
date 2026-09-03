@@ -7,7 +7,6 @@ import { LiveAuctionSlider } from "@/components/sections/LiveAuctionSlider";
 import { TrustStrip } from "@/components/sections/TrustStrip";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
-import { useAuth } from "@/lib/auth";
 
 const SITE_URL = "https://taletails-test.lovable.app";
 const OG_IMAGE = `${SITE_URL}/taletails-logo.jpg`;
