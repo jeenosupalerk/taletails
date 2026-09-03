@@ -285,6 +285,70 @@ function AuthPage() {
     void router.navigate({ to: "/" });
   };
 
+  const openForgot = () => {
+    const input = document.getElementById("auth-email") as HTMLInputElement | null;
+    setForgotEmail((input?.value ?? "").trim().toLowerCase());
+    setForgotCode("");
+    setNewPassword("");
+    setConfirmNewPassword("");
+    setForgotStep("email");
+  };
+
+  const handleRequestReset = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const email = forgotEmail.trim().toLowerCase();
+    if (!email) {
+      toast.error("กรุณากรอกอีเมลของคุณ");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      await sendResetOtp({ data: { email } });
+      setForgotStep("code");
+      toast.success("ส่งรหัสยืนยันแล้ว", { description: `เราได้ส่งรหัส 6 หลักไปที่ ${email}` });
+    } catch (error) {
+      toast.error("ขอรหัสตั้งรหัสผ่านใหม่ไม่สำเร็จ", { description: errText(error) });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (newPassword !== confirmNewPassword) {
+      toast.error("รหัสผ่านใหม่ไม่ตรงกัน");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      await submitReset({
+        data: { email: forgotEmail, code: forgotCode, password: newPassword },
+      });
+      const { error } = await supabase.auth.signInWithPassword({
+        email: forgotEmail,
+        password: newPassword,
+      });
+      if (error) {
+        setForgotStep(null);
+        setMode("login");
+        toast.success("ตั้งรหัสผ่านใหม่สำเร็จ", { description: "กรุณาเข้าสู่ระบบด้วยรหัสผ่านใหม่" });
+        return;
+      }
+      await refresh();
+      setForgotStep(null);
+      setResult({
+        title: "ตั้งรหัสผ่านใหม่สำเร็จ",
+        description: `เข้าสู่ระบบด้วยรหัสผ่านใหม่ของ ${forgotEmail} เรียบร้อยแล้ว`,
+      });
+      setResultOpen(true);
+    } catch (error) {
+      toast.error("ตั้งรหัสผ่านใหม่ไม่สำเร็จ", { description: errText(error) });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
   const socialButtons = (
     <div className="grid grid-cols-2 gap-3">
       <Button
