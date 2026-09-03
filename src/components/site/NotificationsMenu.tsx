@@ -1,4 +1,3 @@
-import { Link } from "@tanstack/react-router";
 import { Bell, Gavel, Package, Receipt, Sparkles } from "lucide-react";
 import { useState } from "react";
 
@@ -75,13 +74,13 @@ export function NotificationsMenu() {
               return (
                 <li key={n.id} className={n.read_at ? "" : "bg-primary/[0.04]"}>
                   {n.link ? (
-                    <Link
-                      to={n.link}
+                    <a
+                      href={n.link}
                       onClick={() => setOpen(false)}
                       className="flex gap-3 px-4 py-3 transition-colors hover:bg-secondary/60"
                     >
                       {content}
-                    </Link>
+                    </a>
                   ) : (
                     <div className="flex gap-3 px-4 py-3">{content}</div>
                   )}
