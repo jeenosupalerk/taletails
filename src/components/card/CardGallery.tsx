@@ -11,7 +11,7 @@ export interface CardGalleryProps {
   /** Card status for the top-right lock/sold pill. */
   status?: "available" | "locked" | "sold";
   /** Optional grade badge text top-right (shown when status is available). */
-  gradeBadge?: string;
+  gradeBadge?: string | undefined;
 }
 
 /**
