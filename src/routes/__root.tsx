@@ -159,8 +159,11 @@ function RootComponent() {
         <CartProvider>
           <WatchlistProvider>
             {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-            <Outlet />
+            <div className="pb-[calc(76px+env(safe-area-inset-bottom))] lg:pb-0">
+              <Outlet />
+            </div>
             <MobileBottomNav />
+
             <Toaster position="top-right" richColors closeButton />
           </WatchlistProvider>
         </CartProvider>
