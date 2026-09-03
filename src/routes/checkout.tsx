@@ -440,6 +440,20 @@ function CheckoutPage() {
         </SheetContent>
       </Sheet>
 
+      <StatusDialog
+        open={paidOpen}
+        onOpenChange={setPaidOpen}
+        tone="success"
+        title="ชำระเงินสำเร็จ!"
+        description={`หมายเลขคำสั่งซื้อ ${orderId}`}
+        actionLabel="เลือกซื้อต่อ"
+        onAction={() => void router.navigate({ to: "/marketplace" })}
+        secondaryLabel="กลับหน้าแรก"
+        onSecondary={() => void router.navigate({ to: "/" })}
+      >
+        <p>ยอดชำระทั้งหมด {thb.format(paidTotal)}</p>
+      </StatusDialog>
+
       <SiteFooter />
     </div>
   );

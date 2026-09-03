@@ -20,6 +20,7 @@ import { useAuthUserId, useOrder, useSubmitPayment } from "@/hooks/useCardDetail
 import { thb } from "@/lib/cart";
 import { cn } from "@/lib/utils";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { StatusDialog } from "@/components/ui/status-dialog";
 
 type Method = "slip" | "qr_promptpay";
 
@@ -39,6 +40,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [done, setDone] = useState(false);
+  const [paidOpen, setPaidOpen] = useState(false);
 
   useEffect(() => {
     if (!file) return setPreview(null);
@@ -66,7 +68,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
       {
         onSuccess: () => {
           setDone(true);
-          toast.success("ชำระเงินสำเร็จ — บันทึกคำสั่งซื้อแล้ว");
+          setPaidOpen(true);
         },
         onError: (e) => toast.error(e.message),
       },
