@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { useAuthUserId, useOrder, useSubmitPayment } from "@/hooks/useCardDetail";
 import { thb } from "@/lib/cart";
 import { cn } from "@/lib/utils";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 type Method = "slip" | "qr_promptpay";
 
@@ -260,18 +261,23 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                   )}
                 </section>
 
-                <Button
-                  className="h-11 w-full rounded-xl"
-                  onClick={send}
+                <ConfirmDialog
+                  title="ยืนยันการชำระเงิน"
+                  description="ยืนยันการส่งหลักฐานการชำระเงินให้ทีมงานตรวจสอบหรือไม่?"
+                  confirmLabel="ส่งหลักฐาน"
                   disabled={submit.isPending}
-                >
-                  {submit.isPending ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <ShieldCheck className="h-4 w-4" />
-                  )}
-                  ยืนยันการชำระเงิน
-                </Button>
+                  onConfirm={send}
+                  trigger={
+                    <Button className="h-11 w-full rounded-xl" disabled={submit.isPending}>
+                      {submit.isPending ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <ShieldCheck className="h-4 w-4" />
+                      )}
+                      ยืนยันการชำระเงิน
+                    </Button>
+                  }
+                />
               </>
             )}
           </>

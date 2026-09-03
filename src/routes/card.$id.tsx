@@ -17,6 +17,7 @@ import { BackButton } from "@/components/site/BackButton";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import {
   useAuctionRealtime,
@@ -317,18 +318,26 @@ function CardDetailPage() {
                       >
                         +{thb.format(Number(auction.bid_increment))}
                       </Button>
-                      <Button
-                        className="h-11 w-full rounded-xl sm:w-auto"
-                        onClick={submitBid}
+                      <ConfirmDialog
+                        title="ยืนยันการเสนอราคา"
+                        description={`คุณกำลังเสนอราคา ${thb.format(amount)} สำหรับการ์ดนี้ การเสนอราคาไม่สามารถยกเลิกได้`}
+                        confirmLabel="เสนอราคา"
                         disabled={placeBid.isPending}
-                      >
-                        {placeBid.isPending ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Gavel className="h-4 w-4" />
-                        )}
-                        เสนอราคา
-                      </Button>
+                        onConfirm={submitBid}
+                        trigger={
+                          <Button
+                            className="h-11 w-full rounded-xl sm:w-auto"
+                            disabled={placeBid.isPending}
+                          >
+                            {placeBid.isPending ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Gavel className="h-4 w-4" />
+                            )}
+                            เสนอราคา
+                          </Button>
+                        }
+                      />
                     </div>
                   ) : (
                     <div className="mt-6 space-y-3">
@@ -348,18 +357,26 @@ function CardDetailPage() {
 
               {!isAuction && (
                 <div className="mt-6">
-                  <Button
-                    className="h-11 w-full rounded-xl"
-                    onClick={submitBuyNow}
+                  <ConfirmDialog
+                    title="ยืนยันการซื้อการ์ด"
+                    description={`ยืนยันซื้อ "${card.name}" ราคา ${thb.format(Number(card.price ?? 0))} ระบบจะล็อกการ์ดใบนี้ไว้ให้คุณและพาไปหน้าชำระเงิน`}
+                    confirmLabel="ซื้อเลย"
                     disabled={buyNow.isPending || card.status !== "available"}
-                  >
-                    {buyNow.isPending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <ShoppingBag className="h-4 w-4" />
-                    )}
-                    {card.status === "available" ? "ซื้อเลย" : "การ์ดนี้ไม่พร้อมขาย"}
-                  </Button>
+                    onConfirm={submitBuyNow}
+                    trigger={
+                      <Button
+                        className="h-11 w-full rounded-xl"
+                        disabled={buyNow.isPending || card.status !== "available"}
+                      >
+                        {buyNow.isPending ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <ShoppingBag className="h-4 w-4" />
+                        )}
+                        {card.status === "available" ? "ซื้อเลย" : "การ์ดนี้ไม่พร้อมขาย"}
+                      </Button>
+                    }
+                  />
                   <p className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground">
                     <ShieldCheck className="h-3.5 w-3.5" />
                     ระบบตรวจสอบสถานะการ์ดอีกครั้งตอนกดซื้อ เพื่อป้องกันการซื้อซ้อน

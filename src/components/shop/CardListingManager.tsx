@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -345,21 +346,29 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                     </Link>
                   </Button>
                   {c.status === "available" && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label="ลบการ์ด"
-                      className="h-10 w-10 shrink-0 rounded-xl text-destructive"
-                      onClick={() =>
+                    <ConfirmDialog
+                      title="ยืนยันการลบการ์ด"
+                      description={`ต้องการลบ "${c.name}" ออกจากร้านหรือไม่? การลบไม่สามารถย้อนกลับได้`}
+                      confirmLabel="ลบการ์ด"
+                      tone="destructive"
+                      onConfirm={() =>
                         del.mutate(c.id, {
                           onSuccess: () => toast.success("ลบการ์ดแล้ว"),
                           onError: (e) =>
                             toast.error(e instanceof Error ? e.message : "ลบไม่สำเร็จ"),
                         })
                       }
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                      trigger={
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label="ลบการ์ด"
+                          className="h-10 w-10 shrink-0 rounded-xl text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      }
+                    />
                   )}
                 </div>
               </li>

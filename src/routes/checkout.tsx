@@ -22,6 +22,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { products } from "@/data/products";
 import { thb, useCart } from "@/lib/cart";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 const SITE_URL = "https://taletails-test.lovable.app";
 const title = "ชำระเงิน — Taletails";
@@ -329,12 +330,17 @@ function CheckoutPage() {
       {lines.length > 0 && (
         <div className="fixed inset-x-0 bottom-[calc(64px+max(0.75rem,env(safe-area-inset-bottom)))] z-40 px-4 lg:bottom-0 lg:border-t lg:border-border lg:bg-card/95 lg:pt-3 lg:pb-4 lg:backdrop-blur">
           <div className="mx-auto max-w-3xl rounded-2xl border border-border bg-card/95 p-3 shadow-lg backdrop-blur lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none">
-            <Button
-              onClick={submit}
-              className="h-11 w-full rounded-xl bg-gradient-ember font-semibold text-primary-foreground shadow-glow hover:opacity-90"
-            >
-              ดำเนินการชำระเงิน {thb.format(grandTotal)}
-            </Button>
+            <ConfirmDialog
+              title="ยืนยันคำสั่งซื้อ"
+              description={`ยืนยันการสั่งซื้อยอดรวม ${thb.format(grandTotal)} และดำเนินการชำระเงินหรือไม่?`}
+              confirmLabel="ยืนยันและชำระเงิน"
+              onConfirm={submit}
+              trigger={
+                <Button className="h-11 w-full rounded-xl bg-gradient-ember font-semibold text-primary-foreground shadow-glow hover:opacity-90">
+                  ดำเนินการชำระเงิน {thb.format(grandTotal)}
+                </Button>
+              }
+            />
             <p className="mt-2 text-center text-[11px] text-muted-foreground">
               การดำเนินการต่อถือว่าคุณยอมรับ ข้อกำหนดและเงื่อนไข
             </p>

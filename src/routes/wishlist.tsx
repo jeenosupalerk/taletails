@@ -3,6 +3,7 @@ import { Heart, X } from "lucide-react";
 
 import { PageShell } from "@/components/site/PageShell";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { thb } from "@/lib/cart";
 import { useWatchlist } from "@/lib/watchlist";
 
@@ -50,14 +51,22 @@ function WishlistPage() {
           <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {items.map((item) => (
               <li key={item.id} className="surface-panel relative overflow-hidden">
-                <button
-                  type="button"
-                  aria-label={`ลบ ${item.name} ออกจากรายการโปรด`}
-                  onClick={() => remove(item.id)}
-                  className="absolute top-2 right-2 z-10 grid h-8 w-8 place-items-center rounded-full bg-card shadow-card"
-                >
-                  <X className="h-4 w-4" />
-                </button>
+                <ConfirmDialog
+                  title="ลบออกจากรายการโปรด"
+                  description={`ต้องการลบ "${item.name}" ออกจากรายการโปรดหรือไม่?`}
+                  confirmLabel="ลบ"
+                  tone="destructive"
+                  onConfirm={() => remove(item.id)}
+                  trigger={
+                    <button
+                      type="button"
+                      aria-label={`ลบ ${item.name} ออกจากรายการโปรด`}
+                      className="absolute top-2 right-2 z-10 grid h-8 w-8 place-items-center rounded-full bg-card shadow-card"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  }
+                />
                 <Link
                   to={item.kind === "auction" ? "/auctions" : "/product/$id"}
                   {...(item.kind === "auction" ? {} : { params: { id: item.id } })}
