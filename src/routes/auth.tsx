@@ -396,18 +396,22 @@ function AuthPage() {
           </button>
 
           <h1 className="font-display text-3xl font-bold leading-tight tracking-tight text-white">
-            {otpStep
-              ? "ยืนยันอีเมลของคุณ"
-              : mode === "login"
-                ? "\n"
-                : "สร้างบัญชีของคุณ"}
+            {forgotStep
+              ? "ลืมรหัสผ่าน"
+              : otpStep
+                ? "ยืนยันอีเมลของคุณ"
+                : mode === "login"
+                  ? "\n"
+                  : "สร้างบัญชีของคุณ"}
           </h1>
           <p className="mt-2 mb-6 text-sm font-medium leading-relaxed text-white/90">
-            {otpStep
-              ? `กรอกรหัส 6 หลักที่ส่งไปยัง ${otpEmail}`
-              : mode === "login"
-                ? "\n"
-                : "\n"}
+            {forgotStep === "email"
+              ? "กรอกอีเมลของคุณ เราจะส่งรหัสยืนยัน 6 หลักไปให้"
+              : forgotStep === "code"
+                ? `กรอกรหัสที่ส่งไปยัง ${forgotEmail} แล้วตั้งรหัสผ่านใหม่`
+                : otpStep
+                  ? `กรอกรหัส 6 หลักที่ส่งไปยัง ${otpEmail}`
+                  : "\n"}
           </p>
         </div>
 
