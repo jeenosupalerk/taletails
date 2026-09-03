@@ -53,7 +53,7 @@ export function AuctionShowcase({ auction }: { auction: Auction }) {
     return () => window.clearInterval(id);
   }, []);
 
-  const gallery = [0, 1, 2, 3];
+  const gallery = auction.images?.length ? auction.images : [auction.imageUrl];
   const minNext = auction.currentBid + 50;
   const urgent = !!c && !c.isFinished && c.totalMs < 3 * 60 * 60 * 1000;
 
@@ -89,13 +89,18 @@ export function AuctionShowcase({ auction }: { auction: Auction }) {
             {/* Card viewer */}
             <div className="relative flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-card">
               <div className="relative aspect-[3/4] w-full min-h-[320px] bg-gradient-vault lg:aspect-auto lg:min-h-0 lg:flex-1">
-                <img
-                  src={auction.imageUrl}
-                  alt={`${auction.cardName} เกรด ${auction.grade}`}
-                  width={768}
-                  height={1024}
-                  className="absolute inset-0 h-full w-full object-cover"
-                />
+                {gallery.map((src, i) => (
+                  <img
+                    key={src + i}
+                    src={src}
+                    alt={`${auction.cardName} เกรด ${auction.grade} รูปที่ ${i + 1}`}
+                    width={768}
+                    height={1024}
+                    className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${
+                      i === shot ? "opacity-100" : "opacity-0"
+                    }`}
+                  />
+                ))}
 
                 <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-gradient-ember px-2.5 py-1 text-[11px] font-bold text-primary-foreground shadow-glow sm:top-4 sm:left-4 sm:px-3 sm:py-1.5 sm:text-xs">
                   <Radio className="h-3.5 w-3.5" />
@@ -104,24 +109,46 @@ export function AuctionShowcase({ auction }: { auction: Auction }) {
                 <span className="absolute top-3 right-3 rounded-full border border-accent/50 bg-background/70 px-2.5 py-1 font-display text-[11px] font-bold text-accent sm:top-4 sm:right-4 sm:px-3 sm:py-1.5 sm:text-xs">
                   {auction.grade}
                 </span>
-                <span className="absolute bottom-3 left-3 rounded-full bg-background/70 px-2.5 py-1 text-[11px] font-semibold backdrop-blur sm:bottom-4 sm:left-4">
-                  {shot + 1}/{gallery.length}
-                </span>
 
                 <button
                   onClick={() => setShot((s) => (s - 1 + gallery.length) % gallery.length)}
                   aria-label="รูปก่อนหน้า"
-                  className="absolute top-1/2 left-3 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/80 backdrop-blur transition-colors hover:bg-secondary sm:left-4 sm:h-11 sm:w-11"
+                  className="absolute top-1/2 left-3 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/80 backdrop-blur transition-colors hover:bg-secondary sm:left-4"
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </button>
                 <button
                   onClick={() => setShot((s) => (s + 1) % gallery.length)}
                   aria-label="รูปถัดไป"
-                  className="absolute top-1/2 right-3 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/80 backdrop-blur transition-colors hover:bg-secondary sm:right-4 sm:h-11 sm:w-11"
+                  className="absolute top-1/2 right-3 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/80 backdrop-blur transition-colors hover:bg-secondary sm:right-4"
                 >
                   <ChevronRight className="h-5 w-5" />
                 </button>
+
+                {/* Thumbnails overlay — bottom inner */}
+                <div className="no-scrollbar absolute right-0 bottom-3 left-0 flex justify-start gap-2 overflow-x-auto px-3 sm:bottom-4 sm:justify-center sm:px-4">
+                  {gallery.map((src, i) => (
+                    <button
+                      key={src + i}
+                      type="button"
+                      onClick={() => setShot(i)}
+                      aria-label={`ดูรูปที่ ${i + 1}`}
+                      aria-pressed={i === shot}
+                      className={`h-10 w-10 shrink-0 overflow-hidden rounded-lg transition-all duration-300 ${
+                        i === shot
+                          ? "opacity-100 ring-2 ring-white"
+                          : "opacity-50 hover:opacity-80"
+                      }`}
+                    >
+                      <img
+                        src={src}
+                        alt=""
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Product details */}
