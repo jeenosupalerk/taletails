@@ -24,9 +24,10 @@ export function MobileBottomNav() {
   return (
     <nav
       aria-label="เมนูหลักบนมือถือ"
-      className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden"
     >
-      <div className="flex h-[52px] items-center gap-1 rounded-full border border-border/70 bg-card px-1.5 shadow-glow">
+      <div className="pointer-events-auto flex h-[52px] items-center gap-1 rounded-full border border-border/70 bg-card px-1.5 shadow-glow">
+
         {items.map((item) => {
           const active =
             item.to === "/"
