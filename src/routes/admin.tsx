@@ -42,7 +42,7 @@ const TABS: { to: string; label: string; hint: string; icon: LucideIcon }[] = [
 function AdminLayout() {
   const { isAdmin, isLoading, userId } = useIsAdmin();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const active = TABS.find((t) => t.to === pathname) ?? TABS[0];
+  const active = TABS.find((t) => t.to === pathname) ?? TABS[0]!;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
