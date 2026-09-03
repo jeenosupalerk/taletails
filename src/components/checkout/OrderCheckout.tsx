@@ -2,6 +2,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import {
   CheckCircle2,
   ChevronLeft,
+  Clock,
   Loader2,
   QrCode,
   Receipt,
@@ -11,6 +12,7 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { PromptPayQR } from "@/components/checkout/PromptPayQR";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -135,6 +137,13 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                 </span>
                 <span>สถานะ: {order.status === "pending" ? "รอชำระเงิน" : order.status}</span>
               </div>
+              {order.status === "pending" && order.payment_due_at && (
+                <p className="flex items-center gap-2 border-t border-border/70 bg-amber-500/10 px-5 py-3 text-xs font-medium text-amber-700 dark:text-amber-400">
+                  <Clock className="h-3.5 w-3.5" />
+                  กรุณาชำระภายใน {new Date(order.payment_due_at).toLocaleString("th-TH")} —
+                  หากเลยกำหนด ระบบจะยกสิทธิ์ให้ผู้เสนอราคาอันดับถัดไปอัตโนมัติ
+                </p>
+              )}
             </section>
 
             {done || order.status !== "pending" ? (
@@ -244,17 +253,10 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                       )}
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center gap-3 rounded-2xl border border-border/70 bg-secondary/30 px-4 py-8">
-                      <div className="grid h-40 w-40 place-items-center rounded-2xl bg-background shadow-sm">
-                        <QrCode className="h-24 w-24" />
-                      </div>
-                      <p className="text-sm font-medium">
-                        สแกนเพื่อจ่าย {thb.format(Number(order.total_amount))}
-                      </p>
-                      <p className="text-[11px] text-muted-foreground">
-                        (ตัวอย่างหน้าจอ QR — เชื่อมต่อผู้ให้บริการจริงได้ภายหลัง)
-                      </p>
-                    </div>
+                    <PromptPayQR
+                      amount={Number(order.total_amount)}
+                      reference={order.id.slice(0, 8).toUpperCase()}
+                    />
                   )}
                 </section>
 

@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Search, ShoppingBag, X } from "lucide-react";
+import { LayoutDashboard, Search, ShoppingBag, X } from "lucide-react";
 import { useState } from "react";
 
 import taletailsLogo from "@/assets/taletails-logo.jpg";
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth";
 import { useCart } from "@/lib/cart";
+import { useIsAdmin } from "@/hooks/useAdmin";
 
 export const navItems = [
   { label: "ประมูล", to: "/auctions" },
@@ -24,6 +25,7 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const { count } = useCart();
   const { user, isAuthenticated } = useAuth();
+  const { isAdmin } = useIsAdmin();
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/80 bg-header shadow-header dark:backdrop-blur-xl">
@@ -71,6 +73,13 @@ export function SiteHeader() {
           </Button>
 
           <div className="hidden items-center gap-1 md:flex">
+            {isAdmin && (
+              <Button asChild variant="ghost" size="icon" aria-label="หลังบ้าน" className="h-11 w-11">
+                <Link to="/admin">
+                  <LayoutDashboard className="h-5 w-5" />
+                </Link>
+              </Button>
+            )}
             <ThemeToggle />
             <WatchlistMenu />
             <NotificationsMenu />

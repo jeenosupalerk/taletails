@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuctionsRouteImport } from './routes/auctions'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CheckoutRouteImport } from './routes/checkout'
@@ -20,6 +21,9 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as VaultRouteImport } from './routes/vault'
 import { Route as WishlistRouteImport } from './routes/wishlist'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminMembersRouteImport } from './routes/admin.members'
+import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AuctionIdRouteImport } from './routes/auction.$id'
 import { Route as CardIdRouteImport } from './routes/card.$id'
 import { Route as CheckoutIdRouteImport } from './routes/checkout.$id'
@@ -28,10 +32,16 @@ import { Route as MarketIdRouteImport } from './routes/market.$id'
 import { Route as NewsIdRouteImport } from './routes/news.$id'
 import { Route as OrderIdRouteImport } from './routes/order.$id'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
+import { Route as ApiPublicCronAuctionsRouteImport } from './routes/api/public/cron.auctions'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuctionsRoute = AuctionsRouteImport.update({
@@ -84,6 +94,21 @@ const WishlistRoute = WishlistRouteImport.update({
   path: '/wishlist',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminMembersRoute = AdminMembersRouteImport.update({
+  id: '/members',
+  path: '/members',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminOrdersRoute = AdminOrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AuctionIdRoute = AuctionIdRouteImport.update({
   id: '/auction/$id',
   path: '/auction/$id',
@@ -124,9 +149,15 @@ const ProductIdRoute = ProductIdRouteImport.update({
   path: '/product/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCronAuctionsRoute = ApiPublicCronAuctionsRouteImport.update({
+  id: '/api/public/cron/auctions',
+  path: '/api/public/cron/auctions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auctions': typeof AuctionsRoute
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRouteWithChildren
@@ -137,6 +168,8 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/vault': typeof VaultRoute
   '/wishlist': typeof WishlistRoute
+  '/admin/members': typeof AdminMembersRoute
+  '/admin/orders': typeof AdminOrdersRoute
   '/auction/$id': typeof AuctionIdRoute
   '/card/$id': typeof CardIdRoute
   '/checkout/$id': typeof CheckoutIdRoute
@@ -144,7 +177,9 @@ export interface FileRoutesByFullPath {
   '/news/$id': typeof NewsIdRoute
   '/order/$id': typeof OrderIdRoute
   '/product/$id': typeof ProductIdRoute
+  '/admin/': typeof AdminIndexRoute
   '/market/': typeof MarketIndexRoute
+  '/api/public/cron/auctions': typeof ApiPublicCronAuctionsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -157,6 +192,8 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/vault': typeof VaultRoute
   '/wishlist': typeof WishlistRoute
+  '/admin/members': typeof AdminMembersRoute
+  '/admin/orders': typeof AdminOrdersRoute
   '/auction/$id': typeof AuctionIdRoute
   '/card/$id': typeof CardIdRoute
   '/checkout/$id': typeof CheckoutIdRoute
@@ -164,11 +201,14 @@ export interface FileRoutesByTo {
   '/news/$id': typeof NewsIdRoute
   '/order/$id': typeof OrderIdRoute
   '/product/$id': typeof ProductIdRoute
+  '/admin': typeof AdminIndexRoute
   '/market': typeof MarketIndexRoute
+  '/api/public/cron/auctions': typeof ApiPublicCronAuctionsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auctions': typeof AuctionsRoute
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRouteWithChildren
@@ -179,6 +219,8 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/vault': typeof VaultRoute
   '/wishlist': typeof WishlistRoute
+  '/admin/members': typeof AdminMembersRoute
+  '/admin/orders': typeof AdminOrdersRoute
   '/auction/$id': typeof AuctionIdRoute
   '/card/$id': typeof CardIdRoute
   '/checkout/$id': typeof CheckoutIdRoute
@@ -186,12 +228,15 @@ export interface FileRoutesById {
   '/news/$id': typeof NewsIdRoute
   '/order/$id': typeof OrderIdRoute
   '/product/$id': typeof ProductIdRoute
+  '/admin/': typeof AdminIndexRoute
   '/market/': typeof MarketIndexRoute
+  '/api/public/cron/auctions': typeof ApiPublicCronAuctionsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/auctions'
     | '/auth'
     | '/checkout'
@@ -202,6 +247,8 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/vault'
     | '/wishlist'
+    | '/admin/members'
+    | '/admin/orders'
     | '/auction/$id'
     | '/card/$id'
     | '/checkout/$id'
@@ -209,7 +256,9 @@ export interface FileRouteTypes {
     | '/news/$id'
     | '/order/$id'
     | '/product/$id'
+    | '/admin/'
     | '/market/'
+    | '/api/public/cron/auctions'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -222,6 +271,8 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/vault'
     | '/wishlist'
+    | '/admin/members'
+    | '/admin/orders'
     | '/auction/$id'
     | '/card/$id'
     | '/checkout/$id'
@@ -229,10 +280,13 @@ export interface FileRouteTypes {
     | '/news/$id'
     | '/order/$id'
     | '/product/$id'
+    | '/admin'
     | '/market'
+    | '/api/public/cron/auctions'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/auctions'
     | '/auth'
     | '/checkout'
@@ -243,6 +297,8 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/vault'
     | '/wishlist'
+    | '/admin/members'
+    | '/admin/orders'
     | '/auction/$id'
     | '/card/$id'
     | '/checkout/$id'
@@ -250,11 +306,14 @@ export interface FileRouteTypes {
     | '/news/$id'
     | '/order/$id'
     | '/product/$id'
+    | '/admin/'
     | '/market/'
+    | '/api/public/cron/auctions'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AuctionsRoute: typeof AuctionsRoute
   AuthRoute: typeof AuthRoute
   CheckoutRoute: typeof CheckoutRouteWithChildren
@@ -269,6 +328,7 @@ export interface RootRouteChildren {
   CardIdRoute: typeof CardIdRoute
   OrderIdRoute: typeof OrderIdRoute
   ProductIdRoute: typeof ProductIdRoute
+  ApiPublicCronAuctionsRoute: typeof ApiPublicCronAuctionsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -278,6 +338,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auctions': {
@@ -350,6 +417,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WishlistRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/members': {
+      id: '/admin/members'
+      path: '/members'
+      fullPath: '/admin/members'
+      preLoaderRoute: typeof AdminMembersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/orders': {
+      id: '/admin/orders'
+      path: '/orders'
+      fullPath: '/admin/orders'
+      preLoaderRoute: typeof AdminOrdersRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/auction/$id': {
       id: '/auction/$id'
       path: '/auction/$id'
@@ -406,8 +494,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/auctions': {
+      id: '/api/public/cron/auctions'
+      path: '/api/public/cron/auctions'
+      fullPath: '/api/public/cron/auctions'
+      preLoaderRoute: typeof ApiPublicCronAuctionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
+
+interface AdminRouteChildren {
+  AdminMembersRoute: typeof AdminMembersRoute
+  AdminOrdersRoute: typeof AdminOrdersRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminMembersRoute: AdminMembersRoute,
+  AdminOrdersRoute: AdminOrdersRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface CheckoutRouteChildren {
   CheckoutIdRoute: typeof CheckoutIdRoute
@@ -446,6 +555,7 @@ const NewsRouteWithChildren = NewsRoute._addFileChildren(NewsRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
   AuctionsRoute: AuctionsRoute,
   AuthRoute: AuthRoute,
   CheckoutRoute: CheckoutRouteWithChildren,
@@ -460,6 +570,7 @@ const rootRouteChildren: RootRouteChildren = {
   CardIdRoute: CardIdRoute,
   OrderIdRoute: OrderIdRoute,
   ProductIdRoute: ProductIdRoute,
+  ApiPublicCronAuctionsRoute: ApiPublicCronAuctionsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

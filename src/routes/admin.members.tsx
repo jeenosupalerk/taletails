@@ -1,0 +1,136 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { ChevronDown, Loader2, ShieldBan, ShieldCheck } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useAdminMembers, useMemberBids, useToggleBan } from "@/hooks/useAdmin";
+import { thb } from "@/lib/cart";
+
+export const Route = createFileRoute("/admin/members")({
+  component: AdminMembersPage,
+});
+
+function AdminMembersPage() {
+  const members = useAdminMembers();
+  const ban = useToggleBan();
+  const [q, setQ] = useState("");
+  const [openId, setOpenId] = useState<string | null>(null);
+  const bids = useMemberBids(openId ?? undefined);
+
+  const rows = (members.data ?? []).filter((m) => {
+    const t = q.trim().toLowerCase();
+    if (!t) return true;
+    return (m.username ?? "").toLowerCase().includes(t) || m.email.toLowerCase().includes(t);
+  });
+
+  return (
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-display text-lg font-semibold">สมาชิก</h2>
+        <Input
+          placeholder="ค้นหาชื่อหรืออีเมล"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          className="h-11 w-full rounded-xl sm:w-64"
+        />
+      </div>
+
+      {members.isLoading ? (
+        <div className="grid place-items-center py-16">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : rows.length === 0 ? (
+        <p className="rounded-3xl border border-dashed border-border py-16 text-center text-sm text-muted-foreground">
+          ไม่พบสมาชิก
+        </p>
+      ) : (
+        <ul className="space-y-3">
+          {rows.map((m) => (
+            <li key={m.id} className="rounded-2xl border border-border bg-card p-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-display text-sm font-semibold">
+                    {m.username ?? "ไม่ระบุชื่อ"}
+                    {m.is_banned && (
+                      <span className="ml-2 rounded-full bg-destructive/15 px-2 py-0.5 text-[11px] font-semibold text-destructive">
+                        ถูกระงับ
+                      </span>
+                    )}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">{m.email}</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    สมัคร {new Date(m.created_at).toLocaleDateString("th-TH")}
+                    {m.phone ? ` • ${m.phone}` : ""}
+                  </p>
+                </div>
+
+                <Button
+                  variant="secondary"
+                  className="h-10 rounded-xl px-3 text-xs"
+                  onClick={() => setOpenId((id) => (id === m.id ? null : m.id))}
+                >
+                  ประวัติการบิด
+                  <ChevronDown
+                    className={`h-3.5 w-3.5 transition-transform ${openId === m.id ? "rotate-180" : ""}`}
+                  />
+                </Button>
+
+                <Button
+                  variant={m.is_banned ? "secondary" : "ghost"}
+                  className={`h-10 rounded-xl px-3 text-xs ${m.is_banned ? "" : "text-destructive"}`}
+                  onClick={() =>
+                    ban.mutate(
+                      { userId: m.id, banned: !m.is_banned },
+                      {
+                        onSuccess: () =>
+                          toast.success(m.is_banned ? "ปลดระงับบัญชีแล้ว" : "ระงับบัญชีแล้ว"),
+                        onError: (e) =>
+                          toast.error(e instanceof Error ? e.message : "ไม่สำเร็จ"),
+                      },
+                    )
+                  }
+                >
+                  {m.is_banned ? (
+                    <>
+                      <ShieldCheck className="h-3.5 w-3.5" />
+                      ปลดระงับ
+                    </>
+                  ) : (
+                    <>
+                      <ShieldBan className="h-3.5 w-3.5" />
+                      ระงับบัญชี
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {openId === m.id && (
+                <div className="mt-3 border-t border-dashed border-border pt-3">
+                  {bids.isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  ) : (bids.data ?? []).length === 0 ? (
+                    <p className="text-xs text-muted-foreground">ยังไม่มีประวัติการบิด</p>
+                  ) : (
+                    <ul className="space-y-1.5">
+                      {(bids.data ?? []).map((b) => (
+                        <li key={b.id} className="flex items-center justify-between text-xs">
+                          <span className="truncate text-muted-foreground">
+                            {b.auctions?.cards?.name ?? "การ์ด"} •{" "}
+                            {new Date(b.created_at).toLocaleString("th-TH")}
+                          </span>
+                          <span className="font-display font-semibold">{thb.format(b.amount)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}

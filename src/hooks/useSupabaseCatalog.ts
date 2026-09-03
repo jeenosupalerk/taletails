@@ -100,7 +100,8 @@ export function useLiveAuctions() {
       if (error) throw error;
       return data ?? [];
     },
-    staleTime: 10_000,
+    staleTime: 4_000,
+    refetchInterval: 4_000,
   });
 }
 
