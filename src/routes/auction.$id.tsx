@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { getAuctionById } from "@/data/auctions";
 import { pad, useCountdown } from "@/hooks/useCountdown";
 import { thb } from "@/lib/cart";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 const SITE_URL = "https://taletails-test.lovable.app";
 
@@ -232,17 +233,22 @@ function AuctionRoom() {
                 +฿5,000
               </Button>
             </div>
-            <Button
-              className="h-11 w-full rounded-xl bg-gradient-ember px-6 font-semibold text-primary-foreground shadow-glow hover:opacity-90 sm:w-auto"
-              onClick={() =>
+            <ConfirmDialog
+              title="ยืนยันการเสนอราคา"
+              description={`คุณกำลังเสนอราคา ${thb.format(bid)} การเสนอราคาไม่สามารถยกเลิกได้`}
+              confirmLabel="เสนอราคา"
+              onConfirm={() =>
                 bid < minNext
                   ? toast.error(`ต้องเสนออย่างน้อย ${thb.format(minNext)}`)
                   : toast.success(`เสนอราคา ${thb.format(bid)} เรียบร้อย`)
               }
-            >
-              <Gavel className="h-4 w-4" />
-              ยืนยันเสนอราคา
-            </Button>
+              trigger={
+                <Button className="h-11 w-full rounded-xl bg-gradient-ember px-6 font-semibold text-primary-foreground shadow-glow hover:opacity-90 sm:w-auto">
+                  <Gavel className="h-4 w-4" />
+                  ยืนยันเสนอราคา
+                </Button>
+              }
+            />
           </div>
         </div>
       </div>
