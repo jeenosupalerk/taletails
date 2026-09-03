@@ -90,7 +90,9 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="font-display text-lg font-semibold">การ์ดในระบบ</h2>
+        <h2 className="font-display text-lg font-semibold">
+          {scope === "shop" ? "สินค้าในร้านของฉัน" : "การ์ดในระบบ"}
+        </h2>
         <Button className="h-11 rounded-xl" onClick={() => setOpen((o) => !o)}>
           <Plus className="h-4 w-4" />
           ลงการ์ดใหม่
@@ -276,7 +278,7 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
         </div>
       ) : (cards.data ?? []).length === 0 ? (
         <p className="rounded-3xl border border-dashed border-border py-16 text-center text-sm text-muted-foreground">
-          ยังไม่มีการ์ดในระบบ
+          {scope === "shop" ? "ยังไม่มีสินค้าในร้านของคุณ" : "ยังไม่มีการ์ดในระบบ"}
         </p>
       ) : (
         <ul className="space-y-3">
