@@ -4,12 +4,12 @@ import {
   Gavel,
   Loader2,
   Lock,
-  Radio,
   ShieldCheck,
   ShoppingBag,
   Timer,
   TrendingUp,
 } from "lucide-react";
+import { CardGallery } from "@/components/card/CardGallery";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -102,7 +102,6 @@ function CardDetailPage() {
     if (minNext > 0) setAmount(minNext);
   }, [minNext]);
 
-  const [active, setActive] = useState(0);
   const images = useMemo(
     () => (card?.images?.length ? card.images : ["/taletails-logo.jpg"]),
     [card?.images],
@@ -211,50 +210,17 @@ function CardDetailPage() {
 
         <div className="grid gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-16">
           {/* Gallery */}
-          <section>
-            <div className="relative overflow-hidden rounded-[28px] bg-secondary/40 shadow-[0_24px_60px_-32px_hsl(var(--foreground)/0.35)]">
-              <div className="relative aspect-[4/5]">
-                <img
-                  src={images[active]!}
-                  alt={`${card.name} ${card.grade ?? ""}`}
-                  className="absolute inset-0 h-full w-full object-contain p-8"
-                  loading="eager"
-                />
-                {isAuction && !closed && (
-                  <span className="absolute top-5 left-5 inline-flex items-center gap-1.5 rounded-full bg-foreground/90 px-3 py-1 text-[11px] font-medium tracking-wide text-background">
-                    <Radio className="h-3 w-3" />
-                    LIVE AUCTION
-                  </span>
-                )}
-                {card.status !== "available" && (
-                  <span className="absolute top-5 right-5 inline-flex items-center gap-1.5 rounded-full bg-background/90 px-3 py-1 text-[11px] font-medium tracking-wide">
-                    <Lock className="h-3 w-3" />
-                    {card.status === "sold" ? "ขายแล้ว" : "ถูกจองแล้ว"}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {images.length > 1 && (
-              <div className="mt-4 flex gap-3">
-                {images.map((src, i) => (
-                  <button
-                    key={`${src}-${i}`}
-                    onClick={() => setActive(i)}
-                    aria-label={`ดูรูปที่ ${i + 1}`}
-                    className={cn(
-                      "h-16 w-16 overflow-hidden rounded-2xl border bg-secondary/40 transition-all",
-                      i === active
-                        ? "border-primary/70 opacity-100"
-                        : "border-border/70 opacity-60 hover:opacity-100",
-                    )}
-                  >
-                    <img src={src} alt="" className="h-full w-full object-contain p-1.5" />
-                  </button>
-                ))}
-              </div>
-            )}
-          </section>
+          <CardGallery
+            images={images}
+            alt={`${card.name} ${card.grade ?? ""}`}
+            liveAuction={isAuction && !closed}
+            status={card.status}
+            gradeBadge={
+              card.grade
+                ? `${card.grading_company ? `${card.grading_company} ` : ""}${card.grade}`
+                : undefined
+            }
+          />
 
           {/* Detail */}
           <section className="lg:pt-2">
