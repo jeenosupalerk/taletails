@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { useEffect } from "react";
 
 import { ArticlesSection } from "@/components/sections/ArticlesSection";
 import { FeaturedMarketplace } from "@/components/sections/FeaturedMarketplace";
@@ -7,6 +8,7 @@ import { LiveAuctionSlider } from "@/components/sections/LiveAuctionSlider";
 import { TrustStrip } from "@/components/sections/TrustStrip";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
+import { useAuth } from "@/lib/auth";
 
 const SITE_URL = "https://taletails-test.lovable.app";
 const OG_IMAGE = `${SITE_URL}/taletails-logo.jpg`;
