@@ -46,6 +46,25 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  const { isAuthenticated, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      void router.navigate({ to: "/auth" });
+    }
+  }, [loading, isAuthenticated, router]);
+
+  if (!loading && !isAuthenticated) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="animate-pulse text-sm text-muted-foreground">
+          กำลังนำไปยังหน้าเข้าสู่ระบบ…
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader />
