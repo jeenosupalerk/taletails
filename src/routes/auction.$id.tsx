@@ -17,6 +17,7 @@ import { SiteHeader } from "@/components/site/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getAuctionById } from "@/data/auctions";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { pad, useCountdown } from "@/hooks/useCountdown";
 import { thb } from "@/lib/cart";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -57,6 +58,7 @@ function AuctionRoom() {
   const c = useCountdown(auction.endTime);
   const [shot, setShot] = useState(0);
   const [bid, setBid] = useState(auction.currentBid + 50);
+  const requireAuth = useRequireAuth();
 
   const gallery = useMemo(() => [0, 1, 2, 3], []);
   const minNext = auction.currentBid + 50;
@@ -237,11 +239,14 @@ function AuctionRoom() {
               title="ยืนยันการเสนอราคา"
               description={`คุณกำลังเสนอราคา ${thb.format(bid)} การเสนอราคาไม่สามารถยกเลิกได้`}
               confirmLabel="เสนอราคา"
-              onConfirm={() =>
-                bid < minNext
-                  ? toast.error(`ต้องเสนออย่างน้อย ${thb.format(minNext)}`)
-                  : toast.success(`เสนอราคา ${thb.format(bid)} เรียบร้อย`)
-              }
+              onConfirm={() => {
+                if (!requireAuth("กรุณาเข้าสู่ระบบก่อนเสนอราคา")) return;
+                if (bid < minNext) {
+                  toast.error(`ต้องเสนออย่างน้อย ${thb.format(minNext)}`);
+                  return;
+                }
+                toast.success(`เสนอราคา ${thb.format(bid)} เรียบร้อย`);
+              }}
               trigger={
                 <Button className="h-11 w-full rounded-xl bg-gradient-ember px-6 font-semibold text-primary-foreground shadow-glow hover:opacity-90 sm:w-auto">
                   <Gavel className="h-4 w-4" />

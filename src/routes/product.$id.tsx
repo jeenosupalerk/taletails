@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { getProductById, getRelatedProducts, type Product } from "@/data/products";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { thb, useCart } from "@/lib/cart";
 
 const SITE_URL = "https://taletails-test.lovable.app";
@@ -70,11 +71,13 @@ function ProductPage() {
   const product = Route.useLoaderData() as Product;
   const related = getRelatedProducts(product.id);
   const { add } = useCart();
+  const requireAuth = useRequireAuth();
   const navigate = useNavigate();
   const [active, setActive] = useState(0);
   const [wished, setWished] = useState(false);
 
   const addToCart = () => {
+    if (!requireAuth("กรุณาเข้าสู่ระบบก่อนสั่งซื้อ")) return false;
     add({
       id: product.id,
       name: product.cardName,
@@ -82,6 +85,7 @@ function ProductPage() {
       imageUrl: product.imageUrl,
     });
     toast.success("เพิ่มลงตะกร้าแล้ว", { description: product.cardName });
+    return true;
   };
 
   return (
@@ -264,7 +268,7 @@ function ProductPage() {
           </Button>
           <Button
             onClick={() => {
-              addToCart();
+              if (!addToCart()) return;
               navigate({ to: "/checkout" });
             }}
             className="h-11 flex-1 rounded-xl bg-gradient-ember font-semibold text-primary-foreground hover:opacity-90"
