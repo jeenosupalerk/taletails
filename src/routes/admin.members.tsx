@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ChevronDown, Loader2, ShieldBan, ShieldCheck, Store } from "lucide-react";
+import { ChevronDown, Loader2, ShieldBan, ShieldCheck, Store, UserCog } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
