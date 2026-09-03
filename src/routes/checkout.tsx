@@ -23,6 +23,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { products } from "@/data/products";
 import { thb, useCart } from "@/lib/cart";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { StatusDialog } from "@/components/ui/status-dialog";
 
 const SITE_URL = "https://taletails-test.lovable.app";
 const title = "ชำระเงิน — Taletails";
@@ -86,14 +87,19 @@ function CheckoutPage() {
   const points = Math.round(grandTotal / 100);
   const paymentLabel = PAYMENT_METHODS.find((m) => m.id === payment)?.label ?? "QR PromptPay";
 
+  const [paidOpen, setPaidOpen] = useState(false);
+  const [paidTotal, setPaidTotal] = useState(0);
+
   const submit = () => {
     if (!address) {
       toast.error("กรุณาระบุที่อยู่สำหรับจัดส่ง");
       setAddressOpen(true);
       return;
     }
+    const total = grandTotal;
     clear();
-    toast.success("ชำระเงินสำเร็จ!", { description: `หมายเลขคำสั่งซื้อ ${orderId}` });
+    setPaidTotal(total);
+    setPaidOpen(true);
   };
 
   return (

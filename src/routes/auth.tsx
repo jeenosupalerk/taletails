@@ -576,6 +576,18 @@ function AuthPage() {
           )}
         </div>
       </main>
+
+      <StatusDialog
+        open={resultOpen}
+        onOpenChange={setResultOpen}
+        tone="success"
+        title={result.title}
+        description={result.description}
+        actionLabel="ไปที่โปรไฟล์"
+        onAction={() => void router.navigate({ to: "/profile" })}
+        secondaryLabel="กลับหน้าแรก"
+        onSecondary={() => void router.navigate({ to: "/" })}
+      />
     </div>
   );
 }
