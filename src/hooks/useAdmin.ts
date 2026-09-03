@@ -24,6 +24,37 @@ export function useIsAdmin() {
   return { userId, isAdmin: query.data === true, isLoading: !userId || query.isLoading };
 }
 
+/**
+ * True when the signed-in user may run a shop ("ร้านของฉัน"):
+ * an admin-approved seller role, or an admin.
+ */
+export function useIsSeller() {
+  const userId = useAuthUserId();
+  const query = useQuery({
+    queryKey: ["is-seller", userId],
+    enabled: Boolean(userId),
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId!);
+      if (error) throw error;
+      const roles = (data ?? []).map((r) => r.role);
+      return {
+        isSeller: roles.includes("seller") || roles.includes("admin"),
+        isAdmin: roles.includes("admin"),
+      };
+    },
+  });
+  return {
+    userId,
+    isSeller: query.data?.isSeller === true,
+    isAdmin: query.data?.isAdmin === true,
+    isLoading: Boolean(userId) && query.isLoading,
+  };
+}
+
 /* ------------------------------- cards ---------------------------------- */
 
 export interface AdminCardRow {
