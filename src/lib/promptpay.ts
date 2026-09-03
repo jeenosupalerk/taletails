@@ -4,10 +4,10 @@
  */
 
 const PROMPTPAY_ID =
-  (import.meta.env.VITE_PROMPTPAY_ID as string | undefined)?.trim() || "0812345678";
+  (import.meta.env['VITE_PROMPTPAY_ID'] as string | undefined)?.trim() || "0812345678";
 
 const PROMPTPAY_NAME =
-  (import.meta.env.VITE_PROMPTPAY_NAME as string | undefined)?.trim() || "TALETAILS";
+  (import.meta.env['VITE_PROMPTPAY_NAME'] as string | undefined)?.trim() || "TALETAILS";
 
 function tag(id: string, value: string) {
   return `${id}${String(value.length).padStart(2, "0")}${value}`;
