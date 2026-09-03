@@ -4,12 +4,12 @@ import {
   Gavel,
   Loader2,
   Lock,
-  Radio,
   ShieldCheck,
   ShoppingBag,
   Timer,
   TrendingUp,
 } from "lucide-react";
+import { CardGallery } from "@/components/card/CardGallery";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
