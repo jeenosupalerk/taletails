@@ -22,6 +22,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as VaultRouteImport } from './routes/vault'
 import { Route as WishlistRouteImport } from './routes/wishlist'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminMembersRouteImport } from './routes/admin.members'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AuctionIdRouteImport } from './routes/auction.$id'
 import { Route as CardIdRouteImport } from './routes/card.$id'
@@ -97,6 +98,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminMembersRoute = AdminMembersRouteImport.update({
+  id: '/members',
+  path: '/members',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminOrdersRoute = AdminOrdersRouteImport.update({
   id: '/orders',
   path: '/orders',
@@ -156,6 +162,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/vault': typeof VaultRoute
   '/wishlist': typeof WishlistRoute
+  '/admin/members': typeof AdminMembersRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/auction/$id': typeof AuctionIdRoute
   '/card/$id': typeof CardIdRoute
@@ -178,6 +185,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/vault': typeof VaultRoute
   '/wishlist': typeof WishlistRoute
+  '/admin/members': typeof AdminMembersRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/auction/$id': typeof AuctionIdRoute
   '/card/$id': typeof CardIdRoute
@@ -203,6 +211,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/vault': typeof VaultRoute
   '/wishlist': typeof WishlistRoute
+  '/admin/members': typeof AdminMembersRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/auction/$id': typeof AuctionIdRoute
   '/card/$id': typeof CardIdRoute
@@ -229,6 +238,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/vault'
     | '/wishlist'
+    | '/admin/members'
     | '/admin/orders'
     | '/auction/$id'
     | '/card/$id'
@@ -251,6 +261,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/vault'
     | '/wishlist'
+    | '/admin/members'
     | '/admin/orders'
     | '/auction/$id'
     | '/card/$id'
@@ -275,6 +286,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/vault'
     | '/wishlist'
+    | '/admin/members'
     | '/admin/orders'
     | '/auction/$id'
     | '/card/$id'
@@ -399,6 +411,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/members': {
+      id: '/admin/members'
+      path: '/members'
+      fullPath: '/admin/members'
+      preLoaderRoute: typeof AdminMembersRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/orders': {
       id: '/admin/orders'
       path: '/orders'
@@ -466,11 +485,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminMembersRoute: typeof AdminMembersRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminMembersRoute: AdminMembersRoute,
   AdminOrdersRoute: AdminOrdersRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
