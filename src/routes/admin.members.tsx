@@ -151,10 +151,16 @@ function AdminMembersPage() {
                   }
                 />
 
-                <Button
-                  variant={m.is_banned ? "secondary" : "ghost"}
-                  className={`h-10 w-full justify-center rounded-xl px-3 text-xs sm:w-auto ${m.is_banned ? "" : "text-destructive"}`}
-                  onClick={() =>
+                <ConfirmDialog
+                  title={m.is_banned ? "ปลดระงับบัญชี" : "ระงับบัญชีสมาชิก"}
+                  description={
+                    m.is_banned
+                      ? `ให้ ${m.full_name ?? m.email ?? "สมาชิกนี้"} กลับมาใช้งานได้ตามปกติหรือไม่?`
+                      : `ระงับบัญชี ${m.full_name ?? m.email ?? "สมาชิกนี้"} — จะไม่สามารถประมูลหรือสั่งซื้อได้`
+                  }
+                  confirmLabel={m.is_banned ? "ปลดระงับ" : "ระงับบัญชี"}
+                  tone={m.is_banned ? "default" : "destructive"}
+                  onConfirm={() =>
                     ban.mutate(
                       { userId: m.id, banned: !m.is_banned },
                       {
@@ -165,19 +171,26 @@ function AdminMembersPage() {
                       },
                     )
                   }
-                >
-                  {m.is_banned ? (
-                    <>
-                      <ShieldCheck className="h-3.5 w-3.5" />
-                      ปลดระงับ
-                    </>
-                  ) : (
-                    <>
-                      <ShieldBan className="h-3.5 w-3.5" />
-                      ระงับบัญชี
-                    </>
-                  )}
-                </Button>
+                  trigger={
+                    <Button
+                      variant={m.is_banned ? "secondary" : "ghost"}
+                      className={`h-10 w-full justify-center rounded-xl px-3 text-xs sm:w-auto ${m.is_banned ? "" : "text-destructive"}`}
+                    >
+                      {m.is_banned ? (
+                        <>
+                          <ShieldCheck className="h-3.5 w-3.5" />
+                          ปลดระงับ
+                        </>
+                      ) : (
+                        <>
+                          <ShieldBan className="h-3.5 w-3.5" />
+                          ระงับบัญชี
+                        </>
+                      )}
+                    </Button>
+                  }
+                />
+
                 </div>
               </div>
 
