@@ -102,11 +102,11 @@ function CardDetailPage() {
     if (minNext > 0) setAmount(minNext);
   }, [minNext]);
 
-  const [active, setActive] = useState(0);
   const images = useMemo(
     () => (card?.images?.length ? card.images : ["/taletails-logo.jpg"]),
     [card?.images],
   );
+  const [active, setActive] = useState(0);
 
   const placeBid = usePlaceBid(auction?.id);
   const buyNow = useBuyNow();
