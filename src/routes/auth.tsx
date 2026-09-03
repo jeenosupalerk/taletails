@@ -12,7 +12,7 @@ import taletailsLogo from "@/assets/taletails-logo.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { StatusDialog } from "@/components/ui/status-dialog";
 import { useAuth } from "@/lib/auth";
-import { requestEmailOtp, verifyEmailOtp } from "@/lib/auth-otp.functions";
+import { registerWithPassword, requestEmailOtp, verifyEmailOtp } from "@/lib/auth-otp.functions";
 
 const SITE_URL = "https://taletails-test.lovable.app";
 const OG_IMAGE = `${SITE_URL}${taletailsLogo}`;
@@ -74,6 +74,7 @@ function AuthPage() {
   const { refresh } = useAuth();
   const sendOtp = useServerFn(requestEmailOtp);
   const checkOtp = useServerFn(verifyEmailOtp);
+  const register = useServerFn(registerWithPassword);
   const [mode, setMode] = useState<"login" | "register">("login");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
