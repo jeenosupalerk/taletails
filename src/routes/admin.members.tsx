@@ -23,10 +23,19 @@ function AdminMembersPage() {
   const members = useAdminMembers();
   const ban = useToggleBan();
   const roles = useSellerRoleMap();
-  const toggleSeller = useToggleSellerRole();
+  const toggleRole = useToggleRole();
   const [q, setQ] = useState("");
   const [openId, setOpenId] = useState<string | null>(null);
   const bids = useMemberBids(openId ?? undefined);
+
+  const setRole = (userId: string, role: ManagedRole, granted: boolean, label: string) =>
+    toggleRole.mutate(
+      { userId, role, granted },
+      {
+        onSuccess: () => toast.success(granted ? `ให้สิทธิ์${label}แล้ว` : `ยกเลิกสิทธิ์${label}แล้ว`),
+        onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "ไม่สำเร็จ"),
+      },
+    );
 
   const rows = (members.data ?? []).filter((m) => {
     const t = q.trim().toLowerCase();
