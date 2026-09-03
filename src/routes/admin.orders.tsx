@@ -86,8 +86,8 @@ function AdminOrdersPage() {
       ) : (
         <ul className="space-y-3">
           {rows.map((o) => (
-            <li key={o.id} className="rounded-2xl border border-border bg-card p-4">
-              <div className="flex flex-wrap items-start gap-4">
+            <li key={o.id} className="rounded-2xl border border-border bg-card p-3.5 transition-colors hover:border-primary/30 sm:p-4">
+              <div className="flex flex-wrap items-start gap-3 sm:gap-4">
                 <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-secondary">
                   {o.cards?.images?.[0] && (
                     <img
@@ -131,7 +131,7 @@ function AdminOrdersPage() {
                   )}
                 </div>
 
-                <div className="text-right">
+                <div className="w-full text-left sm:w-auto sm:text-right">
                   <p className="font-display text-base font-semibold">
                     {thb.format(o.total_amount)}
                   </p>
@@ -145,7 +145,7 @@ function AdminOrdersPage() {
                 {o.slip_url && (
                   <Button
                     variant="secondary"
-                    className="h-10 rounded-xl px-3 text-xs"
+                    className="h-10 w-full justify-center rounded-xl px-3 text-xs sm:w-auto"
                     onClick={() => openSlip(o.slip_url!)}
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
@@ -154,7 +154,7 @@ function AdminOrdersPage() {
                 )}
                 {o.status === "pending" && (
                   <Button
-                    className="h-10 rounded-xl px-3 text-xs"
+                    className="h-10 w-full justify-center rounded-xl px-3 text-xs sm:w-auto"
                     onClick={() => act(o.id, { status: "paid" }, "ยืนยันการชำระเงินแล้ว")}
                   >
                     <CheckCircle2 className="h-3.5 w-3.5" />
@@ -162,10 +162,10 @@ function AdminOrdersPage() {
                   </Button>
                 )}
                 {o.status === "paid" && (
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
                     <Input
                       placeholder="เลขพัสดุ"
-                      className="h-10 w-40 rounded-xl text-xs"
+                      className="h-10 w-full rounded-xl text-xs sm:w-40"
                       value={tracking[o.id] ?? ""}
                       onChange={(e) => setTracking((t) => ({ ...t, [o.id]: e.target.value }))}
                     />

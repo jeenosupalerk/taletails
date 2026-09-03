@@ -66,8 +66,8 @@ function AdminMembersPage() {
       ) : (
         <ul className="space-y-3">
           {rows.map((m) => (
-            <li key={m.id} className="rounded-2xl border border-border bg-card p-4">
-              <div className="flex flex-wrap items-center gap-3">
+            <li key={m.id} className="rounded-2xl border border-border bg-card p-3.5 transition-colors hover:border-primary/30 sm:p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-display text-sm font-semibold">
                     {m.username ?? "ไม่ระบุชื่อ"}
@@ -98,9 +98,10 @@ function AdminMembersPage() {
                   </p>
                 </div>
 
+                <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
                 <Button
                   variant="secondary"
-                  className="h-10 rounded-xl px-3 text-xs"
+                  className="h-10 w-full justify-center rounded-xl px-3 text-xs sm:w-auto"
                   onClick={() => setOpenId((id) => (id === m.id ? null : m.id))}
                 >
                   ประวัติการบิด
@@ -111,7 +112,7 @@ function AdminMembersPage() {
 
                 <Button
                   variant={roles.data?.[m.id]?.seller ? "ghost" : "secondary"}
-                  className="h-10 rounded-xl px-3 text-xs"
+                  className="h-10 w-full justify-center rounded-xl px-3 text-xs sm:w-auto"
                   disabled={toggleRole.isPending}
                   onClick={() =>
                     setRole(m.id, "seller", !roles.data?.[m.id]?.seller, "ร้านค้า")
@@ -123,7 +124,7 @@ function AdminMembersPage() {
 
                 <Button
                   variant={roles.data?.[m.id]?.admin ? "ghost" : "secondary"}
-                  className="h-10 rounded-xl px-3 text-xs"
+                  className="h-10 w-full justify-center rounded-xl px-3 text-xs sm:w-auto"
                   disabled={toggleRole.isPending}
                   onClick={() => setRole(m.id, "admin", !roles.data?.[m.id]?.admin, "แอดมิน")}
                 >
@@ -133,7 +134,7 @@ function AdminMembersPage() {
 
                 <Button
                   variant={m.is_banned ? "secondary" : "ghost"}
-                  className={`h-10 rounded-xl px-3 text-xs ${m.is_banned ? "" : "text-destructive"}`}
+                  className={`h-10 w-full justify-center rounded-xl px-3 text-xs sm:w-auto ${m.is_banned ? "" : "text-destructive"}`}
                   onClick={() =>
                     ban.mutate(
                       { userId: m.id, banned: !m.is_banned },
@@ -158,6 +159,7 @@ function AdminMembersPage() {
                     </>
                   )}
                 </Button>
+                </div>
               </div>
 
               {openId === m.id && (
