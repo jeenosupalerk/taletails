@@ -32,6 +32,7 @@ import { Route as MarketIdRouteImport } from './routes/market.$id'
 import { Route as NewsIdRouteImport } from './routes/news.$id'
 import { Route as OrderIdRouteImport } from './routes/order.$id'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
+import { Route as ApiPublicCronAuctionsRouteImport } from './routes/api/public/cron.auctions'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -148,6 +149,11 @@ const ProductIdRoute = ProductIdRouteImport.update({
   path: '/product/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCronAuctionsRoute = ApiPublicCronAuctionsRouteImport.update({
+  id: '/api/public/cron/auctions',
+  path: '/api/public/cron/auctions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -173,6 +179,7 @@ export interface FileRoutesByFullPath {
   '/product/$id': typeof ProductIdRoute
   '/admin/': typeof AdminIndexRoute
   '/market/': typeof MarketIndexRoute
+  '/api/public/cron/auctions': typeof ApiPublicCronAuctionsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -196,6 +203,7 @@ export interface FileRoutesByTo {
   '/product/$id': typeof ProductIdRoute
   '/admin': typeof AdminIndexRoute
   '/market': typeof MarketIndexRoute
+  '/api/public/cron/auctions': typeof ApiPublicCronAuctionsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -222,6 +230,7 @@ export interface FileRoutesById {
   '/product/$id': typeof ProductIdRoute
   '/admin/': typeof AdminIndexRoute
   '/market/': typeof MarketIndexRoute
+  '/api/public/cron/auctions': typeof ApiPublicCronAuctionsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -249,6 +258,7 @@ export interface FileRouteTypes {
     | '/product/$id'
     | '/admin/'
     | '/market/'
+    | '/api/public/cron/auctions'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -272,6 +282,7 @@ export interface FileRouteTypes {
     | '/product/$id'
     | '/admin'
     | '/market'
+    | '/api/public/cron/auctions'
   id:
     | '__root__'
     | '/'
@@ -297,6 +308,7 @@ export interface FileRouteTypes {
     | '/product/$id'
     | '/admin/'
     | '/market/'
+    | '/api/public/cron/auctions'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -316,6 +328,7 @@ export interface RootRouteChildren {
   CardIdRoute: typeof CardIdRoute
   OrderIdRoute: typeof OrderIdRoute
   ProductIdRoute: typeof ProductIdRoute
+  ApiPublicCronAuctionsRoute: typeof ApiPublicCronAuctionsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -481,6 +494,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/auctions': {
+      id: '/api/public/cron/auctions'
+      path: '/api/public/cron/auctions'
+      fullPath: '/api/public/cron/auctions'
+      preLoaderRoute: typeof ApiPublicCronAuctionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -550,6 +570,7 @@ const rootRouteChildren: RootRouteChildren = {
   CardIdRoute: CardIdRoute,
   OrderIdRoute: OrderIdRoute,
   ProductIdRoute: ProductIdRoute,
+  ApiPublicCronAuctionsRoute: ApiPublicCronAuctionsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
