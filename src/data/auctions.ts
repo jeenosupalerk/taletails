@@ -1,7 +1,9 @@
 import card1 from "@/assets/card-1.jpg";
 import card2 from "@/assets/card-2.jpg";
+import card3 from "@/assets/card-3.jpg";
 import card4 from "@/assets/card-4.jpg";
 import card5 from "@/assets/card-5.jpg";
+import card6 from "@/assets/card-6.jpg";
 
 export type AuctionStatus = "live" | "ending-soon" | "upcoming" | "ended";
 
@@ -11,6 +13,8 @@ export interface Auction {
   setName: string;
   grade: string;
   imageUrl: string;
+  /** รูปสินค้าทั้งหมด — รูปแรกคือรูปหลัก (ตรงกับ imageUrl) */
+  images: string[];
   startingPrice: number;
   currentBid: number;
   bidCount: number;
@@ -37,6 +41,7 @@ export const auctions: Auction[] = [
     setName: "Base Set 1999 · 1st Edition",
     grade: "PSA 10",
     imageUrl: card1,
+    images: [card1, card2, card5, card6],
     startingPrice: 4200,
     currentBid: 12450,
     bidCount: 38,
@@ -57,6 +62,7 @@ export const auctions: Auction[] = [
     setName: "Neo Genesis · Unlimited",
     grade: "BGS 9.5",
     imageUrl: card2,
+    images: [card2, card3, card1, card4],
     startingPrice: 900,
     currentBid: 3180,
     bidCount: 21,
@@ -77,6 +83,7 @@ export const auctions: Auction[] = [
     setName: "Golden Vault · Secret",
     grade: "CGC 9",
     imageUrl: card4,
+    images: [card4, card6, card2, card5],
     startingPrice: 1500,
     currentBid: 2740,
     bidCount: 14,
@@ -97,6 +104,7 @@ export const auctions: Auction[] = [
     setName: "Cosmic Eclipse · Alt Art",
     grade: "PSA 9",
     imageUrl: card5,
+    images: [card5, card1, card3, card6],
     startingPrice: 620,
     currentBid: 1895,
     bidCount: 9,
