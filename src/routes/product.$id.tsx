@@ -90,7 +90,7 @@ function ProductPage() {
       title={product.cardName}
       description={`${product.setName} • ${product.grade}`}
     >
-      <div className="mx-auto max-w-5xl px-4 pt-8 pb-32 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-5xl px-4 pt-8 pb-44 sm:px-6 lg:px-8 lg:pb-32">
         {/* แกลเลอรี */}
         <div className="surface-panel overflow-hidden p-4">
           <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl border border-border bg-secondary/40">
@@ -239,9 +239,9 @@ function ProductPage() {
         </section>
       </div>
 
-      {/* แถบซื้อด้านล่าง */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3 sm:px-6">
+      {/* แถบซื้อด้านล่าง — บนมือถือยกขึ้นเหนือเมนูล่าง (MobileBottomNav) */}
+      <div className="fixed inset-x-0 bottom-[calc(64px+max(0.75rem,env(safe-area-inset-bottom)))] z-40 px-4 lg:bottom-0 lg:border-t lg:border-border lg:bg-background/95 lg:px-0 lg:backdrop-blur">
+        <div className="mx-auto flex max-w-5xl items-center gap-3 rounded-2xl border border-border/70 bg-card/95 px-3 py-2.5 shadow-glow backdrop-blur sm:px-6 lg:rounded-none lg:border-0 lg:bg-transparent lg:py-3 lg:shadow-none lg:backdrop-blur-none">
           <button
             type="button"
             onClick={() => {
