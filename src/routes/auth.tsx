@@ -121,16 +121,34 @@ function AuthPage() {
       const username = `${firstName} ${lastName}`.trim() || (email.split("@")[0] ?? "");
 
       setIsLoading(true);
-      let accountCreated = false;
       try {
-        await register({
+        const res = await register({
           data: { email, password, ...(username ? { username } : {}), ...(phone ? { phone } : {}) },
         });
-        accountCreated = true;
+
+        if (!res.created) {
+          setMode("login");
+          toast.error("อีเมลนี้มีบัญชีอยู่แล้ว", {
+            description: "กรุณาเข้าสู่ระบบด้วยรหัสผ่านที่ตั้งไว้ตอนสมัครครั้งแรก",
+          });
+          return;
+        }
 
         // ยังไม่มีโดเมนสำหรับส่งอีเมล จึงข้ามการยืนยัน OTP และเข้าสู่ระบบให้ทันที
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw new Error(error.message);
+        let signInError: string | null = null;
+        if (res.tokenHash) {
+          const { error } = await supabase.auth.verifyOtp({
+            token_hash: res.tokenHash,
+            type: "email",
+          });
+          signInError = error?.message ?? null;
+        }
+        if (!res.tokenHash || signInError) {
+          const { error } = await supabase.auth.signInWithPassword({ email, password });
+          signInError = error?.message ?? null;
+        }
+        if (signInError) throw new Error(signInError);
+
         await refresh();
         setResult({
           title: "สมัครสมาชิกสำเร็จ",
@@ -138,14 +156,15 @@ function AuthPage() {
         });
         setResultOpen(true);
       } catch (error) {
-        toast.error(
-          accountCreated ? "สร้างบัญชีแล้ว แต่เข้าสู่ระบบไม่สำเร็จ" : "สมัครสมาชิกไม่สำเร็จ",
-          { description: errText(error) },
-        );
+        toast.error("สร้างบัญชีแล้ว แต่เข้าสู่ระบบไม่สำเร็จ", {
+          description: `${errText(error)} — กรุณาเข้าสู่ระบบด้วยอีเมลและรหัสผ่านที่กรอกไว้`,
+        });
+        setMode("login");
       } finally {
         setIsLoading(false);
       }
       return;
+
 
     }
 

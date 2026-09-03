@@ -216,7 +216,12 @@ export const registerWithPassword = createServerFn({ method: "POST" })
       .eq("email", data.email)
       .maybeSingle();
 
-    if (existing.data) return { ok: true as const, created: false as const };
+    // อีเมลนี้มีบัญชีอยู่แล้ว — ห้ามตั้งรหัสผ่านทับ (เสี่ยงยึดบัญชี)
+    // แค่ยืนยันอีเมลให้เรียบร้อย แล้วบอกผู้ใช้ให้เข้าสู่ระบบด้วยรหัสเดิม
+    if (existing.data?.id) {
+      await supabaseAdmin.auth.admin.updateUserById(existing.data.id, { email_confirm: true });
+      return { ok: true as const, created: false as const, tokenHash: null };
+    }
 
     const created = await supabaseAdmin.auth.admin.createUser({
       email: data.email,
@@ -231,11 +236,23 @@ export const registerWithPassword = createServerFn({ method: "POST" })
     if (created.error) {
       const message = created.error.message ?? "";
       if (/already been registered|already exists/i.test(message)) {
-        return { ok: true as const, created: false as const };
+        return { ok: true as const, created: false as const, tokenHash: null };
       }
       console.error("[auth] createUser failed", message);
       throw new Error("สมัครสมาชิกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
     }
 
-    return { ok: true as const, created: true as const };
+    // สร้างเซสชันด้วย one-time token ของ Supabase เอง จึงไม่ต้องพึ่ง
+    // signInWithPassword (ที่อาจล้มเหลวชั่วคราวหรือติดสถานะยืนยันอีเมล)
+    const link = await supabaseAdmin.auth.admin.generateLink({
+      type: "magiclink",
+      email: data.email,
+    });
+
+    const tokenHash = link.data?.properties?.hashed_token ?? null;
+    if (link.error || !tokenHash) {
+      console.error("[auth] generateLink after signup failed", link.error?.message);
+    }
+
+    return { ok: true as const, created: true as const, tokenHash };
   });
