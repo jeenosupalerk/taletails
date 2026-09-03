@@ -241,13 +241,18 @@ export function useAdminUpdateOrder() {
       status?: "paid" | "shipped" | "cancelled";
       trackingNumber?: string;
     }) => {
-      const patch: Record<string, unknown> = {};
+      const patch: {
+        status?: "paid" | "shipped" | "cancelled";
+        paid_at?: string;
+        shipped_at?: string;
+        tracking_number?: string;
+      } = {};
       if (input.status) {
-        patch['status'] = input.status;
-        if (input.status === "paid") patch['paid_at'] = new Date().toISOString();
-        if (input.status === "shipped") patch['shipped_at'] = new Date().toISOString();
+        patch.status = input.status;
+        if (input.status === "paid") patch.paid_at = new Date().toISOString();
+        if (input.status === "shipped") patch.shipped_at = new Date().toISOString();
       }
-      if (input.trackingNumber !== undefined) patch['tracking_number'] = input.trackingNumber;
+      if (input.trackingNumber !== undefined) patch.tracking_number = input.trackingNumber;
 
       const { error } = await supabase.from("orders").update(patch).eq("id", input.orderId);
       if (error) throw new Error(error.message);
