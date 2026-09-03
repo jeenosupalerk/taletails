@@ -113,7 +113,7 @@ function AdminMembersPage() {
 
                 <ConfirmDialog
                   title={roles.data?.[m.id]?.seller ? "ยกเลิกสิทธิ์ร้านค้า" : "อนุญาตให้เปิดร้าน"}
-                  description={`ยืนยันการเปลี่ยนสิทธิ์ร้านค้าของ ${m.full_name ?? m.email ?? "สมาชิกนี้"} หรือไม่?`}
+                  description={`ยืนยันการเปลี่ยนสิทธิ์ร้านค้าของ ${m.username ?? m.email ?? "สมาชิกนี้"} หรือไม่?`}
                   confirmLabel="ยืนยัน"
                   tone={roles.data?.[m.id]?.seller ? "destructive" : "default"}
                   disabled={toggleRole.isPending}
@@ -134,7 +134,7 @@ function AdminMembersPage() {
 
                 <ConfirmDialog
                   title={roles.data?.[m.id]?.admin ? "ยกเลิกสิทธิ์แอดมิน" : "ตั้งเป็นแอดมิน"}
-                  description={`สิทธิ์แอดมินเข้าถึงข้อมูลทั้งระบบได้ ยืนยันเปลี่ยนสิทธิ์ของ ${m.full_name ?? m.email ?? "สมาชิกนี้"} หรือไม่?`}
+                  description={`สิทธิ์แอดมินเข้าถึงข้อมูลทั้งระบบได้ ยืนยันเปลี่ยนสิทธิ์ของ ${m.username ?? m.email ?? "สมาชิกนี้"} หรือไม่?`}
                   confirmLabel="ยืนยัน"
                   tone={roles.data?.[m.id]?.admin ? "destructive" : "default"}
                   disabled={toggleRole.isPending}
@@ -155,8 +155,8 @@ function AdminMembersPage() {
                   title={m.is_banned ? "ปลดระงับบัญชี" : "ระงับบัญชีสมาชิก"}
                   description={
                     m.is_banned
-                      ? `ให้ ${m.full_name ?? m.email ?? "สมาชิกนี้"} กลับมาใช้งานได้ตามปกติหรือไม่?`
-                      : `ระงับบัญชี ${m.full_name ?? m.email ?? "สมาชิกนี้"} — จะไม่สามารถประมูลหรือสั่งซื้อได้`
+                      ? `ให้ ${m.username ?? m.email ?? "สมาชิกนี้"} กลับมาใช้งานได้ตามปกติหรือไม่?`
+                      : `ระงับบัญชี ${m.username ?? m.email ?? "สมาชิกนี้"} — จะไม่สามารถประมูลหรือสั่งซื้อได้`
                   }
                   confirmLabel={m.is_banned ? "ปลดระงับ" : "ระงับบัญชี"}
                   tone={m.is_banned ? "default" : "destructive"}
