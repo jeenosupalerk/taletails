@@ -103,7 +103,8 @@ export function useCardAuction(cardId: string, enabled: boolean) {
       if (error) throw error;
       return (data as unknown as AuctionRow | null) ?? null;
     },
-    staleTime: 5_000,
+    staleTime: 4_000,
+    refetchInterval: 4_000,
   });
 }
 
@@ -122,6 +123,7 @@ export function useBids(auctionId?: string) {
       return (data ?? []) as unknown as BidRow[];
     },
     staleTime: 3_000,
+    refetchInterval: 4_000,
   });
 }
 
