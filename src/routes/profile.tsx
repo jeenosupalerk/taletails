@@ -10,6 +10,7 @@ import {
   Moon,
   Package,
   Settings,
+  ShieldCheck,
   Store,
   Sun,
   User,
@@ -21,7 +22,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { useIsSeller } from "@/hooks/useAdmin";
+import { useIsAdmin, useIsSeller } from "@/hooks/useAdmin";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/lib/auth";
 
@@ -48,6 +49,7 @@ export const Route = createFileRoute("/profile")({
 function ProfilePage() {
   const { user, isAuthenticated, logout } = useAuth();
   const { isSeller } = useIsSeller();
+  const { isAdmin } = useIsAdmin();
   const router = useRouter();
 
   const handleLogout = () => {
@@ -104,6 +106,16 @@ function ProfilePage() {
                 </Button>
               </div>
             </div>
+
+            {isAdmin && (
+              <MenuGroup title="สำหรับผู้ดูแลระบบ">
+                <MenuItem
+                  to="/admin"
+                  icon={<ShieldCheck className="h-5 w-5" />}
+                  label="หลังบ้าน (แอดมิน)"
+                />
+              </MenuGroup>
+            )}
 
             {isSeller && (
               <MenuGroup title="สำหรับผู้ขาย">
