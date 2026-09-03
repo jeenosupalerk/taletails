@@ -346,9 +346,7 @@ function AuthPage() {
               <button
                 type="button"
                 disabled={isLoading}
-                onClick={() =>
-                  toast.success("ส่งรหัส OTP ใหม่แล้ว (จำลอง)", { description: otpEmail })
-                }
+                onClick={() => void handleResendOtp()}
                 className="w-full text-center text-sm font-medium text-primary transition-colors hover:underline disabled:opacity-50"
               >
                 ส่งรหัสอีกครั้ง
