@@ -96,10 +96,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (patch: Partial<Pick<AuthUser, "name" | "avatarUrl" | "phone">>) => {
       const current = user;
       if (!current) return;
-      const payload: Record<string, string> = {};
-      if (patch.name !== undefined) payload["username"] = patch.name;
-      if (patch.avatarUrl !== undefined) payload["avatar_url"] = patch.avatarUrl;
-      if (patch.phone !== undefined) payload["phone"] = patch.phone;
+      const payload: { username?: string; avatar_url?: string; phone?: string } = {};
+      if (patch.name !== undefined) payload.username = patch.name;
+      if (patch.avatarUrl !== undefined) payload.avatar_url = patch.avatarUrl;
+      if (patch.phone !== undefined) payload.phone = patch.phone;
       if (Object.keys(payload).length === 0) return;
 
       const { error } = await supabase.from("users").update(payload).eq("id", current.id);
