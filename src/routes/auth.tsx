@@ -12,7 +12,7 @@ import taletailsLogo from "@/assets/taletails-logo.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { StatusDialog } from "@/components/ui/status-dialog";
 import { useAuth } from "@/lib/auth";
-import { requestEmailOtp, verifyEmailOtp } from "@/lib/auth-otp.functions";
+import { registerWithPassword, requestEmailOtp, verifyEmailOtp } from "@/lib/auth-otp.functions";
 
 const SITE_URL = "https://taletails-test.lovable.app";
 const OG_IMAGE = `${SITE_URL}${taletailsLogo}`;
@@ -74,6 +74,7 @@ function AuthPage() {
   const { refresh } = useAuth();
   const sendOtp = useServerFn(requestEmailOtp);
   const checkOtp = useServerFn(verifyEmailOtp);
+  const register = useServerFn(registerWithPassword);
   const [mode, setMode] = useState<"login" | "register">("login");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -121,15 +122,11 @@ function AuthPage() {
 
       setIsLoading(true);
       try {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { data: { username, phone } },
+        await register({
+          data: { email, password, ...(username ? { username } : {}), ...(phone ? { phone } : {}) },
         });
-        if (error && !/already registered|already been registered/i.test(error.message)) {
-          throw new Error(error.message);
-        }
         await startOtp(email, "register", username);
+
       } catch (error) {
         toast.error("สมัครสมาชิกไม่สำเร็จ", { description: errText(error) });
       } finally {
