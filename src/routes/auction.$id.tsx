@@ -203,8 +203,9 @@ function AuctionRoom() {
       </main>
 
       {/* Sticky bidding controller */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 backdrop-blur">
-        <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
+      <div className="fixed inset-x-0 bottom-[calc(64px+max(0.75rem,env(safe-area-inset-bottom)))] z-40 px-4 lg:bottom-0 lg:border-t lg:border-border lg:bg-card/95 lg:px-0 lg:backdrop-blur">
+        <div className="mx-auto max-w-7xl rounded-2xl border border-border bg-card/95 px-3 py-3 shadow-lg backdrop-blur sm:px-6 lg:rounded-none lg:border-0 lg:bg-transparent lg:px-8 lg:shadow-none">
+
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex min-w-0 flex-1 items-center gap-2">
               <Input
