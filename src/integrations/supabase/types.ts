@@ -200,6 +200,56 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          email_sent_at: string | null
+          email_to: string | null
+          id: string
+          link: string | null
+          read_at: string | null
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          email_sent_at?: string | null
+          email_to?: string | null
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          title: string
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          email_sent_at?: string | null
+          email_to?: string | null
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           auction_id: string | null
@@ -208,6 +258,7 @@ export type Database = {
           id: string
           note: string | null
           paid_at: string | null
+          payment_due_at: string
           payment_method: Database["public"]["Enums"]["payment_method"]
           shipped_at: string | null
           shipping_address: string | null
@@ -227,6 +278,7 @@ export type Database = {
           id?: string
           note?: string | null
           paid_at?: string | null
+          payment_due_at?: string
           payment_method?: Database["public"]["Enums"]["payment_method"]
           shipped_at?: string | null
           shipping_address?: string | null
@@ -246,6 +298,7 @@ export type Database = {
           id?: string
           note?: string | null
           paid_at?: string | null
+          payment_due_at?: string
           payment_method?: Database["public"]["Enums"]["payment_method"]
           shipped_at?: string | null
           shipping_address?: string | null
@@ -341,6 +394,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      award_auction: {
+        Args: { _amount: number; _auction_id: string; _user_id: string }
+        Returns: string
+      }
+      close_expired_auctions: { Args: never; Returns: number }
       create_auction_order: {
         Args: {
           _auction_id: string
@@ -357,6 +415,7 @@ export type Database = {
           id: string
           note: string | null
           paid_at: string | null
+          payment_due_at: string
           payment_method: Database["public"]["Enums"]["payment_method"]
           shipped_at: string | null
           shipping_address: string | null
@@ -376,6 +435,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      expire_unpaid_orders: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -384,6 +444,16 @@ export type Database = {
         Returns: boolean
       }
       is_banned: { Args: { _user_id: string }; Returns: boolean }
+      notify_user: {
+        Args: {
+          _body: string
+          _link: string
+          _title: string
+          _type: string
+          _user_id: string
+        }
+        Returns: undefined
+      }
       pass_auction_to_next_bidder: {
         Args: { _auction_id: string }
         Returns: {
@@ -423,6 +493,7 @@ export type Database = {
           id: string
           note: string | null
           paid_at: string | null
+          payment_due_at: string
           payment_method: Database["public"]["Enums"]["payment_method"]
           shipped_at: string | null
           shipping_address: string | null
