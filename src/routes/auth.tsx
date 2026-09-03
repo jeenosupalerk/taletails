@@ -790,16 +790,27 @@ function AuthPage() {
                       />
                       <span className="text-sm text-muted-foreground">จดจำฉัน</span>
                     </label>
-                    <button
-                      type="button"
-                      disabled={isLoading}
-                      onClick={() => void handleOtpLogin()}
-                      className="text-sm font-medium text-primary transition-colors hover:underline disabled:opacity-50"
-                    >
-                      เข้าสู่ระบบด้วยรหัส OTP
-                    </button>
-                  </div>
-                )}
+                     <div className="flex items-center gap-3">
+                       <button
+                         type="button"
+                         disabled={isLoading}
+                         onClick={() => void handleOtpLogin()}
+                         className="text-sm font-medium text-primary transition-colors hover:underline disabled:opacity-50"
+                       >
+                         เข้าสู่ระบบด้วยรหัส OTP
+                       </button>
+                       <span className="text-border">|</span>
+                       <button
+                         type="button"
+                         disabled={isLoading}
+                         onClick={openForgot}
+                         className="text-sm font-medium text-primary transition-colors hover:underline disabled:opacity-50"
+                       >
+                         ลืมรหัสผ่าน?
+                       </button>
+                     </div>
+                   </div>
+                 )}
 
                 <Button
                   type="submit"
