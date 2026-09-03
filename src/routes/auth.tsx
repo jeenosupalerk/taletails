@@ -76,6 +76,8 @@ function AuthPage() {
   const sendOtp = useServerFn(requestEmailOtp);
   const checkOtp = useServerFn(verifyEmailOtp);
   const register = useServerFn(registerWithPassword);
+  const sendResetOtp = useServerFn(requestPasswordResetOtp);
+  const submitReset = useServerFn(resetPasswordWithOtp);
   const [mode, setMode] = useState<"login" | "register">("login");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
