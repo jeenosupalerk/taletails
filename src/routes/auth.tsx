@@ -127,16 +127,26 @@ function AuthPage() {
           data: { email, password, ...(username ? { username } : {}), ...(phone ? { phone } : {}) },
         });
         accountCreated = true;
-        await startOtp(email, "register", username);
 
-      } catch (error) {
-        toast.error(accountCreated ? "สร้างบัญชีแล้ว แต่ส่ง OTP ไม่สำเร็จ" : "สมัครสมาชิกไม่สำเร็จ", {
-          description: errText(error),
+        // ยังไม่มีโดเมนสำหรับส่งอีเมล จึงข้ามการยืนยัน OTP และเข้าสู่ระบบให้ทันที
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw new Error(error.message);
+        await refresh();
+        setResult({
+          title: "สมัครสมาชิกสำเร็จ",
+          description: `ยินดีต้อนรับ ${username || email} เข้าสู่ระบบเรียบร้อยแล้ว`,
         });
+        setResultOpen(true);
+      } catch (error) {
+        toast.error(
+          accountCreated ? "สร้างบัญชีแล้ว แต่เข้าสู่ระบบไม่สำเร็จ" : "สมัครสมาชิกไม่สำเร็จ",
+          { description: errText(error) },
+        );
       } finally {
         setIsLoading(false);
       }
       return;
+
     }
 
     setIsLoading(true);
