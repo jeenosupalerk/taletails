@@ -285,6 +285,24 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
           </>
         )}
       </main>
+
+      <StatusDialog
+        open={paidOpen}
+        onOpenChange={setPaidOpen}
+        tone="success"
+        title="ส่งข้อมูลการชำระเงินแล้ว"
+        description={
+          method === "slip"
+            ? "เราได้รับสลิปของคุณแล้ว ทีมงานจะตรวจสอบและยืนยันภายใน 24 ชั่วโมง"
+            : "เราได้รับแจ้งการชำระผ่าน QR PromptPay แล้ว ระบบจะยืนยันให้โดยเร็วที่สุด"
+        }
+        actionLabel="ดูสถานะคำสั่งซื้อ"
+        onAction={() => void navigate({ to: "/order/$id", params: { id: orderId } })}
+        secondaryLabel="เลือกซื้อต่อ"
+        onSecondary={() => void navigate({ to: "/marketplace" })}
+      >
+        {order ? <p>ยอดชำระ {thb.format(Number(order.total_amount ?? 0))}</p> : null}
+      </StatusDialog>
     </div>
   );
 }
