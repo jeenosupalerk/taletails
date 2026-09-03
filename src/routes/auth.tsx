@@ -594,10 +594,11 @@ function AuthPage() {
         tone="success"
         title={result.title}
         description={result.description}
-        actionLabel="ไปที่โปรไฟล์"
-        onAction={() => void router.navigate({ to: "/profile" })}
-        secondaryLabel="กลับหน้าแรก"
-        onSecondary={() => void router.navigate({ to: "/" })}
+        actionLabel="เข้าใช้งานระบบ"
+        onAction={() => void router.navigate({ to: "/" })}
+        secondaryLabel="ไปที่โปรไฟล์"
+        onSecondary={() => void router.navigate({ to: "/profile" })}
+
       />
     </div>
   );
