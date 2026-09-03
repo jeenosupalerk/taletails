@@ -50,10 +50,12 @@ const STATUS_LABEL: Record<string, string> = {
   sold: "ขายแล้ว",
 };
 
-function AdminCardsPage() {
+export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "shop" }) {
   const [form, setForm] = useState<NewCardInput>(EMPTY);
   const [open, setOpen] = useState(false);
-  const cards = useAdminCards();
+  const adminCards = useAdminCards(scope === "admin");
+  const myCards = useMyCards(scope === "shop");
+  const cards = scope === "shop" ? myCards : adminCards;
   const create = useCreateCard();
   const del = useDeleteCard();
   const setEnd = useUpdateAuctionEndTime();
