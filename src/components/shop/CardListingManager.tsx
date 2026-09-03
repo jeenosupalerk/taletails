@@ -1,5 +1,15 @@
 import { Link } from "@tanstack/react-router";
-import { Gavel, ImagePlus, Loader2, Plus, Tag, Trash2 } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Gavel,
+  ImagePlus,
+  Loader2,
+  PackageOpen,
+  Plus,
+  Tag,
+  Trash2,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -7,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -45,6 +56,8 @@ const EMPTY: NewCardInput = {
   files: [],
 };
 
+const PAGE_SIZE = 8;
+
 const STATUS_LABEL: Record<string, string> = {
   available: "พร้อมขาย",
   locked: "ถูกจอง",
@@ -54,12 +67,31 @@ const STATUS_LABEL: Record<string, string> = {
 export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "shop" }) {
   const [form, setForm] = useState<NewCardInput>(EMPTY);
   const [open, setOpen] = useState(false);
+  const [page, setPage] = useState(1);
   const adminCards = useAdminCards(scope === "admin");
   const myCards = useMyCards(scope === "shop");
   const cards = scope === "shop" ? myCards : adminCards;
   const create = useCreateCard();
   const del = useDeleteCard();
   const setEnd = useUpdateAuctionEndTime();
+
+  const items = cards.data ?? [];
+  const total = items.length;
+  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const safePage = Math.min(page, pageCount);
+  const pageItems = items.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+  const onRowKeyDown = (e: React.KeyboardEvent<HTMLLIElement>) => {
+    const target = e.target as HTMLElement;
+    if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
+    const key = e.key.toLowerCase();
+    if (key === "v") {
+      e.currentTarget.querySelector<HTMLElement>('[data-action="view"]')?.click();
+    } else if (e.key === "Delete" || e.key === "Backspace") {
+      e.preventDefault();
+      e.currentTarget.querySelector<HTMLElement>('[data-action="delete"]')?.click();
+    }
+  };
 
   const set = <K extends keyof NewCardInput>(key: K, value: NewCardInput[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
@@ -324,7 +356,9 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
             return (
               <li
                 key={c.id}
-                className="rounded-2xl border border-border bg-card p-3 sm:p-4"
+                tabIndex={0}
+                onKeyDown={onRowKeyDown}
+                className="rounded-2xl border border-border bg-card p-3 outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:p-4"
               >
                 <div className="flex items-start gap-3">
                   <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-secondary">
