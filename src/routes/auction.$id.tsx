@@ -21,6 +21,7 @@ import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { pad, useCountdown } from "@/hooks/useCountdown";
 import { thb } from "@/lib/cart";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { SmartImage } from "@/components/ui/smart-image";
 
 const SITE_URL = "https://taletails-test.lovable.app";
 
@@ -101,12 +102,13 @@ function AuctionRoom() {
           {/* Card viewer */}
           <section className="relative overflow-hidden rounded-3xl border border-border bg-card">
             <div className="relative aspect-[4/3] bg-gradient-vault">
-              <img
+              <SmartImage
                 src={auction.imageUrl}
                 alt={`${auction.cardName} เกรด ${auction.grade}`}
-                width={768}
-                height={1024}
-                className="absolute top-1/2 left-1/2 h-[78%] w-auto -translate-x-1/2 -translate-y-1/2 rounded-xl border-4 border-white/10 object-cover shadow-2xl"
+                transformWidth={900}
+                priority
+                wrapperClassName="absolute top-1/2 left-1/2 h-[78%] w-auto -translate-x-1/2 -translate-y-1/2 rounded-xl border-4 border-white/10 shadow-2xl"
+                className="object-cover"
               />
 
               <span className="absolute top-4 left-4 inline-flex items-center gap-1.5 rounded-full bg-gradient-ember px-3 py-1.5 text-xs font-bold text-primary-foreground shadow-glow">

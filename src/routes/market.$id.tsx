@@ -28,6 +28,7 @@ import {
   type MarketRange,
 } from "@/data/market";
 import { cn } from "@/lib/utils";
+import { SmartImage } from "@/components/ui/smart-image";
 
 const SITE_URL = "https://taletails-test.lovable.app";
 
@@ -106,10 +107,13 @@ function MarketDetailPage() {
       <section className="mx-auto max-w-5xl space-y-6 px-4 py-6 pb-28 sm:px-6 lg:px-8">
         {/* Stock-style header */}
         <div className="surface-panel flex flex-wrap items-center gap-4 p-5 sm:gap-6">
-          <img
+          <SmartImage
             src={card.imageUrl}
             alt={card.cardName}
-            className="h-28 w-[84px] rounded-xl border border-border object-cover"
+            transformWidth={220}
+            priority
+            wrapperClassName="h-28 w-[84px] shrink-0 rounded-xl border border-border"
+            className="object-cover"
           />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">

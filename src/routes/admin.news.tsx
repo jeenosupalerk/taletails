@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
+import { SmartImage } from "@/components/ui/smart-image";
   useAdminArticles,
   useDeleteArticle,
   useSaveArticle,
@@ -222,7 +223,7 @@ function AdminNewsPage() {
             >
               <div className="h-14 w-20 shrink-0 overflow-hidden rounded-xl bg-secondary">
                 {a.thumbnail_url && (
-                  <img src={a.thumbnail_url} alt={a.title} className="h-full w-full object-cover" />
+                  <SmartImage src={a.thumbnail_url} alt={a.title} transformWidth={240} className="object-cover" />
                 )}
               </div>
               <div className="min-w-0 flex-1">

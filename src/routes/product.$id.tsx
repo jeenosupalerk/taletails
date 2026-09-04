@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { getProductById, getRelatedProducts, type Product } from "@/data/products";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { thb, useCart } from "@/lib/cart";
+import { SmartImage } from "@/components/ui/smart-image";
 
 const SITE_URL = "https://taletails-test.lovable.app";
 
@@ -98,10 +99,12 @@ function ProductPage() {
         {/* แกลเลอรี */}
         <div className="surface-panel overflow-hidden p-4">
           <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl border border-border bg-secondary/40">
-            <img
+            <SmartImage
               src={product.images[active] ?? product.imageUrl}
               alt={`${product.cardName} รูปที่ ${active + 1}`}
-              className="h-full w-full object-cover object-center"
+              transformWidth={900}
+              priority
+              className="object-cover object-center"
             />
           </div>
           <div className="mt-4 flex gap-3 overflow-x-auto pb-1">
@@ -115,7 +118,7 @@ function ProductPage() {
                   i === active ? "border-primary" : "border-border"
                 }`}
               >
-                <img src={img} alt="" className="h-full w-full object-cover object-center" />
+                <SmartImage src={img} alt="" transformWidth={160} className="object-cover object-center" />
               </button>
             ))}
           </div>
