@@ -225,14 +225,29 @@ function AuthPage() {
   const handleSocialLogin = async (provider: "google" | "facebook", label: string) => {
     setSocialLoading(provider);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      // Google refuses OAuth inside iframes / embedded previews (returns 403),
+      // so we always navigate the top-level window instead of the current frame.
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
           redirectTo: `${window.location.origin}/`,
+          skipBrowserRedirect: true,
           ...(provider === "google" ? { queryParams: { prompt: "select_account" } } : {}),
         },
       });
       if (error) throw new Error(error.message);
+      if (!data?.url) throw new Error("ไม่สามารถสร้างลิงก์เข้าสู่ระบบได้");
+
+      const embedded = window.self !== window.top;
+      if (embedded) {
+        try {
+          window.top!.location.href = data.url;
+        } catch {
+          window.open(data.url, "_blank", "noopener");
+        }
+      } else {
+        window.location.assign(data.url);
+      }
     } catch (error) {
       setSocialLoading(null);
       const message = errText(error);
