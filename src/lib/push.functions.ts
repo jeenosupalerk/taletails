@@ -62,3 +62,15 @@ export const sendTestPush = createServerFn({ method: "POST" })
       tag: "taletails-test",
     });
   });
+
+/**
+ * ส่งการแจ้งเตือนที่ยังค้างอยู่ออกเป็น Push ทันที
+ * เรียกหลังผู้ใช้ทำรายการที่ทำให้เกิดการแจ้งเตือน (เช่น เคาะราคา)
+ * เพื่อให้ผู้ที่ถูกแซงได้รับการแจ้งเตือนบนหน้าจอทันทีโดยไม่ต้องรอตัวตั้งเวลา
+ */
+export const flushPendingPush = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async () => {
+    const { dispatchPendingPush } = await import("./push.server");
+    return dispatchPendingPush(20);
+  });
