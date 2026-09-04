@@ -64,6 +64,73 @@ export type Database = {
           },
         ]
       }
+      auction_penalties: {
+        Row: {
+          auction_id: string | null
+          banned_until: string | null
+          cleared_at: string | null
+          created_at: string
+          id: string
+          is_permanent: boolean
+          level: string
+          order_id: string | null
+          reason: string | null
+          strike_no: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auction_id?: string | null
+          banned_until?: string | null
+          cleared_at?: string | null
+          created_at?: string
+          id?: string
+          is_permanent?: boolean
+          level?: string
+          order_id?: string | null
+          reason?: string | null
+          strike_no?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auction_id?: string | null
+          banned_until?: string | null
+          cleared_at?: string | null
+          created_at?: string
+          id?: string
+          is_permanent?: boolean
+          level?: string
+          order_id?: string | null
+          reason?: string | null
+          strike_no?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auction_penalties_auction_id_fkey"
+            columns: ["auction_id"]
+            isOneToOne: false
+            referencedRelation: "auctions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "auction_penalties_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "auction_penalties_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       auctions: {
         Row: {
           bid_count: number
@@ -483,6 +550,9 @@ export type Database = {
       }
       users: {
         Row: {
+          auction_ban_forever: boolean
+          auction_banned_until: string | null
+          auction_strikes: number
           avatar_url: string | null
           created_at: string
           email: string
@@ -493,6 +563,9 @@ export type Database = {
           username: string | null
         }
         Insert: {
+          auction_ban_forever?: boolean
+          auction_banned_until?: string | null
+          auction_strikes?: number
           avatar_url?: string | null
           created_at?: string
           email: string
@@ -503,6 +576,9 @@ export type Database = {
           username?: string | null
         }
         Update: {
+          auction_ban_forever?: boolean
+          auction_banned_until?: string | null
+          auction_strikes?: number
           avatar_url?: string | null
           created_at?: string
           email?: string
@@ -519,9 +595,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_auction_strike: {
+        Args: { _auction_id: string; _order_id: string; _user_id: string }
+        Returns: undefined
+      }
       award_auction: {
         Args: { _amount: number; _auction_id: string; _user_id: string }
         Returns: string
+      }
+      clear_auction_ban: {
+        Args: { _reset_strikes?: boolean; _user_id: string }
+        Returns: undefined
       }
       close_expired_auctions: { Args: never; Returns: number }
       create_auction_order: {
@@ -568,6 +652,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_auction_banned: { Args: { _user_id: string }; Returns: boolean }
       is_banned: { Args: { _user_id: string }; Returns: boolean }
       notify_user: {
         Args: {
