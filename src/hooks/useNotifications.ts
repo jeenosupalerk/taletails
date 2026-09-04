@@ -109,18 +109,33 @@ export function useNotifications() {
 export function useMarkNotificationsRead() {
   const userId = useAuthUserId();
   const queryClient = useQueryClient();
+  const key = ["notifications", userId] as const;
   return useMutation({
     mutationFn: async (ids: string[]) => {
       if (!ids.length) return true;
       const { error } = await supabase
         .from("notifications")
         .update({ read_at: new Date().toISOString() })
-        .in("id", ids);
+        .in("id", ids)
+        .is("read_at", null);
       if (error) throw new Error(error.message);
       return true;
     },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
+    // อัปเดตทันทีในหน้าจอ (จุดแดงหาย) โดยไม่ต้องรอเซิร์ฟเวอร์ตอบกลับ
+    onMutate: async (ids) => {
+      await queryClient.cancelQueries({ queryKey: key });
+      const previous = queryClient.getQueryData<NotificationRow[]>(key);
+      const now = new Date().toISOString();
+      queryClient.setQueryData<NotificationRow[]>(key, (old) =>
+        (old ?? []).map((n) => (ids.includes(n.id) && !n.read_at ? { ...n, read_at: now } : n)),
+      );
+      return { previous };
+    },
+    onError: (_err, _ids, ctx) => {
+      if (ctx?.previous) queryClient.setQueryData(key, ctx.previous);
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: key });
     },
   });
 }
