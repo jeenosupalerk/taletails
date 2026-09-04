@@ -84,3 +84,41 @@ export async function sendPushToUser(userId: string, payload: PushPayload) {
 
   return { devices: rows.length, sent, removed: stale.length };
 }
+
+/**
+ * ส่งการแจ้งเตือนในระบบที่ยังไม่ได้ push ออกไปยังอุปกรณ์ของผู้ใช้
+ * ถ้าผู้ใช้ยังไม่มีอุปกรณ์ที่ลงทะเบียนไว้ จะยังไม่ทำเครื่องหมายว่าส่งแล้ว
+ * เพื่อให้ได้รับการแจ้งเตือนหลังจากเปิดรับบนอุปกรณ์
+ */
+export async function dispatchPendingPush(limit = 50) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data, error } = await supabaseAdmin
+    .from("notifications")
+    .select("id, user_id, title, body, link")
+    .is("push_sent_at", null)
+    .order("created_at", { ascending: true })
+    .limit(limit);
+  if (error) throw new Error(error.message);
+
+  const rows = data ?? [];
+  let delivered = 0;
+  for (const row of rows) {
+    try {
+      const result = await sendPushToUser(row.user_id, {
+        title: row.title,
+        body: row.body,
+        link: row.link,
+        tag: row.id,
+      });
+      delivered += result.sent;
+      if (result.devices === 0) continue;
+    } catch (err) {
+      console.error("push dispatch failed", err);
+    }
+    await supabaseAdmin
+      .from("notifications")
+      .update({ push_sent_at: new Date().toISOString() })
+      .eq("id", row.id);
+  }
+  return { processed: rows.length, delivered };
+}

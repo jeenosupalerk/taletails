@@ -1,7 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { flushPendingPush } from "@/lib/push.functions";
+
 
 export interface CardDetailRow {
   id: string;
@@ -160,6 +163,7 @@ export function useAuctionRealtime(auctionId?: string) {
 
 export function usePlaceBid(auctionId?: string) {
   const queryClient = useQueryClient();
+  const flushPush = useServerFn(flushPendingPush);
   return useMutation({
     mutationFn: async ({ amount, userId }: { amount: number; userId: string }) => {
       if (!auctionId) throw new Error("ไม่พบรอบประมูล");
@@ -167,6 +171,8 @@ export function usePlaceBid(auctionId?: string) {
         .from("bids")
         .insert({ auction_id: auctionId, user_id: userId, amount });
       if (error) throw new Error(error.message);
+      // ส่ง Push ให้ผู้ที่ถูกแซงทันที ไม่ต้องรอตัวตั้งเวลา
+      void flushPush({}).catch(() => undefined);
       return amount;
     },
     onSuccess: () => {
