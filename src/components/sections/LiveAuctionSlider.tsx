@@ -50,7 +50,7 @@ export function LiveAuctionSlider() {
   const live = useLiveAuctions();
   const items: Auction[] = live.data?.length ? live.data : getLiveAuctions();
   const go = (d: number) => setIndex((i) => (i + d + items.length) % items.length);
-  const active = items[index]!;
+  const active = items[Math.min(index, items.length - 1)]!;
 
   return (
     <section id="auctions" className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
