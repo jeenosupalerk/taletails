@@ -12,6 +12,7 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { CheckoutStepper } from "@/components/checkout/CheckoutStepper";
 import { PromptPayQR } from "@/components/checkout/PromptPayQR";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
