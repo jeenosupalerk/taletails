@@ -278,23 +278,23 @@ function ProductPage() {
         )}
 
         {/* ข้อมูลเพิ่มเติม */}
-        <Accordion type="multiple" className="surface-panel mt-6 px-4">
+        <Accordion type="multiple" className="surface-panel mt-6 px-4 py-2">
           <AccordionItem value="authenticity">
-            <AccordionTrigger className="text-sm font-semibold">การตรวจสอบของแท้</AccordionTrigger>
+            <AccordionTrigger className="py-5 text-sm font-semibold">การตรวจสอบของแท้</AccordionTrigger>
             <AccordionContent className="text-sm text-muted-foreground">
               ทุกใบผ่านการตรวจสอบโดยทีม Taletails และยืนยันรหัสจาก {product.gradingCompany} ก่อนส่งถึงมือผู้ซื้อ
               รหัสรายการ: {product.cardIdCode}
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="shipping">
-            <AccordionTrigger className="text-sm font-semibold">การจัดส่งและการคืนสินค้า</AccordionTrigger>
+            <AccordionTrigger className="py-5 text-sm font-semibold">การจัดส่งและการคืนสินค้า</AccordionTrigger>
             <AccordionContent className="text-sm text-muted-foreground">
               จัดส่งภายใน 1–2 วันทำการ พร้อมกล่องกันกระแทกและประกันการขนส่งเต็มมูลค่า
               คืนสินค้าได้ภายใน 7 วันหากสภาพไม่ตรงตามที่ระบุ
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="sales">
-            <AccordionTrigger className="text-sm font-semibold">ประวัติการขาย</AccordionTrigger>
+            <AccordionTrigger className="py-5 text-sm font-semibold">ประวัติการขาย</AccordionTrigger>
             <AccordionContent className="text-sm text-muted-foreground">
               ขายไปแล้ว {product.soldCount} ชิ้น ราคาขายปัจจุบัน {thb.format(product.price)}
             </AccordionContent>
@@ -319,7 +319,7 @@ function ProductPage() {
 
       {/* แถบซื้อด้านล่าง — บนมือถือยกขึ้นเหนือเมนูล่าง (MobileBottomNav) */}
       <div className="fixed inset-x-0 bottom-[calc(64px+max(0.75rem,env(safe-area-inset-bottom)))] z-40 px-4 lg:bottom-0 lg:border-t lg:border-border lg:bg-background/95 lg:px-0 lg:backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center gap-3 rounded-2xl border border-border/70 bg-card/95 px-3 py-2.5 shadow-glow backdrop-blur sm:px-6 lg:rounded-none lg:border-0 lg:bg-transparent lg:py-3 lg:shadow-none lg:backdrop-blur-none">
+        <div className="mx-auto flex max-w-5xl items-center gap-4 rounded-2xl border border-border/70 bg-card/95 px-4 py-3 shadow-glow backdrop-blur sm:px-6 lg:rounded-none lg:border-0 lg:bg-transparent lg:py-3 lg:shadow-none lg:backdrop-blur-none">
           <button
             type="button"
             onClick={() => {
@@ -336,7 +336,7 @@ function ProductPage() {
                 { description: product.cardName },
               );
             }}
-            className="flex min-h-11 shrink-0 flex-col items-center justify-center px-1 text-[10px] text-muted-foreground"
+            className="flex min-h-11 shrink-0 flex-col items-center justify-center px-2 text-[10px] text-muted-foreground"
             aria-label="เพิ่มลงรายการที่อยากได้"
           >
             <Heart className={`h-5 w-5 ${wished ? "fill-primary text-primary" : ""}`} />
