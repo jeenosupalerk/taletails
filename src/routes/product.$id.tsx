@@ -287,14 +287,14 @@ function ProductPage() {
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="shipping">
-            <AccordionTrigger className="text-sm font-semibold">การจัดส่งและการคืนสินค้า</AccordionTrigger>
+            <AccordionTrigger className="py-5 text-sm font-semibold">การจัดส่งและการคืนสินค้า</AccordionTrigger>
             <AccordionContent className="text-sm text-muted-foreground">
               จัดส่งภายใน 1–2 วันทำการ พร้อมกล่องกันกระแทกและประกันการขนส่งเต็มมูลค่า
               คืนสินค้าได้ภายใน 7 วันหากสภาพไม่ตรงตามที่ระบุ
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="sales">
-            <AccordionTrigger className="text-sm font-semibold">ประวัติการขาย</AccordionTrigger>
+            <AccordionTrigger className="py-5 text-sm font-semibold">ประวัติการขาย</AccordionTrigger>
             <AccordionContent className="text-sm text-muted-foreground">
               ขายไปแล้ว {product.soldCount} ชิ้น ราคาขายปัจจุบัน {thb.format(product.price)}
             </AccordionContent>
