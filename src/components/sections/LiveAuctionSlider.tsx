@@ -4,12 +4,12 @@ import { useState } from "react";
 
 import { SectionHeading } from "@/components/site/SectionHeading";
 import { Button } from "@/components/ui/button";
-import { getLiveAuctions } from "@/data/auctions";
+import { getLiveAuctions, type Auction } from "@/data/auctions";
+import { useLiveAuctions } from "@/hooks/useLiveAuctions";
 import { thb } from "@/lib/cart";
 import { pad, useCountdown } from "@/hooks/useCountdown";
 import { cn } from "@/lib/utils";
 
-const items = getLiveAuctions();
 
 function BigCountdown({ endTime }: { endTime: string }) {
   const c = useCountdown(endTime);
@@ -47,8 +47,10 @@ function BigCountdown({ endTime }: { endTime: string }) {
 
 export function LiveAuctionSlider() {
   const [index, setIndex] = useState(0);
+  const live = useLiveAuctions();
+  const items: Auction[] = live.data?.length ? live.data : getLiveAuctions();
   const go = (d: number) => setIndex((i) => (i + d + items.length) % items.length);
-  const active = items[index]!;
+  const active = items[Math.min(index, items.length - 1)]!;
 
   return (
     <section id="auctions" className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">

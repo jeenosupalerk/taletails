@@ -8,7 +8,8 @@ import { SiteFooter } from "@/components/site/SiteFooter";
 import { BackButton } from "@/components/site/BackButton";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { Button } from "@/components/ui/button";
-import { getLiveAuctions } from "@/data/auctions";
+import { getLiveAuctions, type Auction } from "@/data/auctions";
+import { useLiveAuctions, type LiveAuction } from "@/hooks/useLiveAuctions";
 import { thb } from "@/lib/cart";
 
 const SITE_URL = "https://taletails-test.lovable.app";
@@ -74,12 +75,18 @@ export const Route = createFileRoute("/auctions")({
 });
 
 function AuctionsPage() {
-  const liveAuctions = getLiveAuctions();
+  const live = useLiveAuctions();
+  // ใช้ข้อมูลจริงจาก Supabase เมื่ออ่านได้ (ต้องเข้าสู่ระบบ) ไม่งั้นแสดงตัวอย่าง
+  const liveAuctions: Auction[] = live.data?.length ? live.data : getLiveAuctions();
+  const isRealData = Boolean(live.data?.length);
   const { id } = Route.useSearch();
   const navigate = useNavigate();
-  const [activeId, setActiveId] = useState(liveAuctions[0]?.id);
+  const [activeId, setActiveId] = useState<string | undefined>(undefined);
   const currentId = id ?? activeId;
   const active = liveAuctions.find((a) => a.id === currentId) ?? liveAuctions[0];
+  const activeAuctionId = isRealData ? active?.id : undefined;
+  const activeIncrement =
+    isRealData && active && "bidIncrement" in active ? (active as LiveAuction).bidIncrement : 50;
 
   useEffect(() => {
     if (id && typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
@@ -99,7 +106,14 @@ function AuctionsPage() {
         <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6 lg:px-8">
           <BackButton />
         </div>
-        {active && <AuctionShowcase key={active.id} auction={active} />}
+        {active && (
+          <AuctionShowcase
+            key={active.id}
+            auction={active}
+            auctionId={activeAuctionId}
+            bidIncrement={activeIncrement}
+          />
+        )}
 
         <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
           <h2 className="font-display text-2xl font-bold">รายการประมูลอื่นๆ</h2>

@@ -16,19 +16,39 @@ import { toast } from "sonner";
 
 import taletailsLogo from "@/assets/taletails-logo.jpg";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import type { Auction } from "@/data/auctions";
 import { timeAgo, useBidHistory } from "@/hooks/useBidHistory";
+import {
+  useAuctionRealtime,
+  useAuthUserId,
+  useBids,
+  usePlaceBid,
+} from "@/hooks/useCardDetail";
 import { pad, useCountdown } from "@/hooks/useCountdown";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { thb } from "@/lib/cart";
 import { useWatchlist } from "@/lib/watchlist";
 
-export function AuctionShowcase({ auction }: { auction: Auction }) {
+export function AuctionShowcase({
+  auction,
+  auctionId,
+  bidIncrement = 50,
+}: {
+  auction: Auction;
+  /** รหัสรอบประมูลจริงใน Supabase — ถ้ามี จะเคาะราคาลงฐานข้อมูลจริง */
+  auctionId?: string | undefined;
+  bidIncrement?: number | undefined;
+}) {
   const c = useCountdown(auction.endTime);
   const [shot, setShot] = useState(0);
-  const [bid, setBid] = useState(auction.currentBid + 50);
-  const { entries, pushOwnBid } = useBidHistory(auction.id, auction.currentBid, auction.bidCount);
+  const [bid, setBid] = useState(auction.currentBid + bidIncrement);
+  const demo = useBidHistory(auction.id, auction.currentBid, auction.bidCount);
+  const userId = useAuthUserId();
+  useAuctionRealtime(auctionId);
+  const liveBids = useBids(auctionId);
+  const placeBid = usePlaceBid(auctionId);
   const [, setTick] = useState(0);
   const [expanded, setExpanded] = useState(false);
   const watchlist = useWatchlist();
@@ -56,8 +76,23 @@ export function AuctionShowcase({ auction }: { auction: Auction }) {
 
   const requireAuth = useRequireAuth();
   const gallery = auction.images?.length ? auction.images : [auction.imageUrl];
-  const minNext = auction.currentBid + 50;
+  const minNext = auction.currentBid + (auction.bidCount === 0 ? 0 : bidIncrement);
   const urgent = !!c && !c.isFinished && c.totalMs < 3 * 60 * 60 * 1000;
+
+  const entries = auctionId
+    ? (liveBids.data ?? []).map((b) => ({
+        id: b.id,
+        bidder:
+          b.user_id === userId ? "คุณ" : (b.users?.username ?? "ผู้ประมูล") + "***",
+        amount: Number(b.amount),
+        at: new Date(b.created_at).getTime(),
+      }))
+    : demo.entries;
+
+  // ราคาปัจจุบันตามฐานข้อมูลเมื่อเชื่อมต่อรอบประมูลจริง
+  useEffect(() => {
+    setBid((b) => (b < auction.currentBid + bidIncrement ? auction.currentBid + bidIncrement : b));
+  }, [auction.currentBid, bidIncrement]);
 
   const time = c
     ? [
@@ -71,14 +106,31 @@ export function AuctionShowcase({ auction }: { auction: Auction }) {
         { v: "--", l: "วินาที" },
       ];
 
-  const submit = () => {
-    if (!requireAuth("กรุณาเข้าสู่ระบบก่อนเสนอราคา")) return;
+  const canBid = () => {
+    if (!requireAuth("กรุณาเข้าสู่ระบบก่อนเสนอราคา")) return false;
     if (bid < minNext) {
       toast.error(`ต้องเสนออย่างน้อย ${thb.format(minNext)}`);
+      return false;
+    }
+    return true;
+  };
+
+  const submit = () => {
+    if (!canBid()) return;
+
+    if (!auctionId || !userId) {
+      demo.pushOwnBid(bid);
+      toast.success(`เสนอราคา ${thb.format(bid)} เรียบร้อย`);
       return;
     }
-    pushOwnBid(bid);
-    toast.success(`เสนอราคา ${thb.format(bid)} เรียบร้อย`);
+
+    placeBid.mutate(
+      { amount: bid, userId },
+      {
+        onSuccess: () => toast.success(`เสนอราคา ${thb.format(bid)} เรียบร้อย`),
+        onError: (e: Error) => toast.error("เสนอราคาไม่สำเร็จ", { description: e.message }),
+      },
+    );
   };
 
   return (
@@ -355,13 +407,30 @@ export function AuctionShowcase({ auction }: { auction: Auction }) {
                 +฿5,000
               </Button>
             </div>
-            <Button
-              className="h-11 w-full rounded-xl bg-gradient-ember px-6 font-semibold text-primary-foreground shadow-glow transition-opacity hover:opacity-90 sm:w-auto"
-              onClick={submit}
-            >
-              <Gavel className="h-4 w-4" />
-              ยืนยันเสนอราคา
-            </Button>
+            <ConfirmDialog
+              title="ยืนยันการเสนอราคา"
+              description={
+                <>
+                  คุณกำลังเสนอราคา{" "}
+                  <span className="font-display font-bold text-primary">{thb.format(bid)}</span> สำหรับ{" "}
+                  {auction.cardName}
+                  <br />
+                  เมื่อยืนยันแล้วจะยกเลิกการเสนอราคาไม่ได้
+                </>
+              }
+              confirmLabel="ยืนยันเสนอราคา"
+              disabled={placeBid.isPending}
+              onConfirm={submit}
+              trigger={
+                <Button
+                  className="h-11 w-full rounded-xl bg-gradient-ember px-6 font-semibold text-primary-foreground shadow-glow transition-opacity hover:opacity-90 sm:w-auto"
+                  disabled={placeBid.isPending}
+                >
+                  <Gavel className="h-4 w-4" />
+                  {placeBid.isPending ? "กำลังส่งราคา..." : "ยืนยันเสนอราคา"}
+                </Button>
+              }
+            />
           </div>
 
           {/* Realtime bid history */}
