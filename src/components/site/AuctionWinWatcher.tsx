@@ -57,13 +57,20 @@ export function AuctionWinWatcher() {
   useEffect(() => {
     if (!userId) return;
     const sweep = () => {
-      void supabase.rpc("close_expired_auctions").then(() => undefined);
-      void supabase.rpc("expire_unpaid_orders").then(() => undefined);
+      void runProcessAuctions({})
+        .then((res) => {
+          if (res && (res.auctionsClosed > 0 || res.ordersExpired > 0)) {
+            void wins.refetch();
+          }
+        })
+        .catch(() => undefined);
     };
     sweep();
     const id = window.setInterval(sweep, 60_000);
     return () => window.clearInterval(id);
-  }, [userId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, runProcessAuctions]);
+
 
   // ป๊อบอัพเตือนชำระเงินครั้งแรกที่เข้าเว็บ
   useEffect(() => {
