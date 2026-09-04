@@ -13,12 +13,21 @@ export interface WonOrderRow {
   status: "pending" | "paid" | "shipped" | "cancelled";
   payment_due_at: string;
   created_at: string;
+  updated_at: string | null;
+  paid_at: string | null;
+  shipped_at: string | null;
+  tracking_number: string | null;
   cards: {
     id: string;
     name: string;
     set_name: string | null;
     grade: string | null;
     images: string[];
+  } | null;
+  auctions: {
+    id: string;
+    status: string;
+    winner_id: string | null;
   } | null;
 }
 
@@ -33,7 +42,7 @@ export function useAuctionWins() {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id, auction_id, card_id, total_amount, status, payment_due_at, created_at, cards:cards!orders_card_id_fkey (id, name, set_name, grade, images)",
+          "id, auction_id, card_id, total_amount, status, payment_due_at, created_at, updated_at, paid_at, shipped_at, tracking_number, cards:cards!orders_card_id_fkey (id, name, set_name, grade, images), auctions:auctions!orders_auction_id_fkey (id, status, winner_id)",
         )
         .eq("user_id", userId!)
         .not("auction_id", "is", null)
@@ -45,6 +54,7 @@ export function useAuctionWins() {
       }
       return (data ?? []) as unknown as WonOrderRow[];
     },
+
     retry: 1,
     staleTime: 5_000,
     refetchInterval: 10_000,
