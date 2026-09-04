@@ -243,13 +243,35 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
 
                   {method === "slip" ? (
                     <div className="space-y-3">
-                      <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border px-4 py-8 text-center transition-colors hover:bg-secondary/50">
-                        <Upload className="h-5 w-5 text-muted-foreground" />
-                        <span className="text-sm font-medium">
-                          {file ? file.name : "เลือกรูปสลิปการโอนเงิน"}
-                        </span>
-                        <span className="text-[11px] text-muted-foreground">
-                          JPG หรือ PNG ไม่เกิน 10MB
+                      <label
+                        className={cn(
+                          "group flex cursor-pointer flex-col items-center justify-center gap-2.5 rounded-3xl border p-1.5 text-center transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+                          file
+                            ? "border-primary/40 bg-primary/5 shadow-glow"
+                            : "border-border/70 bg-secondary/30 hover:border-primary/30",
+                        )}
+                      >
+                        <span className="flex w-full flex-col items-center gap-2.5 rounded-[calc(1.5rem-0.375rem)] border border-dashed border-border/70 bg-card/70 px-4 py-8">
+                          <span
+                            className={cn(
+                              "grid h-11 w-11 place-items-center rounded-2xl transition-transform duration-500 group-hover:-translate-y-0.5",
+                              file
+                                ? "bg-gradient-ember text-primary-foreground"
+                                : "bg-primary/10 text-primary",
+                            )}
+                          >
+                            {file ? (
+                              <CheckCircle2 className="h-5 w-5" />
+                            ) : (
+                              <Upload className="h-5 w-5" />
+                            )}
+                          </span>
+                          <span className="max-w-full truncate text-sm font-medium">
+                            {file ? file.name : "เลือกรูปสลิปการโอนเงิน"}
+                          </span>
+                          <span className="text-[11px] text-muted-foreground">
+                            JPG หรือ PNG ไม่เกิน 10MB
+                          </span>
                         </span>
                         <input
                           type="file"
@@ -259,12 +281,15 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                         />
                       </label>
                       {preview && (
-                        <img
-                          src={preview}
-                          alt="ตัวอย่างสลิป"
-                          className="mx-auto max-h-64 rounded-2xl border border-border object-contain"
-                        />
+                        <div className="mx-auto w-fit rounded-3xl border border-border/70 bg-secondary/30 p-1.5">
+                          <img
+                            src={preview}
+                            alt="ตัวอย่างสลิป"
+                            className="max-h-64 rounded-[calc(1.5rem-0.375rem)] object-contain"
+                          />
+                        </div>
                       )}
+
                     </div>
                   ) : (
                     <PromptPayQR
