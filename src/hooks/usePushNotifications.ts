@@ -103,8 +103,8 @@ export function usePushNotifications() {
       await save({
         data: {
           endpoint: sub.endpoint,
-          p256dh: json.keys?.p256dh ?? keyToBase64(sub.getKey("p256dh")),
-          auth: json.keys?.auth ?? keyToBase64(sub.getKey("auth")),
+          p256dh: json.keys?.['p256dh'] ?? keyToBase64(sub.getKey("p256dh")),
+          auth: json.keys?.['auth'] ?? keyToBase64(sub.getKey("auth")),
           userAgent: navigator.userAgent,
         },
       });
