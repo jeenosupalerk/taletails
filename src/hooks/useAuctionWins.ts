@@ -107,16 +107,20 @@ export function useMyPenalties() {
   return useQuery({
     queryKey: ["auction-penalties", userId],
     enabled: Boolean(userId),
-    queryFn: async () => {
+    queryFn: async (): Promise<PenaltyRow[]> => {
       const { data, error } = await supabase
         .from("auction_penalties")
         .select("id, strike_no, level, banned_until, is_permanent, reason, cleared_at, created_at")
         .eq("user_id", userId!)
         .order("created_at", { ascending: false })
         .limit(20);
-      if (error) throw error;
+      if (error) {
+        if (isPermissionError(error)) return [];
+        throw error;
+      }
       return (data ?? []) as unknown as PenaltyRow[];
     },
+    retry: 1,
     staleTime: 30_000,
   });
 }
