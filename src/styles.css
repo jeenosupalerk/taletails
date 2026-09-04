@@ -235,6 +235,36 @@
     font-family: var(--font-display);
     letter-spacing: -0.02em;
   }
+
+  /* รองรับการขยายขนาดตัวอักษรของเบราว์เซอร์ / iOS-Android dynamic type */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  li,
+  dt,
+  dd,
+  a,
+  label,
+  span,
+  button,
+  th,
+  td {
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  input,
+  textarea,
+  select,
+  button {
+    font-size: inherit;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
 }
 
 @utility text-gradient-ember {
