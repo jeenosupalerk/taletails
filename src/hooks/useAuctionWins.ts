@@ -71,7 +71,10 @@ export function useAuctionBanStatus() {
         .select("auction_strikes, auction_banned_until, auction_ban_forever")
         .eq("id", userId!)
         .maybeSingle();
-      if (error) throw error;
+      if (error) {
+        if (isPermissionError(error)) return null;
+        throw error;
+      }
       if (!data) return null;
       const until = data.auction_banned_until;
       return {
