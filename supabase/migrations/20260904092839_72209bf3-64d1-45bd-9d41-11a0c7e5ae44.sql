@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.notify_outbid() FROM anon, authenticated;
