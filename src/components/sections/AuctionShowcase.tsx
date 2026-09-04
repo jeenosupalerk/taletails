@@ -407,13 +407,30 @@ export function AuctionShowcase({
                 +฿5,000
               </Button>
             </div>
-            <Button
-              className="h-11 w-full rounded-xl bg-gradient-ember px-6 font-semibold text-primary-foreground shadow-glow transition-opacity hover:opacity-90 sm:w-auto"
-              onClick={submit}
-            >
-              <Gavel className="h-4 w-4" />
-              ยืนยันเสนอราคา
-            </Button>
+            <ConfirmDialog
+              title="ยืนยันการเสนอราคา"
+              description={
+                <>
+                  คุณกำลังเสนอราคา{" "}
+                  <span className="font-display font-bold text-primary">{thb.format(bid)}</span> สำหรับ{" "}
+                  {auction.cardName}
+                  <br />
+                  เมื่อยืนยันแล้วจะยกเลิกการเสนอราคาไม่ได้
+                </>
+              }
+              confirmLabel="ยืนยันเสนอราคา"
+              disabled={placeBid.isPending}
+              onConfirm={submit}
+              trigger={
+                <Button
+                  className="h-11 w-full rounded-xl bg-gradient-ember px-6 font-semibold text-primary-foreground shadow-glow transition-opacity hover:opacity-90 sm:w-auto"
+                  disabled={placeBid.isPending}
+                >
+                  <Gavel className="h-4 w-4" />
+                  {placeBid.isPending ? "กำลังส่งราคา..." : "ยืนยันเสนอราคา"}
+                </Button>
+              }
+            />
           </div>
 
           {/* Realtime bid history */}
