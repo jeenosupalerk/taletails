@@ -336,7 +336,7 @@ function ProductPage() {
                 { description: product.cardName },
               );
             }}
-            className="flex min-h-11 shrink-0 flex-col items-center justify-center px-1 text-[10px] text-muted-foreground"
+            className="flex min-h-11 shrink-0 flex-col items-center justify-center px-2 text-[10px] text-muted-foreground"
             aria-label="เพิ่มลงรายการที่อยากได้"
           >
             <Heart className={`h-5 w-5 ${wished ? "fill-primary text-primary" : ""}`} />
