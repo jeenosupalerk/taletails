@@ -35,7 +35,37 @@ export const Route = createFileRoute("/wins")({
     links: [{ rel: "canonical", href: `${SITE_URL}/wins` }],
   }),
   component: WinsPage,
+  errorComponent: WinsError,
 });
+
+function WinsError() {
+  return (
+    <PageShell
+      eyebrow="คลังของฉัน"
+      title="ของที่ประมูลชนะ"
+      description="ตอนนี้ระบบดึงรายการของคุณไม่สำเร็จ กรุณาลองอีกครั้ง"
+    >
+      <section className="mx-auto max-w-3xl px-4 py-14 text-center sm:px-6">
+        <p className="text-sm text-muted-foreground">
+          โหลดรายการที่ชนะประมูลไม่สำเร็จ อาจเป็นเพราะเซสชันหมดอายุ ลองเข้าสู่ระบบใหม่อีกครั้ง
+        </p>
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-center">
+          <Button
+            className="h-11 rounded-xl px-5"
+            onClick={() => {
+              if (typeof window !== "undefined") window.location.reload();
+            }}
+          >
+            ลองอีกครั้ง
+          </Button>
+          <Button asChild variant="secondary" className="h-11 rounded-xl px-5">
+            <Link to="/auth">เข้าสู่ระบบ</Link>
+          </Button>
+        </div>
+      </section>
+    </PageShell>
+  );
+}
 
 const statusMeta: Record<string, { label: string; className: string }> = {
   pending: { label: "รอชำระเงิน", className: "bg-primary/15 text-primary" },
@@ -73,7 +103,9 @@ function WinsPage() {
               <p className="mt-1 text-muted-foreground">
                 {ban.data.isPermanent
                   ? "กรุณาติดต่อทีมงานหากต้องการอุทธรณ์"
-                  : `กลับมาประมูลได้อีกครั้ง ${new Date(ban.data.bannedUntil!).toLocaleString("th-TH")}`}
+                  : ban.data.bannedUntil
+                    ? `กลับมาประมูลได้อีกครั้ง ${new Date(ban.data.bannedUntil).toLocaleString("th-TH")}`
+                    : "กรุณาติดต่อทีมงานเพื่อตรวจสอบสถานะ"}
               </p>
             </div>
           </div>
@@ -93,6 +125,15 @@ function WinsPage() {
             {Array.from({ length: 4 }).map((_, i) => (
               <Skeleton key={i} className="h-28 w-full rounded-2xl" />
             ))}
+          </div>
+        ) : wins.isError ? (
+          <div className="rounded-3xl border border-dashed border-destructive/40 py-14 text-center">
+            <p className="text-sm text-muted-foreground">
+              โหลดรายการที่ชนะประมูลไม่สำเร็จ กรุณาลองอีกครั้ง
+            </p>
+            <Button className="mt-4 h-11 rounded-xl px-5" onClick={() => void wins.refetch()}>
+              ลองอีกครั้ง
+            </Button>
           </div>
         ) : rows.length === 0 ? (
           <div className="rounded-3xl border border-dashed border-border py-16 text-center">

@@ -3,6 +3,7 @@ import { useEffect } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthUserId } from "@/hooks/useCardDetail";
+import { isPermissionError } from "@/lib/query-guards";
 
 export interface WonOrderRow {
   id: string;
@@ -28,19 +29,23 @@ export function useAuctionWins() {
   return useQuery({
     queryKey: ["auction-wins", userId],
     enabled: Boolean(userId),
-    queryFn: async () => {
+    queryFn: async (): Promise<WonOrderRow[]> => {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id, auction_id, card_id, total_amount, status, payment_due_at, created_at, cards:card_id (id, name, set_name, grade, images)",
+          "id, auction_id, card_id, total_amount, status, payment_due_at, created_at, cards:cards!orders_card_id_fkey (id, name, set_name, grade, images)",
         )
         .eq("user_id", userId!)
         .not("auction_id", "is", null)
         .order("created_at", { ascending: false })
         .limit(60);
-      if (error) throw error;
+      if (error) {
+        if (isPermissionError(error)) return [];
+        throw error;
+      }
       return (data ?? []) as unknown as WonOrderRow[];
     },
+    retry: 1,
     staleTime: 5_000,
     refetchInterval: 10_000,
   });
@@ -66,7 +71,10 @@ export function useAuctionBanStatus() {
         .select("auction_strikes, auction_banned_until, auction_ban_forever")
         .eq("id", userId!)
         .maybeSingle();
-      if (error) throw error;
+      if (error) {
+        if (isPermissionError(error)) return null;
+        throw error;
+      }
       if (!data) return null;
       const until = data.auction_banned_until;
       return {
@@ -99,16 +107,20 @@ export function useMyPenalties() {
   return useQuery({
     queryKey: ["auction-penalties", userId],
     enabled: Boolean(userId),
-    queryFn: async () => {
+    queryFn: async (): Promise<PenaltyRow[]> => {
       const { data, error } = await supabase
         .from("auction_penalties")
         .select("id, strike_no, level, banned_until, is_permanent, reason, cleared_at, created_at")
         .eq("user_id", userId!)
         .order("created_at", { ascending: false })
         .limit(20);
-      if (error) throw error;
+      if (error) {
+        if (isPermissionError(error)) return [];
+        throw error;
+      }
       return (data ?? []) as unknown as PenaltyRow[];
     },
+    retry: 1,
     staleTime: 30_000,
   });
 }
