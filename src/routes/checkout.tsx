@@ -15,6 +15,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { SiteFooter } from "@/components/site/SiteFooter";
+import { WonAuctionsPanel } from "@/components/site/WonAuctionsPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -125,6 +126,9 @@ function CheckoutPage() {
       </header>
 
       <main className="mx-auto max-w-3xl space-y-4 px-4 py-4">
+        {/* ของที่ชนะประมูลและรอชำระเงิน — แสดงเสมอในตะกร้า พร้อมเวลานับถอยหลัง */}
+        <WonAuctionsPanel />
+
         {lines.length === 0 ? (
           <div className="surface-panel p-8 text-center">
             <ShoppingBag className="mx-auto h-8 w-8 text-muted-foreground" />

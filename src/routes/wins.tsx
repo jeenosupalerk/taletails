@@ -1,5 +1,6 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute, useRouter, type ErrorComponentProps } from "@tanstack/react-router";
 import { Gavel, Loader2, PackageCheck, ShieldAlert, Trophy } from "lucide-react";
+import { useEffect } from "react";
 
 import { PaymentCountdown } from "@/components/site/PaymentCountdown";
 import { PageShell } from "@/components/site/PageShell";
@@ -38,7 +39,37 @@ export const Route = createFileRoute("/wins")({
   errorComponent: WinsError,
 });
 
-function WinsError() {
+const RELOAD_KEY = "tt-wins-auto-reload";
+
+function WinsError({ error, reset }: ErrorComponentProps) {
+  const router = useRouter();
+
+  // ถ้าเป็นปัญหาโหลดไฟล์ของหน้าไม่สำเร็จ (เช่น เปิดเว็บค้างไว้ข้ามการอัปเดต) ให้รีเฟรชอัตโนมัติหนึ่งครั้ง
+  useEffect(() => {
+    const message = (error as { message?: string } | null)?.message ?? "";
+    const chunkLike =
+      /Importing a module script failed|dynamically imported module|ChunkLoadError|Load failed/i.test(
+        message,
+      );
+    if (!chunkLike || typeof window === "undefined") return;
+    try {
+      if (sessionStorage.getItem(RELOAD_KEY)) return;
+      sessionStorage.setItem(RELOAD_KEY, "1");
+      window.location.reload();
+    } catch {
+      /* sessionStorage ไม่พร้อมใช้งาน */
+    }
+  }, [error]);
+
+  useEffect(() => {
+    try {
+      const t = window.setTimeout(() => sessionStorage.removeItem(RELOAD_KEY), 15_000);
+      return () => window.clearTimeout(t);
+    } catch {
+      return undefined;
+    }
+  }, []);
+
   return (
     <PageShell
       eyebrow="คลังของฉัน"
@@ -47,19 +78,29 @@ function WinsError() {
     >
       <section className="mx-auto max-w-3xl px-4 py-14 text-center sm:px-6">
         <p className="text-sm text-muted-foreground">
-          โหลดรายการที่ชนะประมูลไม่สำเร็จ อาจเป็นเพราะเซสชันหมดอายุ ลองเข้าสู่ระบบใหม่อีกครั้ง
+          โหลดรายการที่ชนะประมูลไม่สำเร็จ กรุณาลองอีกครั้ง — ระหว่างนี้ดูรายการที่รอชำระเงินได้จากตะกร้าสินค้า
         </p>
         <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-center">
           <Button
             className="h-11 rounded-xl px-5"
             onClick={() => {
-              if (typeof window !== "undefined") window.location.reload();
+              reset();
+              void router.invalidate();
             }}
           >
             ลองอีกครั้ง
           </Button>
           <Button asChild variant="secondary" className="h-11 rounded-xl px-5">
-            <Link to="/auth">เข้าสู่ระบบ</Link>
+            <Link to="/checkout">ไปที่ตะกร้า</Link>
+          </Button>
+          <Button
+            variant="ghost"
+            className="h-11 rounded-xl px-5"
+            onClick={() => {
+              if (typeof window !== "undefined") window.location.reload();
+            }}
+          >
+            รีเฟรชหน้า
           </Button>
         </div>
       </section>
