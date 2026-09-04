@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
+import { isPermissionError } from "@/lib/query-guards";
 import type { Product } from "@/data/products";
 
 /**
@@ -72,7 +73,10 @@ export function useMarketplaceCards() {
         .eq("sale_type", "fixed_price")
         .order("created_at", { ascending: false })
         .limit(24);
-      if (error) throw error;
+      if (error) {
+        if (isPermissionError(error)) return [] as Product[];
+        throw error;
+      }
       return (data ?? []).map((row) => {
         const { users, ...card } = row as unknown as CardRow & {
           users: { username: string | null } | null;
@@ -97,7 +101,10 @@ export function useLiveAuctions() {
         .eq("status", "active")
         .order("end_time", { ascending: true })
         .limit(12);
-      if (error) throw error;
+      if (error) {
+        if (isPermissionError(error)) return [];
+        throw error;
+      }
       return data ?? [];
     },
     staleTime: 4_000,

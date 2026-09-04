@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
+import { isPermissionError } from "@/lib/query-guards";
 import type { Auction } from "@/data/auctions";
 
 export interface LiveAuction extends Auction {
@@ -88,7 +89,10 @@ export function useLiveAuctions() {
         .gt("end_time", new Date().toISOString())
         .order("end_time", { ascending: true })
         .limit(24);
-      if (error) throw error;
+      if (error) {
+        if (isPermissionError(error)) return [] as LiveAuction[];
+        throw error;
+      }
       return ((data ?? []) as unknown as AuctionJoinRow[])
         .map(toLiveAuction)
         .filter((a): a is LiveAuction => a !== null);
