@@ -38,16 +38,22 @@ export function NotificationsMenu() {
       }}
     >
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="การแจ้งเตือน" className="relative">
+        <Button variant="ghost" size="icon" aria-label="การแจ้งเตือน" className="relative h-11 w-11">
           <Bell className="h-5 w-5" />
           {unread > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+            <span className="absolute top-1 right-1 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
               {unread}
             </span>
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-[20rem] rounded-2xl p-0">
+      <PopoverContent
+        align="end"
+        sideOffset={8}
+        collisionPadding={12}
+        className="w-[min(20rem,calc(100vw-1.5rem))] rounded-2xl p-0"
+      >
+
         <div className="border-b border-border px-4 py-3">
           <p className="font-display text-sm font-bold">การแจ้งเตือน</p>
         </div>
