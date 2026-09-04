@@ -82,6 +82,8 @@ function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [socialLoading, setSocialLoading] = useState<"google" | "facebook" | null>(null);
+
   const [rememberMe, setRememberMe] = useState(false);
   const [forgotStep, setForgotStep] = useState<null | "email" | "code">(null);
   const [forgotEmail, setForgotEmail] = useState("");
