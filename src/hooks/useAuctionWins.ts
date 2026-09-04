@@ -131,8 +131,10 @@ export function useWinsRealtime(userId: string | null) {
 
   useEffect(() => {
     if (!userId) return;
+    // ชื่อช่องต้องไม่ซ้ำกันระหว่างคอมโพเนนต์ (หน้า /wins และ AuctionWinWatcher ใช้ hook นี้พร้อมกัน)
+    // ถ้าซ้ำ supabase จะคืนช่องเดิมที่ subscribe แล้ว และ .on() จะ throw จนหน้าพัง
     const channel = supabase
-      .channel(`wins-${userId}`)
+      .channel(`wins-${userId}-${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "orders", filter: `user_id=eq.${userId}` },

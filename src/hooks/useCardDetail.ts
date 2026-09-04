@@ -137,7 +137,7 @@ export function useAuctionRealtime(auctionId?: string) {
   useEffect(() => {
     if (!auctionId) return;
     const channel = supabase
-      .channel(`auction-${auctionId}`)
+      .channel(`auction-${auctionId}-${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "bids", filter: `auction_id=eq.${auctionId}` },
