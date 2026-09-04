@@ -50,7 +50,30 @@ export function AuctionShowcase({
   const liveBids = useBids(auctionId);
   const placeBid = usePlaceBid(auctionId);
   const [, setTick] = useState(0);
-...
+  const [expanded, setExpanded] = useState(false);
+  const watchlist = useWatchlist();
+  const watched = watchlist.has(auction.id);
+
+  const toggleWatch = () => {
+    const added = watchlist.toggle({
+      id: auction.id,
+      name: auction.cardName,
+      subtitle: auction.setName,
+      imageUrl: auction.imageUrl,
+      price: auction.currentBid,
+      kind: "auction",
+    });
+    toast[added ? "success" : "info"](
+      added ? "เพิ่มลงรายการที่อยากได้แล้ว" : "นำออกจากรายการที่อยากได้แล้ว",
+      { description: auction.cardName },
+    );
+  };
+
+  useEffect(() => {
+    const id = window.setInterval(() => setTick((t) => t + 1), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+
   const requireAuth = useRequireAuth();
   const gallery = auction.images?.length ? auction.images : [auction.imageUrl];
   const minNext = auction.currentBid + (auction.bidCount === 0 ? 0 : bidIncrement);
