@@ -37,13 +37,17 @@ export function useNotifications() {
     },
   });
 
-  // Ask once for desktop-notification permission so alerts still reach the
-  // user while they are on another tab.
+  // ลงทะเบียน service worker + ขอสิทธิ์แจ้งเตือนหนึ่งครั้ง เพื่อให้การแจ้งเตือน
+  // เด้งบนหน้าจอได้แม้ผู้ใช้ไม่ได้เปิดหน้าเว็บค้างไว้
   useEffect(() => {
     if (!userId || permissionAsked.current) return;
     permissionAsked.current = true;
-    if (typeof window !== "undefined" && "Notification" in window) {
-      if (Notification.permission === "default") void Notification.requestPermission();
+    if (typeof window === "undefined") return;
+    if ("serviceWorker" in navigator) {
+      void navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+    }
+    if ("Notification" in window && Notification.permission === "default") {
+      void Notification.requestPermission();
     }
   }, [userId]);
 
@@ -59,17 +63,11 @@ export function useNotifications() {
           void queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
           void queryClient.invalidateQueries({ queryKey: ["order"] });
           toast(row.title, { description: row.body ?? undefined });
-          if (
-            typeof window !== "undefined" &&
-            "Notification" in window &&
-            Notification.permission === "granted" &&
-            document.visibilityState !== "visible"
-          ) {
-            new Notification(row.title, { body: row.body ?? "", icon: "/icon-192.png" });
-          }
+          void showSystemNotification(row);
         },
       )
       .subscribe();
+
 
     return () => {
       void supabase.removeChannel(channel);
