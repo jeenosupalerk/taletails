@@ -24,7 +24,7 @@ export function MobileBottomNav() {
   return (
     <nav
       aria-label="เมนูหลักบนมือถือ"
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] lg:hidden"
     >
       <div className="pointer-events-auto flex w-full max-w-md min-h-13 flex-nowrap items-center justify-between gap-0.5 overflow-hidden rounded-full border border-border/70 bg-card px-1.5 shadow-glow">
 
