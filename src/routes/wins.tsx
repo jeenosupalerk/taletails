@@ -112,12 +112,8 @@ function WinsError({ error, reset }: ErrorComponentProps) {
   );
 }
 
-const statusMeta: Record<string, { label: string; className: string }> = {
-  pending: { label: "รอชำระเงิน", className: "bg-primary/15 text-primary" },
-  paid: { label: "ชำระเงินแล้ว", className: "bg-emerald-500/15 text-emerald-600" },
-  shipped: { label: "จัดส่งแล้ว", className: "bg-sky-500/15 text-sky-600" },
-  cancelled: { label: "ยกเลิก (ไม่ชำระตามเวลา)", className: "bg-destructive/15 text-destructive" },
-};
+
+
 
 function WinsPage() {
   const userId = useAuthUserId();
