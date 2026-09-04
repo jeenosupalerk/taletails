@@ -110,6 +110,16 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
 
         {order && (
           <>
+            <CheckoutStepper
+              current={
+                done || order.status !== "pending"
+                  ? 3
+                  : name.trim() && phone.trim() && address.trim()
+                    ? 2
+                    : 1
+              }
+            />
+
             <section className="overflow-hidden rounded-3xl border border-border/70 bg-card shadow-[0_18px_50px_-40px_hsl(var(--foreground)/0.5)]">
               <div className="flex gap-4 p-5">
                 <div className="h-24 w-20 shrink-0 overflow-hidden rounded-2xl bg-secondary/40">
