@@ -123,14 +123,14 @@ function AuctionRoom() {
               <button
                 onClick={() => setShot((s) => (s - 1 + gallery.length) % gallery.length)}
                 aria-label="รูปก่อนหน้า"
-                className="absolute top-1/2 left-4 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/80 backdrop-blur transition-colors hover:bg-secondary"
+                className="absolute top-1/2 left-4 flex min-h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/80 backdrop-blur transition-colors hover:bg-secondary"
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
               <button
                 onClick={() => setShot((s) => (s + 1) % gallery.length)}
                 aria-label="รูปถัดไป"
-                className="absolute top-1/2 right-4 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/80 backdrop-blur transition-colors hover:bg-secondary"
+                className="absolute top-1/2 right-4 flex min-h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/80 backdrop-blur transition-colors hover:bg-secondary"
               >
                 <ChevronRight className="h-5 w-5" />
               </button>
@@ -179,7 +179,7 @@ function AuctionRoom() {
 
               <button
                 onClick={() => toast(`มีการเสนอราคาแล้ว ${auction.bidCount} ครั้ง`)}
-                className="mt-4 inline-flex h-10 items-center gap-2 rounded-full border border-primary/40 px-4 text-sm font-semibold text-primary transition-colors hover:bg-primary/10"
+                className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-full border border-primary/40 px-4 text-sm font-semibold text-primary transition-colors hover:bg-primary/10"
               >
                 <span className="grid h-5 w-5 place-items-center rounded-full bg-primary/20">
                   <Gavel className="h-3 w-3" />
@@ -218,18 +218,18 @@ function AuctionRoom() {
                 min={minNext}
                 step={50}
                 onChange={(e) => setBid(Number(e.target.value))}
-                className="h-11 min-w-0 flex-1 rounded-xl text-base font-semibold"
+                className="min-h-11 min-w-0 flex-1 rounded-xl text-base font-semibold"
               />
               <Button
                 variant="secondary"
-                className="h-11 shrink-0 rounded-xl px-3 text-xs font-semibold"
+                className="min-h-11 shrink-0 rounded-xl px-3 text-xs font-semibold"
                 onClick={() => setBid((b: number) => b + 1000)}
               >
                 +฿1,000
               </Button>
               <Button
                 variant="secondary"
-                className="h-11 shrink-0 rounded-xl px-3 text-xs font-semibold"
+                className="min-h-11 shrink-0 rounded-xl px-3 text-xs font-semibold"
                 onClick={() => setBid((b: number) => b + 5000)}
               >
                 +฿5,000
@@ -248,7 +248,7 @@ function AuctionRoom() {
                 toast.success(`เสนอราคา ${thb.format(bid)} เรียบร้อย`);
               }}
               trigger={
-                <Button className="h-11 w-full rounded-xl bg-gradient-ember px-6 font-semibold text-primary-foreground shadow-glow hover:opacity-90 sm:w-auto">
+                <Button className="min-h-11 w-full rounded-xl bg-gradient-ember px-6 font-semibold text-primary-foreground shadow-glow hover:opacity-90 sm:w-auto">
                   <Gavel className="h-4 w-4" />
                   ยืนยันเสนอราคา
                 </Button>

@@ -83,12 +83,12 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
           <Link
             to="/marketplace"
             aria-label="ย้อนกลับ"
-            className="flex h-10 w-10 items-center justify-center rounded-xl transition-colors hover:bg-secondary"
+            className="flex min-h-10 w-10 items-center justify-center rounded-xl transition-colors hover:bg-secondary"
           >
             <ChevronLeft className="h-5 w-5" />
           </Link>
           <h1 className="flex-1 text-center font-display text-base font-semibold">ชำระเงิน</h1>
-          <span className="h-10 w-10" />
+          <span className="min-h-10 w-10" />
         </div>
       </header>
 
@@ -162,14 +162,14 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
 
             {done || order.status !== "pending" ? (
               <section className="rounded-3xl border border-border/70 bg-card p-8 text-center">
-                <CheckCircle2 className="mx-auto h-10 w-10 text-primary" />
+                <CheckCircle2 className="mx-auto min-h-10 w-10 text-primary" />
                 <p className="mt-3 font-display text-lg font-semibold">ชำระเงินเรียบร้อยแล้ว</p>
                 <p className="mt-2 text-sm text-muted-foreground">
                   การ์ดใบนี้ถูกบันทึกเป็น &quot;ขายแล้ว&quot; และทีมงานจะจัดส่งให้เร็วที่สุด
                 </p>
                 <Link
                   to="/profile"
-                  className="mt-6 inline-flex h-11 items-center rounded-xl border border-border px-5 text-sm font-medium"
+                  className="mt-6 inline-flex min-h-11 items-center rounded-xl border border-border px-5 text-sm font-medium"
                 >
                   ดูคำสั่งซื้อของฉัน
                 </Link>
@@ -187,7 +187,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                         id="ship-name"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="h-11 rounded-xl"
+                        className="min-h-11 rounded-xl"
                       />
                     </div>
                     <div className="space-y-1.5">
@@ -198,7 +198,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                         id="ship-phone"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        className="h-11 rounded-xl"
+                        className="min-h-11 rounded-xl"
                       />
                     </div>
                   </div>
@@ -210,7 +210,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                       id="ship-address"
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
-                      className="h-11 rounded-xl"
+                      className="min-h-11 rounded-xl"
                     />
                   </div>
                 </section>
@@ -229,7 +229,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                         type="button"
                         onClick={() => setMethod(m.id)}
                         className={cn(
-                          "flex h-11 items-center justify-center gap-2 rounded-xl border text-sm font-medium transition-colors",
+                          "flex min-h-11 items-center justify-center gap-2 rounded-xl border text-sm font-medium transition-colors",
                           method === m.id
                             ? "border-primary bg-primary/5 text-primary"
                             : "border-border text-muted-foreground hover:bg-secondary",
@@ -254,7 +254,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                         <span className="flex w-full flex-col items-center gap-2.5 rounded-[calc(1.5rem-0.375rem)] border border-dashed border-border/70 bg-card/70 px-4 py-8">
                           <span
                             className={cn(
-                              "grid h-11 w-11 place-items-center rounded-2xl transition-transform duration-500 group-hover:-translate-y-0.5",
+                              "grid min-h-11 w-11 place-items-center rounded-2xl transition-transform duration-500 group-hover:-translate-y-0.5",
                               file
                                 ? "bg-gradient-ember text-primary-foreground"
                                 : "bg-primary/10 text-primary",
@@ -306,7 +306,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                   disabled={submit.isPending}
                   onConfirm={send}
                   trigger={
-                    <Button className="h-11 w-full rounded-xl" disabled={submit.isPending}>
+                    <Button className="min-h-11 w-full rounded-xl" disabled={submit.isPending}>
                       {submit.isPending ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (

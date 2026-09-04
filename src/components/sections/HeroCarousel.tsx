@@ -27,7 +27,7 @@ export function HeroCarousel() {
   return (
     <section className="relative mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
       <div className="relative overflow-hidden rounded-3xl border border-border shadow-card">
-        <div className="relative aspect-[16/11] sm:aspect-[16/7]">
+        <div className="relative min-h-[28rem] sm:aspect-[16/7] sm:min-h-0">
           {slides.map((slide, i) => (
             <div
               key={slide.id}
@@ -46,7 +46,7 @@ export function HeroCarousel() {
                 className="h-full w-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-fade" />
-              <div className="absolute inset-0 flex items-end">
+              <div className="absolute inset-0 flex items-end overflow-hidden">
                 <div className="w-full p-6 sm:p-10 lg:p-14">
                   <div className="flex items-center gap-2">
                     <img
@@ -87,14 +87,14 @@ export function HeroCarousel() {
         <button
           onClick={() => go(-1)}
           aria-label="สไลด์ก่อนหน้า"
-          className="absolute top-1/2 left-3 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/70 backdrop-blur transition-colors hover:bg-secondary sm:flex"
+          className="absolute top-1/2 left-3 hidden min-h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/70 backdrop-blur transition-colors hover:bg-secondary sm:flex"
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
         <button
           onClick={() => go(1)}
           aria-label="สไลด์ถัดไป"
-          className="absolute top-1/2 right-3 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/70 backdrop-blur transition-colors hover:bg-secondary sm:flex"
+          className="absolute top-1/2 right-3 hidden min-h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/70 backdrop-blur transition-colors hover:bg-secondary sm:flex"
         >
           <ChevronRight className="h-5 w-5" />
         </button>

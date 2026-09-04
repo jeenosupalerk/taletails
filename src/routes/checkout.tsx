@@ -116,12 +116,12 @@ function CheckoutPage() {
                 ? router.history.back()
                 : void router.navigate({ to: "/marketplace" })
             }
-            className="flex h-10 w-10 items-center justify-center rounded-xl text-foreground transition-colors hover:bg-secondary"
+            className="flex min-h-10 w-10 items-center justify-center rounded-xl text-foreground transition-colors hover:bg-secondary"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
           <h1 className="flex-1 text-center text-base font-bold">ชำระเงิน (Checkout)</h1>
-          <span className="h-10 w-10" />
+          <span className="min-h-10 w-10" />
         </div>
       </header>
 
@@ -133,7 +133,7 @@ function CheckoutPage() {
           <div className="surface-panel p-8 text-center">
             <ShoppingBag className="mx-auto h-8 w-8 text-muted-foreground" />
             <p className="mt-3 text-sm text-muted-foreground">ยังไม่มีสินค้าในตะกร้า</p>
-            <Button asChild variant="secondary" className="mt-4 h-11 rounded-xl">
+            <Button asChild variant="secondary" className="mt-4 min-h-11 rounded-xl">
               <Link to="/marketplace">ไปเลือกซื้อการ์ด</Link>
             </Button>
           </div>
@@ -245,7 +245,7 @@ function CheckoutPage() {
                   <button
                     type="button"
                     onClick={() => setAddressOpen(true)}
-                    className="mt-3 flex h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-primary/10 text-sm font-semibold text-primary transition-colors hover:bg-primary/15"
+                    className="mt-3 flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-primary/10 text-sm font-semibold text-primary transition-colors hover:bg-primary/15"
                   >
                     <Plus className="h-4 w-4" />
                     เพิ่มที่อยู่จัดส่งใหม่
@@ -290,7 +290,7 @@ function CheckoutPage() {
                     value={discountCode}
                     onChange={(e) => setDiscountCode(e.target.value)}
                     placeholder="กรอกโค้ด"
-                    className="h-10 w-32 rounded-xl text-sm"
+                    className="min-h-10 w-32 rounded-xl text-sm"
                   />
                   <span className="text-xs font-semibold text-emerald-600">ใช้โค้ดลดค่าส่งแล้ว</span>
                 </div>
@@ -346,7 +346,7 @@ function CheckoutPage() {
               confirmLabel="ยืนยันและชำระเงิน"
               onConfirm={submit}
               trigger={
-                <Button className="h-11 w-full rounded-xl bg-gradient-ember font-semibold text-primary-foreground shadow-glow hover:opacity-90">
+                <Button className="min-h-11 w-full rounded-xl bg-gradient-ember font-semibold text-primary-foreground shadow-glow hover:opacity-90">
                   ดำเนินการชำระเงิน {thb.format(grandTotal)}
                 </Button>
               }
@@ -389,7 +389,7 @@ function CheckoutPage() {
                 setPayment(draftPayment);
                 setPaymentOpen(false);
               }}
-              className="h-11 w-full rounded-xl bg-gradient-ember font-semibold text-primary-foreground hover:opacity-90"
+              className="min-h-11 w-full rounded-xl bg-gradient-ember font-semibold text-primary-foreground hover:opacity-90"
             >
               ยืนยัน
             </Button>
@@ -420,19 +420,19 @@ function CheckoutPage() {
           >
             <div className="space-y-1.5">
               <Label htmlFor="co-name">ชื่อ-นามสกุล</Label>
-              <Input id="co-name" name="name" required className="h-11 rounded-xl" />
+              <Input id="co-name" name="name" required className="min-h-11 rounded-xl" />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="co-phone">เบอร์โทร</Label>
-              <Input id="co-phone" name="phone" required className="h-11 rounded-xl" />
+              <Input id="co-phone" name="phone" required className="min-h-11 rounded-xl" />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="co-address">ที่อยู่</Label>
-              <Input id="co-address" name="detail" required className="h-11 rounded-xl" />
+              <Input id="co-address" name="detail" required className="min-h-11 rounded-xl" />
             </div>
             <Button
               type="submit"
-              className="h-11 w-full rounded-xl bg-gradient-ember font-semibold text-primary-foreground hover:opacity-90"
+              className="min-h-11 w-full rounded-xl bg-gradient-ember font-semibold text-primary-foreground hover:opacity-90"
             >
               บันทึกที่อยู่
             </Button>

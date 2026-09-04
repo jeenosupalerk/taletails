@@ -50,7 +50,7 @@ export function NotificationsMenu() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="การแจ้งเตือน" className="relative h-11 w-11">
+        <Button variant="ghost" size="icon" aria-label="การแจ้งเตือน" className="relative min-h-11 w-11">
           <Bell className="h-5 w-5" />
           {unread > 0 && (
             <span className="absolute top-1 right-1 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground shadow-glow">
@@ -81,7 +81,7 @@ export function NotificationsMenu() {
               size="sm"
               onClick={markAll}
               disabled={markRead.isPending}
-              className="h-10 gap-1.5 rounded-lg px-2.5 text-xs text-muted-foreground hover:text-foreground"
+              className="min-h-10 gap-1.5 rounded-lg px-2.5 text-xs text-muted-foreground hover:text-foreground"
             >
               <CheckCheck className="h-3.5 w-3.5" />
               อ่านทั้งหมด
@@ -120,7 +120,7 @@ export function NotificationsMenu() {
                     )}
                     <span
                       className={cn(
-                        "mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full",
+                        "mt-0.5 grid min-h-9 w-9 shrink-0 place-items-center rounded-full",
                         isUnread
                           ? "bg-gradient-ember text-primary-foreground shadow-glow"
                           : "bg-secondary text-muted-foreground",

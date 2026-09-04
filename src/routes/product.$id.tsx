@@ -252,7 +252,7 @@ function ProductPage() {
               setWished((v) => !v);
               if (!wished) toast.success("เพิ่มลงรายการที่อยากได้แล้ว");
             }}
-            className="flex h-11 shrink-0 flex-col items-center justify-center px-1 text-[10px] text-muted-foreground"
+            className="flex min-h-11 shrink-0 flex-col items-center justify-center px-1 text-[10px] text-muted-foreground"
             aria-label="เพิ่มลงรายการที่อยากได้"
           >
             <Heart className={`h-5 w-5 ${wished ? "fill-primary text-primary" : ""}`} />
@@ -261,7 +261,7 @@ function ProductPage() {
           <Button
             variant="secondary"
             onClick={addToCart}
-            className="h-11 flex-1 rounded-xl font-semibold"
+            className="min-h-11 flex-1 rounded-xl font-semibold"
           >
             <ShoppingBag className="h-4 w-4" />
             เพิ่มลงตะกร้า
@@ -271,7 +271,7 @@ function ProductPage() {
               if (!addToCart()) return;
               navigate({ to: "/checkout" });
             }}
-            className="h-11 flex-1 rounded-xl bg-gradient-ember font-semibold text-primary-foreground hover:opacity-90"
+            className="min-h-11 flex-1 rounded-xl bg-gradient-ember font-semibold text-primary-foreground hover:opacity-90"
           >
             ซื้อเลย
           </Button>

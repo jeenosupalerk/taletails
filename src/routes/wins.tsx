@@ -86,7 +86,7 @@ function WinsError({ error, reset }: ErrorComponentProps) {
         </p>
         <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-center">
           <Button
-            className="h-11 rounded-xl px-5"
+            className="min-h-11 rounded-xl px-5"
             onClick={() => {
               reset();
               void router.invalidate();
@@ -94,12 +94,12 @@ function WinsError({ error, reset }: ErrorComponentProps) {
           >
             ลองอีกครั้ง
           </Button>
-          <Button asChild variant="secondary" className="h-11 rounded-xl px-5">
+          <Button asChild variant="secondary" className="min-h-11 rounded-xl px-5">
             <Link to="/checkout">ไปที่ตะกร้า</Link>
           </Button>
           <Button
             variant="ghost"
-            className="h-11 rounded-xl px-5"
+            className="min-h-11 rounded-xl px-5"
             onClick={() => {
               if (typeof window !== "undefined") window.location.reload();
             }}
@@ -157,7 +157,7 @@ function WinsPage() {
             <p className="text-sm text-muted-foreground">
               เข้าสู่ระบบเพื่อดูรายการที่คุณชนะการประมูล
             </p>
-            <Button asChild className="mt-4 h-11 rounded-xl px-5">
+            <Button asChild className="mt-4 min-h-11 rounded-xl px-5">
               <Link to="/auth">เข้าสู่ระบบ</Link>
             </Button>
           </div>
@@ -172,7 +172,7 @@ function WinsPage() {
             <p className="text-sm text-muted-foreground">
               โหลดรายการที่ชนะประมูลไม่สำเร็จ กรุณาลองอีกครั้ง
             </p>
-            <Button className="mt-4 h-11 rounded-xl px-5" onClick={() => void wins.refetch()}>
+            <Button className="mt-4 min-h-11 rounded-xl px-5" onClick={() => void wins.refetch()}>
               ลองอีกครั้ง
             </Button>
           </div>
@@ -182,7 +182,7 @@ function WinsPage() {
             <p className="mt-3 text-sm text-muted-foreground">
               ยังไม่มีรายการที่ชนะการประมูล ลองเข้าร่วมประมูลรอบถัดไป
             </p>
-            <Button asChild className="mt-4 h-11 rounded-xl px-5">
+            <Button asChild className="mt-4 min-h-11 rounded-xl px-5">
               <Link to="/auctions" search={{ id: undefined }}>
                 <Gavel className="h-4 w-4" />
                 ไปหน้าประมูล
@@ -272,17 +272,17 @@ function WinsPage() {
 
                     <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:justify-end">
                       {o.status === "pending" ? (
-                        <Button asChild className="h-11 rounded-xl px-5 text-sm font-semibold">
+                        <Button asChild className="min-h-11 rounded-xl px-5 text-sm font-semibold">
                           <Link to="/checkout/$id" params={{ id: o.id }}>
                             ชำระเงินตอนนี้
                           </Link>
                         </Button>
                       ) : o.status === "cancelled" ? (
-                        <Button asChild variant="secondary" className="h-11 rounded-xl px-5 text-sm">
+                        <Button asChild variant="secondary" className="min-h-11 rounded-xl px-5 text-sm">
                           <Link to="/auctions" search={{ id: undefined }}>ประมูลรอบอื่น</Link>
                         </Button>
                       ) : (
-                        <Button asChild variant="secondary" className="h-11 rounded-xl px-5 text-sm">
+                        <Button asChild variant="secondary" className="min-h-11 rounded-xl px-5 text-sm">
                           <Link to="/order/$id" params={{ id: o.id }}>
                             <PackageCheck className="h-4 w-4" />
                             ดูสถานะคำสั่งซื้อ

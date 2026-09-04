@@ -59,7 +59,7 @@ export function PromptPayQR({ amount, reference }: { amount: number; reference?:
           void navigator.clipboard.writeText(info.payload);
           toast.success("คัดลอกข้อมูล QR แล้ว");
         }}
-        className="inline-flex h-10 items-center gap-2 rounded-xl border border-border px-4 text-xs font-medium transition-colors hover:bg-secondary"
+        className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-border px-4 text-xs font-medium transition-colors hover:bg-secondary"
       >
         <Copy className="h-3.5 w-3.5" />
         คัดลอก QR payload

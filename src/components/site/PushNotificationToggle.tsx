@@ -14,7 +14,7 @@ export function PushNotificationToggle() {
   return (
     <div className="surface-panel mt-4 rounded-2xl p-4">
       <div className="flex items-start gap-3">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-ember text-primary-foreground">
+        <span className="grid min-h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-ember text-primary-foreground">
           {enabled ? <BellRing className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
         </span>
         <div className="min-w-0 flex-1">
@@ -58,7 +58,7 @@ export function PushNotificationToggle() {
           type="button"
           onClick={() => void enable()}
           disabled={busy}
-          className="mt-3 h-11 w-full rounded-xl bg-gradient-ember font-semibold text-primary-foreground"
+          className="mt-3 min-h-11 w-full rounded-xl bg-gradient-ember font-semibold text-primary-foreground"
         >
           {busy ? "กำลังเปิด…" : "เปิดรับการแจ้งเตือน"}
         </Button>

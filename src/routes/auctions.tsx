@@ -168,7 +168,7 @@ function AuctionsPage() {
                     </div>
                     <Button
                       asChild
-                      className="h-10 shrink-0 rounded-xl bg-gradient-ember px-4 font-semibold text-primary-foreground shadow-glow transition-opacity hover:opacity-90"
+                      className="min-h-10 shrink-0 rounded-xl bg-gradient-ember px-4 font-semibold text-primary-foreground shadow-glow transition-opacity hover:opacity-90"
                     >
                       <span>
                         <Gavel className="h-4 w-4" />

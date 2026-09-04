@@ -91,7 +91,7 @@ function AdminNewsPage() {
         {open ? (
           <Button
             variant="secondary"
-            className="h-11 rounded-xl px-4 text-sm"
+            className="min-h-11 rounded-xl px-4 text-sm"
             onClick={() => {
               setOpen(false);
               setEditId(null);
@@ -101,7 +101,7 @@ function AdminNewsPage() {
             ปิดฟอร์ม
           </Button>
         ) : (
-          <Button className="h-11 rounded-xl px-4 text-sm" onClick={startCreate}>
+          <Button className="min-h-11 rounded-xl px-4 text-sm" onClick={startCreate}>
             <Plus className="h-4 w-4" />
             สร้างข่าวใหม่
           </Button>
@@ -115,7 +115,7 @@ function AdminNewsPage() {
               <Label htmlFor="title">หัวข้อข่าว</Label>
               <Input
                 id="title"
-                className="h-11 rounded-xl"
+                className="min-h-11 rounded-xl"
                 value={form.title}
                 onChange={(e) => set("title", e.target.value)}
                 placeholder="เช่น สรุปตลาดการ์ดประจำเดือน"
@@ -126,7 +126,7 @@ function AdminNewsPage() {
               <Label htmlFor="category">หมวดหมู่</Label>
               <select
                 id="category"
-                className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm"
+                className="min-h-11 w-full rounded-xl border border-input bg-background px-3 text-sm"
                 value={form.categoryTag}
                 onChange={(e) => set("categoryTag", e.target.value)}
               >
@@ -143,7 +143,7 @@ function AdminNewsPage() {
               <Input
                 id="publishedAt"
                 type="datetime-local"
-                className="h-11 rounded-xl"
+                className="min-h-11 rounded-xl"
                 value={form.publishedAt}
                 onChange={(e) => set("publishedAt", e.target.value)}
               />
@@ -153,7 +153,7 @@ function AdminNewsPage() {
               <Label htmlFor="excerpt">เรื่องย่อ</Label>
               <Input
                 id="excerpt"
-                className="h-11 rounded-xl"
+                className="min-h-11 rounded-xl"
                 value={form.excerpt}
                 onChange={(e) => set("excerpt", e.target.value)}
                 placeholder="สรุปสั้นๆ 1-2 บรรทัด"
@@ -178,12 +178,12 @@ function AdminNewsPage() {
                 id="thumb"
                 type="file"
                 accept="image/*"
-                className="h-11 rounded-xl py-2.5"
+                className="min-h-11 rounded-xl py-2.5"
                 onChange={(e) => set("file", e.target.files?.[0] ?? null)}
               />
             </div>
 
-            <label className="flex h-11 items-center gap-2 self-end text-sm">
+            <label className="flex min-h-11 items-center gap-2 self-end text-sm">
               <input
                 type="checkbox"
                 checked={form.isPublished}
@@ -195,7 +195,7 @@ function AdminNewsPage() {
           </div>
 
           <Button
-            className="h-11 w-full rounded-xl sm:w-auto sm:px-6"
+            className="min-h-11 w-full rounded-xl sm:w-auto sm:px-6"
             disabled={save.isPending}
             onClick={submit}
           >
@@ -234,7 +234,7 @@ function AdminNewsPage() {
               </div>
               <Button
                 variant="secondary"
-                className="h-10 rounded-xl px-3 text-xs"
+                className="min-h-10 rounded-xl px-3 text-xs"
                 onClick={() => startEdit(a)}
               >
                 <Pencil className="h-3.5 w-3.5" />
@@ -255,7 +255,7 @@ function AdminNewsPage() {
                 trigger={
                   <Button
                     variant="ghost"
-                    className="h-10 rounded-xl px-3 text-xs text-destructive"
+                    className="min-h-10 rounded-xl px-3 text-xs text-destructive"
                     disabled={remove.isPending}
                   >
                     <Trash2 className="h-3.5 w-3.5" />

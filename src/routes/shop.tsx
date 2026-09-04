@@ -35,7 +35,7 @@ function ShopPage() {
       <section className="mx-auto max-w-5xl px-4 py-6 pb-28 sm:px-6 lg:px-8">
         {!userId ? (
           <div className="surface-panel flex flex-col items-center gap-4 px-6 py-14 text-center">
-            <Store className="h-10 w-10 text-primary" />
+            <Store className="min-h-10 w-10 text-primary" />
             <div>
               <p className="font-semibold">ยังไม่ได้เข้าสู่ระบบ</p>
               <p className="text-sm text-muted-foreground">
@@ -44,7 +44,7 @@ function ShopPage() {
             </div>
             <Button
               asChild
-              className="h-11 rounded-xl bg-gradient-ember font-semibold text-primary-foreground"
+              className="min-h-11 rounded-xl bg-gradient-ember font-semibold text-primary-foreground"
             >
               <Link to="/auth">เข้าสู่ระบบ</Link>
             </Button>
@@ -61,7 +61,7 @@ function ShopPage() {
               การลงสินค้าและเปิดประมูลสงวนไว้สำหรับบัญชีที่แอดมินอนุญาตแล้วเท่านั้น
               กรุณาติดต่อทีมงานเพื่อขอสิทธิ์ผู้ขาย
             </p>
-            <Button asChild variant="secondary" className="mt-5 h-11 rounded-xl">
+            <Button asChild variant="secondary" className="mt-5 min-h-11 rounded-xl">
               <Link to="/news">ติดต่อทีมงาน</Link>
             </Button>
           </div>

@@ -59,7 +59,7 @@ function AdminMembersPage() {
           placeholder="ค้นหาชื่อหรืออีเมล"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          className="h-11 w-full rounded-xl sm:w-64"
+          className="min-h-11 w-full rounded-xl sm:w-64"
         />
       </div>
 
@@ -121,7 +121,7 @@ function AdminMembersPage() {
                 <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
                 <Button
                   variant="secondary"
-                  className="h-10 w-full justify-center rounded-xl px-3 text-xs sm:w-auto"
+                  className="min-h-10 w-full justify-center rounded-xl px-3 text-xs sm:w-auto"
                   onClick={() => setOpenId((id) => (id === m.id ? null : m.id))}
                 >
                   ประวัติการบิด
@@ -145,7 +145,7 @@ function AdminMembersPage() {
                     trigger={
                       <Button
                         variant="secondary"
-                        className="h-10 w-full justify-center rounded-xl px-3 text-xs sm:w-auto"
+                        className="min-h-10 w-full justify-center rounded-xl px-3 text-xs sm:w-auto"
                         disabled={clearBan.isPending}
                       >
                         <Gavel className="h-3.5 w-3.5" />
@@ -168,7 +168,7 @@ function AdminMembersPage() {
                   trigger={
                     <Button
                       variant={roles.data?.[m.id]?.seller ? "ghost" : "secondary"}
-                      className="h-10 w-full justify-center rounded-xl px-3 text-xs sm:w-auto"
+                      className="min-h-10 w-full justify-center rounded-xl px-3 text-xs sm:w-auto"
                       disabled={toggleRole.isPending}
                     >
                       <Store className="h-3.5 w-3.5" />
@@ -187,7 +187,7 @@ function AdminMembersPage() {
                   trigger={
                     <Button
                       variant={roles.data?.[m.id]?.admin ? "ghost" : "secondary"}
-                      className="h-10 w-full justify-center rounded-xl px-3 text-xs sm:w-auto"
+                      className="min-h-10 w-full justify-center rounded-xl px-3 text-xs sm:w-auto"
                       disabled={toggleRole.isPending}
                     >
                       <UserCog className="h-3.5 w-3.5" />
@@ -219,7 +219,7 @@ function AdminMembersPage() {
                   trigger={
                     <Button
                       variant={m.is_banned ? "secondary" : "ghost"}
-                      className={`h-10 w-full justify-center rounded-xl px-3 text-xs sm:w-auto ${m.is_banned ? "" : "text-destructive"}`}
+                      className={`min-h-10 w-full justify-center rounded-xl px-3 text-xs sm:w-auto ${m.is_banned ? "" : "text-destructive"}`}
                     >
                       {m.is_banned ? (
                         <>

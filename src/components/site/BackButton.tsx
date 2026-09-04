@@ -21,7 +21,7 @@ export function BackButton({ className, label = "ย้อนกลับ" }: { 
       onClick={goBack}
       aria-label={label}
       className={cn(
-        "inline-flex h-10 items-center gap-1.5 rounded-full border border-border bg-card/80 pr-4 pl-2.5 text-sm font-semibold text-foreground backdrop-blur transition-colors hover:border-primary/50 hover:text-primary",
+        "inline-flex min-h-10 items-center gap-1.5 rounded-full border border-border bg-card/80 pr-4 pl-2.5 text-sm font-semibold text-foreground backdrop-blur transition-colors hover:border-primary/50 hover:text-primary",
         className,
       )}
     >

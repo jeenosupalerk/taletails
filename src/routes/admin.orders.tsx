@@ -64,7 +64,7 @@ function AdminOrdersPage() {
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`h-10 shrink-0 rounded-xl px-3.5 text-xs font-medium transition-colors ${
+              className={`min-h-10 shrink-0 rounded-xl px-3.5 text-xs font-medium transition-colors ${
                 filter === f
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:bg-secondary"
@@ -146,7 +146,7 @@ function AdminOrdersPage() {
                 {o.slip_url && (
                   <Button
                     variant="secondary"
-                    className="h-10 w-full justify-center rounded-xl px-3 text-xs sm:w-auto"
+                    className="min-h-10 w-full justify-center rounded-xl px-3 text-xs sm:w-auto"
                     onClick={() => openSlip(o.slip_url!)}
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
@@ -160,7 +160,7 @@ function AdminOrdersPage() {
                     confirmLabel="ยืนยันชำระเงิน"
                     onConfirm={() => act(o.id, { status: "paid" }, "ยืนยันการชำระเงินแล้ว")}
                     trigger={
-                      <Button className="h-10 w-full justify-center rounded-xl px-3 text-xs sm:w-auto">
+                      <Button className="min-h-10 w-full justify-center rounded-xl px-3 text-xs sm:w-auto">
                         <CheckCircle2 className="h-3.5 w-3.5" />
                         ยืนยันชำระเงิน
                       </Button>
@@ -171,7 +171,7 @@ function AdminOrdersPage() {
                   <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
                     <Input
                       placeholder="เลขพัสดุ"
-                      className="h-10 w-full rounded-xl text-xs sm:w-40"
+                      className="min-h-10 w-full rounded-xl text-xs sm:w-40"
                       value={tracking[o.id] ?? ""}
                       onChange={(e) => setTracking((t) => ({ ...t, [o.id]: e.target.value }))}
                     />
@@ -188,7 +188,7 @@ function AdminOrdersPage() {
                         act(o.id, { status: "shipped", trackingNumber: t }, "บันทึกการจัดส่งแล้ว");
                       }}
                       trigger={
-                        <Button className="h-10 rounded-xl px-3 text-xs">
+                        <Button className="min-h-10 rounded-xl px-3 text-xs">
                           <Truck className="h-3.5 w-3.5" />
                           กดส่งของ
                         </Button>
@@ -212,7 +212,7 @@ function AdminOrdersPage() {
                     trigger={
                       <Button
                         variant="ghost"
-                        className="h-10 rounded-xl px-3 text-xs text-destructive"
+                        className="min-h-10 rounded-xl px-3 text-xs text-destructive"
                       >
                         <XCircle className="h-3.5 w-3.5" />
                         ยกเลิก

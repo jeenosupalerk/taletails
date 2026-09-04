@@ -45,7 +45,7 @@ function MarketPage() {
         {/* Top metrics */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="surface-panel flex items-center gap-4 p-5">
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <span className="flex min-h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <TrendingUp className="h-5 w-5" />
             </span>
             <div>
@@ -59,7 +59,7 @@ function MarketPage() {
             </div>
           </div>
           <div className="surface-panel flex items-center gap-4 p-5">
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <span className="flex min-h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <Activity className="h-5 w-5" />
             </span>
             <div>
@@ -87,7 +87,7 @@ function MarketPage() {
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-3 rounded-xl px-3 py-3">
                   <Skeleton className="h-5 w-6" />
-                  <Skeleton className="h-12 w-9 rounded-md" />
+                  <Skeleton className="min-h-12 w-9 rounded-md" />
                   <div className="flex-1 space-y-2">
                     <Skeleton className="h-4 w-40" />
                     <Skeleton className="h-3 w-24" />
@@ -134,7 +134,7 @@ function MarketPage() {
                               src={card.imageUrl}
                               alt={card.cardName}
                               loading="lazy"
-                              className="h-12 w-9 rounded-md border border-border object-cover"
+                              className="min-h-12 w-9 rounded-md border border-border object-cover"
                             />
                             <span className="min-w-0">
                               <span className="block truncate font-semibold group-hover:text-primary">

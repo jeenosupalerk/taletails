@@ -168,14 +168,14 @@ export function AuctionShowcase({
                 <button
                   onClick={() => setShot((s) => (s - 1 + gallery.length) % gallery.length)}
                   aria-label="รูปก่อนหน้า"
-                  className="absolute top-1/2 left-3 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/80 backdrop-blur transition-colors hover:bg-secondary sm:left-4"
+                  className="absolute top-1/2 left-3 flex min-h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/80 backdrop-blur transition-colors hover:bg-secondary sm:left-4"
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </button>
                 <button
                   onClick={() => setShot((s) => (s + 1) % gallery.length)}
                   aria-label="รูปถัดไป"
-                  className="absolute top-1/2 right-3 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/80 backdrop-blur transition-colors hover:bg-secondary sm:right-4"
+                  className="absolute top-1/2 right-3 flex min-h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/80 backdrop-blur transition-colors hover:bg-secondary sm:right-4"
                 >
                   <ChevronRight className="h-5 w-5" />
                 </button>
@@ -189,7 +189,7 @@ export function AuctionShowcase({
                       onClick={() => setShot(i)}
                       aria-label={`ดูรูปที่ ${i + 1}`}
                       aria-pressed={i === shot}
-                      className={`h-10 w-10 shrink-0 overflow-hidden rounded-lg transition-all duration-300 ${
+                      className={`min-h-10 w-10 shrink-0 overflow-hidden rounded-lg transition-all duration-300 ${
                         i === shot
                           ? "opacity-100 ring-2 ring-white"
                           : "opacity-50 hover:opacity-80"
@@ -267,7 +267,7 @@ export function AuctionShowcase({
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <Button
                     variant="secondary"
-                    className="h-10 flex-1 rounded-xl text-xs font-semibold sm:text-sm"
+                    className="min-h-10 flex-1 rounded-xl text-xs font-semibold sm:text-sm"
                     onClick={() => setExpanded((v) => !v)}
                     aria-expanded={expanded}
                   >
@@ -283,7 +283,7 @@ export function AuctionShowcase({
                   </Button>
                   <Button
                     variant={watched ? "default" : "outline"}
-                    className={`h-10 flex-1 rounded-xl text-xs font-semibold sm:text-sm ${
+                    className={`min-h-10 flex-1 rounded-xl text-xs font-semibold sm:text-sm ${
                       watched ? "bg-primary text-primary-foreground hover:bg-primary/90" : ""
                     }`}
                     onClick={toggleWatch}
@@ -348,7 +348,7 @@ export function AuctionShowcase({
                 </p>
 
                 <div className="mt-2 flex flex-wrap items-center gap-2 sm:mt-4">
-                  <span className="inline-flex h-9 items-center gap-2 rounded-full border border-primary/40 px-3 text-xs font-semibold text-primary sm:h-10 sm:px-4 sm:text-sm">
+                  <span className="inline-flex min-h-9 items-center gap-2 rounded-full border border-primary/40 px-3 text-xs font-semibold text-primary sm:min-h-10 sm:px-4 sm:text-sm">
                     <span className="grid h-5 w-5 place-items-center rounded-full bg-primary/20">
                       <Gavel className="h-3 w-3" />
                     </span>
@@ -390,18 +390,18 @@ export function AuctionShowcase({
                 min={minNext}
                 step={50}
                 onChange={(e) => setBid(Number(e.target.value))}
-                className="h-11 min-w-0 flex-1 rounded-xl border-2 border-border bg-white text-base font-semibold text-neutral-900 shadow-sm placeholder:text-neutral-400 focus-visible:border-primary"
+                className="min-h-11 min-w-0 flex-1 rounded-xl border-2 border-border bg-white text-base font-semibold text-neutral-900 shadow-sm placeholder:text-neutral-400 focus-visible:border-primary"
               />
               <Button
                 variant="secondary"
-                className="h-11 shrink-0 rounded-xl px-3 text-xs font-semibold transition-colors"
+                className="min-h-11 shrink-0 rounded-xl px-3 text-xs font-semibold transition-colors"
                 onClick={() => setBid((b: number) => b + 1000)}
               >
                 +฿1,000
               </Button>
               <Button
                 variant="secondary"
-                className="h-11 shrink-0 rounded-xl px-3 text-xs font-semibold transition-colors"
+                className="min-h-11 shrink-0 rounded-xl px-3 text-xs font-semibold transition-colors"
                 onClick={() => setBid((b: number) => b + 5000)}
               >
                 +฿5,000
@@ -423,7 +423,7 @@ export function AuctionShowcase({
               onConfirm={submit}
               trigger={
                 <Button
-                  className="h-11 w-full rounded-xl bg-gradient-ember px-6 font-semibold text-primary-foreground shadow-glow transition-opacity hover:opacity-90 sm:w-auto"
+                  className="min-h-11 w-full rounded-xl bg-gradient-ember px-6 font-semibold text-primary-foreground shadow-glow transition-opacity hover:opacity-90 sm:w-auto"
                   disabled={placeBid.isPending}
                 >
                   <Gavel className="h-4 w-4" />
