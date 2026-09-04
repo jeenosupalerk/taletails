@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   Store,
   Sun,
+  Trophy,
   User,
 } from "lucide-react";
 import type { ReactNode } from "react";
@@ -133,6 +134,11 @@ function ProfilePage() {
 
             {/* My Activities */}
             <MenuGroup title="กิจกรรมของฉัน">
+              <MenuItem
+                to="/wins"
+                icon={<Trophy className="h-5 w-5" />}
+                label="ของที่ประมูลชนะ"
+              />
               <MenuItem
                 to="/auctions"
                 icon={<Hammer className="h-5 w-5" />}

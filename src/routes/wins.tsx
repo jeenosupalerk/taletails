@@ -101,7 +101,7 @@ function WinsPage() {
               ยังไม่มีรายการที่ชนะการประมูล ลองเข้าร่วมประมูลรอบถัดไป
             </p>
             <Button asChild className="mt-4 h-11 rounded-xl px-5">
-              <Link to="/auctions">
+              <Link to="/auctions" search={{ id: undefined }}>
                 <Gavel className="h-4 w-4" />
                 ไปหน้าประมูล
               </Link>
@@ -166,7 +166,7 @@ function WinsPage() {
                         </Button>
                       ) : o.status === "cancelled" ? (
                         <Button asChild variant="secondary" className="h-11 rounded-xl px-5 text-sm">
-                          <Link to="/auctions">ประมูลรอบอื่น</Link>
+                          <Link to="/auctions" search={{ id: undefined }}>ประมูลรอบอื่น</Link>
                         </Button>
                       ) : (
                         <Button asChild variant="secondary" className="h-11 rounded-xl px-5 text-sm">
