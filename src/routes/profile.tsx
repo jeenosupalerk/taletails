@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 
+import { PushNotificationToggle } from "@/components/site/PushNotificationToggle";
 import { PageShell } from "@/components/site/PageShell";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -107,6 +108,8 @@ function ProfilePage() {
                 </Button>
               </div>
             </div>
+
+            <PushNotificationToggle />
 
             {isAdmin && (
               <MenuGroup title="สำหรับผู้ดูแลระบบ">
