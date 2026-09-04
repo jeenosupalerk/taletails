@@ -14,13 +14,11 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 export function ProductGridCard({ product }: { product: Product }) {
   const watchlist = useWatchlist();
   const wished = watchlist.has(product.id);
-  // Live Supabase listings (UUID ids) have their own detail page; demo rows use /product.
-  const isLive = UUID_RE.test(product.id);
 
   return (
     <article className="group surface-panel relative flex flex-col overflow-hidden transition-shadow duration-300 hover:shadow-card">
       <Link
-        to={isLive ? "/card/$id" : "/product/$id"}
+        to="/product/$id"
         params={{ id: product.id }}
         className="flex flex-1 flex-col"
         aria-label={product.cardName}
