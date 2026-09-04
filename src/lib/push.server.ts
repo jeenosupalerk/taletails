@@ -1,6 +1,7 @@
 import { buildPushPayload, type PushSubscription } from "@block65/webcrypto-web-push";
 
 export interface PushPayload {
+  [key: string]: string | null | undefined;
   title: string;
   body?: string | null;
   link?: string | null;
@@ -29,7 +30,11 @@ export async function sendPushToSubscription(
     subscription,
     keys,
   );
-  const res = await fetch(subscription.endpoint, built);
+  const res = await fetch(subscription.endpoint, {
+    method: built.method,
+    headers: built.headers as Record<string, string>,
+    body: built.body.slice().buffer as ArrayBuffer,
+  });
   return res.status;
 }
 
