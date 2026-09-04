@@ -131,28 +131,35 @@ export function useWinsRealtime(userId: string | null) {
 
   useEffect(() => {
     if (!userId) return;
-    // ชื่อช่องต้องไม่ซ้ำกันระหว่างคอมโพเนนต์ (หน้า /wins และ AuctionWinWatcher ใช้ hook นี้พร้อมกัน)
+    // ชื่อช่องต้องไม่ซ้ำกันระหว่างคอมโพเนนต์ (หน้า /wins, ตะกร้า และ AuctionWinWatcher ใช้ hook นี้พร้อมกัน)
     // ถ้าซ้ำ supabase จะคืนช่องเดิมที่ subscribe แล้ว และ .on() จะ throw จนหน้าพัง
-    const channel = supabase
-      .channel(`wins-${userId}-${Math.random().toString(36).slice(2)}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "orders", filter: `user_id=eq.${userId}` },
-        () => {
-          void queryClient.invalidateQueries({ queryKey: ["auction-wins"] });
-        },
-      )
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "users", filter: `id=eq.${userId}` },
-        () => {
-          void queryClient.invalidateQueries({ queryKey: ["auction-ban"] });
-        },
-      )
-      .subscribe();
+    // ห่อด้วย try/catch เพื่อให้ปัญหา Realtime ไม่ทำให้หน้าแสดงผลไม่ได้ (ยังมี polling สำรองอยู่)
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    try {
+      channel = supabase
+        .channel(`wins-${userId}-${Math.random().toString(36).slice(2)}`)
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "orders", filter: `user_id=eq.${userId}` },
+          () => {
+            void queryClient.invalidateQueries({ queryKey: ["auction-wins"] });
+          },
+        )
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "users", filter: `id=eq.${userId}` },
+          () => {
+            void queryClient.invalidateQueries({ queryKey: ["auction-ban"] });
+          },
+        )
+        .subscribe();
+    } catch (err) {
+      console.warn("[wins] realtime unavailable, falling back to polling", err);
+      channel = null;
+    }
 
     return () => {
-      void supabase.removeChannel(channel);
+      if (channel) void supabase.removeChannel(channel);
     };
   }, [userId, queryClient]);
 }
