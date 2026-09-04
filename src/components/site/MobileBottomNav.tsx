@@ -45,32 +45,45 @@ export function MobileBottomNav() {
               className="relative block min-w-0 shrink"
             >
               <motion.span
-                layout
-                transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                whileTap={{ scale: 0.92 }}
+                transition={{ type: "spring", stiffness: 600, damping: 28, mass: 0.6 }}
                 className={cn(
-                  "relative flex min-h-11 items-center justify-center gap-1.5 rounded-full px-2.5 sm:px-3 transition-colors",
-                  active
-                    ? "bg-gradient-ember text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground",
+                  "relative flex min-h-11 items-center justify-center gap-1.5 rounded-full px-2.5 sm:px-3",
+                  active ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                <Icon className="h-5 w-5 shrink-0" strokeWidth={active ? 2.4 : 2} />
-                <AnimatePresence initial={false}>
+                {/* Shared morphing pill — slides between tabs via layoutId */}
+                {active && (
+                  <motion.span
+                    layoutId="mobile-nav-pill"
+                    className="absolute inset-0 rounded-full bg-gradient-ember"
+                    transition={{ type: "spring", stiffness: 380, damping: 32, mass: 0.9 }}
+                  />
+                )}
+                <motion.span
+                  initial={false}
+                  animate={{ scale: active ? 1.08 : 1 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 26 }}
+                  className="relative z-10 flex items-center gap-1.5"
+                >
+                  <Icon className="h-5 w-5 shrink-0" strokeWidth={active ? 2.5 : 2} />
+                </motion.span>
+                <AnimatePresence initial={false} mode="popLayout">
                   {active && (
                     <motion.span
                       key="label"
-                      initial={{ opacity: 0, width: 0 }}
-                      animate={{ opacity: 1, width: "auto" }}
-                      exit={{ opacity: 0, width: 0 }}
-                      transition={{ duration: 0.18 }}
-                      className="max-w-[4.5rem] truncate overflow-hidden text-sm font-semibold"
+                      initial={{ opacity: 0, width: 0, scale: 0.6 }}
+                      animate={{ opacity: 1, width: "auto", scale: 1 }}
+                      exit={{ opacity: 0, width: 0, scale: 0.6 }}
+                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                      className="relative z-10 max-w-[4.5rem] truncate overflow-hidden text-sm font-semibold"
                     >
                       {item.label}
                     </motion.span>
                   )}
                 </AnimatePresence>
                 {showBadge && (
-                  <span className="absolute -top-0.5 right-0.5 grid min-w-4 place-items-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-none text-destructive-foreground shadow-sm">
+                  <span className="absolute -top-0.5 right-0.5 z-20 grid min-w-4 place-items-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-none text-destructive-foreground shadow-sm">
                     {unread > 9 ? "9+" : unread}
                   </span>
                 )}
