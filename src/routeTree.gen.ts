@@ -35,6 +35,7 @@ import { Route as NewsIdRouteImport } from './routes/news.$id'
 import { Route as OrderIdRouteImport } from './routes/order.$id'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
 import { Route as ApiPublicCronAuctionsRouteImport } from './routes/api/public/cron.auctions'
+import { Route as ApiPublicPushDispatchRouteImport } from './routes/api/public/push.dispatch'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -166,6 +167,11 @@ const ApiPublicCronAuctionsRoute = ApiPublicCronAuctionsRouteImport.update({
   path: '/api/public/cron/auctions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicPushDispatchRoute = ApiPublicPushDispatchRouteImport.update({
+  id: '/api/public/push/dispatch',
+  path: '/api/public/push/dispatch',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -194,6 +200,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/market/': typeof MarketIndexRoute
   '/api/public/cron/auctions': typeof ApiPublicCronAuctionsRoute
+  '/api/public/push/dispatch': typeof ApiPublicPushDispatchRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -220,6 +227,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/market': typeof MarketIndexRoute
   '/api/public/cron/auctions': typeof ApiPublicCronAuctionsRoute
+  '/api/public/push/dispatch': typeof ApiPublicPushDispatchRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -249,6 +257,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/market/': typeof MarketIndexRoute
   '/api/public/cron/auctions': typeof ApiPublicCronAuctionsRoute
+  '/api/public/push/dispatch': typeof ApiPublicPushDispatchRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -279,6 +288,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/market/'
     | '/api/public/cron/auctions'
+    | '/api/public/push/dispatch'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -305,6 +315,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/market'
     | '/api/public/cron/auctions'
+    | '/api/public/push/dispatch'
   id:
     | '__root__'
     | '/'
@@ -333,6 +344,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/market/'
     | '/api/public/cron/auctions'
+    | '/api/public/push/dispatch'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -354,6 +366,7 @@ export interface RootRouteChildren {
   OrderIdRoute: typeof OrderIdRoute
   ProductIdRoute: typeof ProductIdRoute
   ApiPublicCronAuctionsRoute: typeof ApiPublicCronAuctionsRoute
+  ApiPublicPushDispatchRoute: typeof ApiPublicPushDispatchRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -540,6 +553,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronAuctionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/push/dispatch': {
+      id: '/api/public/push/dispatch'
+      path: '/api/public/push/dispatch'
+      fullPath: '/api/public/push/dispatch'
+      preLoaderRoute: typeof ApiPublicPushDispatchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -613,6 +633,7 @@ const rootRouteChildren: RootRouteChildren = {
   OrderIdRoute: OrderIdRoute,
   ProductIdRoute: ProductIdRoute,
   ApiPublicCronAuctionsRoute: ApiPublicCronAuctionsRoute,
+  ApiPublicPushDispatchRoute: ApiPublicPushDispatchRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
