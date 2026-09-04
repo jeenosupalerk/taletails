@@ -778,6 +778,7 @@ function AuthPage() {
                       placeholder="••••••••"
                       required
                       disabled={isLoading}
+                      onChange={(e) => setPasswordValue(e.target.value)}
                       className="h-11 rounded-xl border-border bg-secondary/40 pl-10 pr-11"
                     />
                     <button
@@ -790,7 +791,9 @@ function AuthPage() {
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
+                  {mode === "register" && <PasswordStrength value={passwordValue} />}
                 </div>
+
 
                 {mode === "register" && (
                   <div className="space-y-1.5">
