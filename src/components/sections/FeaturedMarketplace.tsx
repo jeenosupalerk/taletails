@@ -9,7 +9,6 @@ import { thb } from "@/lib/cart";
 import { useWatchlist } from "@/lib/watchlist";
 import { SmartImage } from "@/components/ui/smart-image";
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export function ProductGridCard({ product }: { product: Product }) {
   const watchlist = useWatchlist();
