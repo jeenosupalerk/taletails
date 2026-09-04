@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/dialog";
 import { useAuctionBanStatus, useAuctionWins, useWinsRealtime } from "@/hooks/useAuctionWins";
 import { useAuthUserId } from "@/hooks/useCardDetail";
-import { supabase } from "@/integrations/supabase/client";
 import { processAuctions } from "@/lib/auctions.functions";
 import { thb } from "@/lib/cart";
 import { flushPendingPush } from "@/lib/push.functions";
