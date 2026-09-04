@@ -21,6 +21,7 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as VaultRouteImport } from './routes/vault'
+import { Route as WinsRouteImport } from './routes/wins'
 import { Route as WishlistRouteImport } from './routes/wishlist'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminMembersRouteImport } from './routes/admin.members'
@@ -95,6 +96,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const VaultRoute = VaultRouteImport.update({
   id: '/vault',
   path: '/vault',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WinsRoute = WinsRouteImport.update({
+  id: '/wins',
+  path: '/wins',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WishlistRoute = WishlistRouteImport.update({
@@ -186,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/shop': typeof ShopRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/vault': typeof VaultRoute
+  '/wins': typeof WinsRoute
   '/wishlist': typeof WishlistRoute
   '/admin/members': typeof AdminMembersRoute
   '/admin/news': typeof AdminNewsRoute
@@ -213,6 +220,7 @@ export interface FileRoutesByTo {
   '/shop': typeof ShopRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/vault': typeof VaultRoute
+  '/wins': typeof WinsRoute
   '/wishlist': typeof WishlistRoute
   '/admin/members': typeof AdminMembersRoute
   '/admin/news': typeof AdminNewsRoute
@@ -243,6 +251,7 @@ export interface FileRoutesById {
   '/shop': typeof ShopRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/vault': typeof VaultRoute
+  '/wins': typeof WinsRoute
   '/wishlist': typeof WishlistRoute
   '/admin/members': typeof AdminMembersRoute
   '/admin/news': typeof AdminNewsRoute
@@ -274,6 +283,7 @@ export interface FileRouteTypes {
     | '/shop'
     | '/sitemap.xml'
     | '/vault'
+    | '/wins'
     | '/wishlist'
     | '/admin/members'
     | '/admin/news'
@@ -301,6 +311,7 @@ export interface FileRouteTypes {
     | '/shop'
     | '/sitemap.xml'
     | '/vault'
+    | '/wins'
     | '/wishlist'
     | '/admin/members'
     | '/admin/news'
@@ -330,6 +341,7 @@ export interface FileRouteTypes {
     | '/shop'
     | '/sitemap.xml'
     | '/vault'
+    | '/wins'
     | '/wishlist'
     | '/admin/members'
     | '/admin/news'
@@ -360,6 +372,7 @@ export interface RootRouteChildren {
   ShopRoute: typeof ShopRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   VaultRoute: typeof VaultRoute
+  WinsRoute: typeof WinsRoute
   WishlistRoute: typeof WishlistRoute
   AuctionIdRoute: typeof AuctionIdRoute
   CardIdRoute: typeof CardIdRoute
@@ -453,6 +466,13 @@ declare module '@tanstack/react-router' {
       path: '/vault'
       fullPath: '/vault'
       preLoaderRoute: typeof VaultRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/wins': {
+      id: '/wins'
+      path: '/wins'
+      fullPath: '/wins'
+      preLoaderRoute: typeof WinsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/wishlist': {
@@ -627,6 +647,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShopRoute: ShopRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   VaultRoute: VaultRoute,
+  WinsRoute: WinsRoute,
   WishlistRoute: WishlistRoute,
   AuctionIdRoute: AuctionIdRoute,
   CardIdRoute: CardIdRoute,
