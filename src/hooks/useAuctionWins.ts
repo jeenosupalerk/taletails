@@ -205,7 +205,7 @@ export const penaltyLabel = (level: string) =>
 export interface WinTimelineEntry {
   at: string;
   label: string;
-  detail?: string;
+  detail?: string | undefined;
   tone: "muted" | "primary" | "success" | "danger";
 }
 
@@ -262,7 +262,7 @@ export function winTimeline(order: WonOrderRow, userId: string | null): WinTimel
   return items
     .filter((i) => Boolean(i.at))
     .sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime())
-    .map((i) => ({ ...i, detail: i.detail ?? undefined, at: i.at }));
+    ;
 }
 
 export const formatWinTime = fmt;
