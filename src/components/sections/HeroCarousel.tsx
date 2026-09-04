@@ -27,7 +27,7 @@ export function HeroCarousel() {
   return (
     <section className="relative mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
       <div className="relative overflow-hidden rounded-3xl border border-border shadow-card">
-        <div className="relative aspect-[16/11] sm:aspect-[16/7]">
+        <div className="relative min-h-[28rem] sm:aspect-[16/7] sm:min-h-0">
           {slides.map((slide, i) => (
             <div
               key={slide.id}
@@ -46,7 +46,7 @@ export function HeroCarousel() {
                 className="h-full w-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-fade" />
-              <div className="absolute inset-0 flex items-end">
+              <div className="absolute inset-0 flex items-end overflow-hidden">
                 <div className="w-full p-6 sm:p-10 lg:p-14">
                   <div className="flex items-center gap-2">
                     <img
