@@ -103,7 +103,9 @@ function WinsPage() {
               <p className="mt-1 text-muted-foreground">
                 {ban.data.isPermanent
                   ? "กรุณาติดต่อทีมงานหากต้องการอุทธรณ์"
-                  : `กลับมาประมูลได้อีกครั้ง ${new Date(ban.data.bannedUntil!).toLocaleString("th-TH")}`}
+                  : ban.data.bannedUntil
+                    ? `กลับมาประมูลได้อีกครั้ง ${new Date(ban.data.bannedUntil).toLocaleString("th-TH")}`
+                    : "กรุณาติดต่อทีมงานเพื่อตรวจสอบสถานะ"}
               </p>
             </div>
           </div>
