@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
+import { AuctionWinWatcher } from "@/components/site/AuctionWinWatcher";
 import { MobileBottomNav } from "@/components/site/MobileBottomNav";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/auth";
@@ -163,6 +164,8 @@ function RootComponent() {
               <Outlet />
             </div>
             <MobileBottomNav />
+            <AuctionWinWatcher />
+
 
             <Toaster position="top-right" richColors closeButton />
           </WatchlistProvider>
