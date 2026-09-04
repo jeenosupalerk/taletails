@@ -14,6 +14,7 @@ import { StatusDialog } from "@/components/ui/status-dialog";
 import { useAuth } from "@/lib/auth";
 import { registerWithPassword, requestEmailOtp, verifyEmailOtp } from "@/lib/auth-otp.functions";
 import { requestPasswordResetOtp, resetPasswordWithOtp } from "@/lib/auth-reset.functions";
+import { PasswordStrength } from "@/components/ui/password-strength";
 
 const SITE_URL = "https://taletails-test.lovable.app";
 const OG_IMAGE = `${SITE_URL}${taletailsLogo}`;
@@ -80,6 +81,7 @@ function AuthPage() {
   const submitReset = useServerFn(resetPasswordWithOtp);
   const [mode, setMode] = useState<"login" | "register">("login");
   const [showPassword, setShowPassword] = useState(false);
+  const [passwordValue, setPasswordValue] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<"google" | "facebook" | null>(null);
