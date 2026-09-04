@@ -29,6 +29,7 @@ export const Route = createFileRoute("/admin/members")({
 function AdminMembersPage() {
   const members = useAdminMembers();
   const ban = useToggleBan();
+  const clearBan = useClearAuctionBan();
   const roles = useSellerRoleMap();
   const toggleRole = useToggleRole();
   const [q, setQ] = useState("");
