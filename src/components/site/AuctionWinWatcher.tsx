@@ -15,9 +15,10 @@ import {
 } from "@/components/ui/dialog";
 import { useAuctionBanStatus, useAuctionWins, useWinsRealtime } from "@/hooks/useAuctionWins";
 import { useAuthUserId } from "@/hooks/useCardDetail";
-import { supabase } from "@/integrations/supabase/client";
+import { processAuctions } from "@/lib/auctions.functions";
 import { thb } from "@/lib/cart";
 import { flushPendingPush } from "@/lib/push.functions";
+
 
 const winsSeenKey = (userId: string) => `taletails-wins-reminder-${userId}`;
 const banSeenKey = (userId: string) => `taletails-ban-notice-${userId}`;
@@ -34,6 +35,8 @@ export function AuctionWinWatcher() {
   const wins = useAuctionWins();
   const ban = useAuctionBanStatus();
   const flushPush = useServerFn(flushPendingPush);
+  const runProcessAuctions = useServerFn(processAuctions);
+
   useWinsRealtime(userId);
 
   const [openWins, setOpenWins] = useState(false);
@@ -57,13 +60,20 @@ export function AuctionWinWatcher() {
   useEffect(() => {
     if (!userId) return;
     const sweep = () => {
-      void supabase.rpc("close_expired_auctions").then(() => undefined);
-      void supabase.rpc("expire_unpaid_orders").then(() => undefined);
+      void runProcessAuctions({})
+        .then((res) => {
+          if (res && (res.auctionsClosed > 0 || res.ordersExpired > 0)) {
+            void wins.refetch();
+          }
+        })
+        .catch(() => undefined);
     };
     sweep();
     const id = window.setInterval(sweep, 60_000);
     return () => window.clearInterval(id);
-  }, [userId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, runProcessAuctions]);
+
 
   // ป๊อบอัพเตือนชำระเงินครั้งแรกที่เข้าเว็บ
   useEffect(() => {
