@@ -16,8 +16,10 @@ import {
 import { useAuctionBanStatus, useAuctionWins, useWinsRealtime } from "@/hooks/useAuctionWins";
 import { useAuthUserId } from "@/hooks/useCardDetail";
 import { supabase } from "@/integrations/supabase/client";
+import { processAuctions } from "@/lib/auctions.functions";
 import { thb } from "@/lib/cart";
 import { flushPendingPush } from "@/lib/push.functions";
+
 
 const winsSeenKey = (userId: string) => `taletails-wins-reminder-${userId}`;
 const banSeenKey = (userId: string) => `taletails-ban-notice-${userId}`;
