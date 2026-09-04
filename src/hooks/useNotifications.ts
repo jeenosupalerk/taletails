@@ -16,6 +16,34 @@ export interface NotificationRow {
   created_at: string;
 }
 
+/**
+ * แสดงการแจ้งเตือนระดับระบบผ่าน service worker (เด้งบนหน้าจอมือถือ/เดสก์ท็อป
+ * แม้ผู้ใช้สลับแอปหรือไม่ได้เปิดหน้าเว็บค้างไว้) พร้อม fallback เป็น Notification ปกติ
+ */
+async function showSystemNotification(row: NotificationRow) {
+  if (typeof window === "undefined" || !("Notification" in window)) return;
+  if (Notification.permission !== "granted") return;
+  const options = {
+    body: row.body ?? "",
+    icon: "/icon-192.png",
+    badge: "/icon-192.png",
+    tag: row.id,
+    data: { link: row.link ?? "/" },
+  };
+  try {
+    if ("serviceWorker" in navigator) {
+      const reg = await navigator.serviceWorker.ready;
+      await reg.showNotification(row.title, options);
+      return;
+    }
+  } catch {
+    /* ตกไปใช้ fallback ด้านล่าง */
+  }
+  if (document.visibilityState !== "visible") {
+    new Notification(row.title, options);
+  }
+}
+
 /** Fetches the signed-in user's notifications, live-updated via Realtime. */
 export function useNotifications() {
   const userId = useAuthUserId();
