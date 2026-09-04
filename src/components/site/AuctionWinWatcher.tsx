@@ -34,6 +34,8 @@ export function AuctionWinWatcher() {
   const wins = useAuctionWins();
   const ban = useAuctionBanStatus();
   const flushPush = useServerFn(flushPendingPush);
+  const runProcessAuctions = useServerFn(processAuctions);
+
   useWinsRealtime(userId);
 
   const [openWins, setOpenWins] = useState(false);
