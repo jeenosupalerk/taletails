@@ -393,33 +393,33 @@ function AuthPage() {
 
 
   const socialButtons = (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="space-y-3">
       <Button
         type="button"
         variant="outline"
         onClick={() => void handleSocialLogin("google", "Google")}
         disabled={isLoading || socialLoading !== null}
-        className="h-11 gap-2 rounded-xl border-border bg-card text-foreground hover:bg-secondary/60 disabled:opacity-70"
+        className="h-11 w-full gap-3 rounded-2xl border border-border bg-card text-foreground shadow-sm transition-all hover:border-primary/40 hover:bg-secondary/50 hover:shadow-md disabled:opacity-60 disabled:hover:shadow-sm"
       >
         {socialLoading === "google" ? (
-          <Loader2 className="h-5 w-5 animate-spin" />
+          <Loader2 className="h-5 w-5 animate-spin text-primary" />
         ) : (
-          <GoogleIcon className="h-5 w-5" />
+          <GoogleIcon className="h-5 w-5 shrink-0" />
         )}
-        <span className="font-medium">Google</span>
+        <span className="font-semibold">ดำเนินการต่อด้วย Google</span>
       </Button>
       <Button
         type="button"
         onClick={() => void handleSocialLogin("facebook", "Facebook")}
         disabled={isLoading || socialLoading !== null}
-        className="h-11 gap-2 rounded-xl border-0 bg-[#1877F2] text-white hover:bg-[#166fe5] disabled:opacity-70"
+        className="h-11 w-full gap-3 rounded-2xl bg-[#1877F2] text-white shadow-sm transition-all hover:bg-[#166fe5] hover:shadow-md disabled:opacity-60 disabled:hover:shadow-sm"
       >
         {socialLoading === "facebook" ? (
           <Loader2 className="h-5 w-5 animate-spin" />
         ) : (
-          <FacebookIcon className="h-5 w-5" />
+          <FacebookIcon className="h-5 w-5 shrink-0" />
         )}
-        <span className="font-medium">Facebook</span>
+        <span className="font-semibold">ดำเนินการต่อด้วย Facebook</span>
       </Button>
     </div>
   );
