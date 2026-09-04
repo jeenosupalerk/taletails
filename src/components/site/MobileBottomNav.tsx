@@ -26,7 +26,7 @@ export function MobileBottomNav() {
       aria-label="เมนูหลักบนมือถือ"
       className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden"
     >
-      <div className="pointer-events-auto flex h-[52px] max-w-full items-center gap-1 overflow-hidden rounded-full border border-border/70 bg-card px-1.5 shadow-glow">
+      <div className="pointer-events-auto flex min-h-13 max-w-full flex-wrap justify-center items-center gap-1 overflow-hidden rounded-full border border-border/70 bg-card px-1.5 shadow-glow">
 
         {items.map((item) => {
           const active =
