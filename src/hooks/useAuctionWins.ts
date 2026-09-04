@@ -29,19 +29,23 @@ export function useAuctionWins() {
   return useQuery({
     queryKey: ["auction-wins", userId],
     enabled: Boolean(userId),
-    queryFn: async () => {
+    queryFn: async (): Promise<WonOrderRow[]> => {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id, auction_id, card_id, total_amount, status, payment_due_at, created_at, cards:card_id (id, name, set_name, grade, images)",
+          "id, auction_id, card_id, total_amount, status, payment_due_at, created_at, cards:cards!orders_card_id_fkey (id, name, set_name, grade, images)",
         )
         .eq("user_id", userId!)
         .not("auction_id", "is", null)
         .order("created_at", { ascending: false })
         .limit(60);
-      if (error) throw error;
+      if (error) {
+        if (isPermissionError(error)) return [];
+        throw error;
+      }
       return (data ?? []) as unknown as WonOrderRow[];
     },
+    retry: 1,
     staleTime: 5_000,
     refetchInterval: 10_000,
   });
