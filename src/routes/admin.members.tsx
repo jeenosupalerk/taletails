@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ChevronDown, Loader2, ShieldBan, ShieldCheck, Store, UserCog } from "lucide-react";
+import { ChevronDown, Gavel, Loader2, ShieldBan, ShieldCheck, Store, UserCog } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -12,9 +12,15 @@ import {
   useSellerRoleMap,
   useToggleBan,
   useToggleRole,
+  type AdminMemberRow,
   type ManagedRole,
 } from "@/hooks/useAdmin";
+import { useClearAuctionBan } from "@/hooks/useAuctionWins";
 import { thb } from "@/lib/cart";
+
+const isAuctionBanned = (m: AdminMemberRow) =>
+  Boolean(m.auction_ban_forever) ||
+  (!!m.auction_banned_until && new Date(m.auction_banned_until).getTime() > Date.now());
 
 export const Route = createFileRoute("/admin/members")({
   component: AdminMembersPage,
