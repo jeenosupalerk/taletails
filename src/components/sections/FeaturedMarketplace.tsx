@@ -9,18 +9,23 @@ import { thb } from "@/lib/cart";
 import { useWatchlist } from "@/lib/watchlist";
 import { SmartImage } from "@/components/ui/smart-image";
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export function ProductGridCard({ product }: { product: Product }) {
   const watchlist = useWatchlist();
   const wished = watchlist.has(product.id);
+  // Live Supabase listings (UUID ids) have their own detail page; demo rows use /product.
+  const isLive = UUID_RE.test(product.id);
 
   return (
     <article className="group surface-panel relative flex flex-col overflow-hidden transition-shadow duration-300 hover:shadow-card">
       <Link
-        to="/product/$id"
+        to={isLive ? "/card/$id" : "/product/$id"}
         params={{ id: product.id }}
         className="flex flex-1 flex-col"
         aria-label={product.cardName}
       >
+
         <div className="relative aspect-[3/4] overflow-hidden rounded-t-2xl border-b border-border bg-secondary/40">
           <SmartImage
             src={product.imageUrl}
