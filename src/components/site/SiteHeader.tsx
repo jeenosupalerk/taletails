@@ -28,8 +28,9 @@ export function SiteHeader() {
   const { isAdmin } = useIsAdmin();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/80 bg-header shadow-header dark:backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 border-b border-border/80 bg-header shadow-header md:top-4 md:mx-auto md:mt-4 md:w-[calc(100%-2rem)] md:max-w-7xl md:rounded-full md:border md:border-border/60 md:bg-card/85 md:shadow-[0_18px_50px_-24px_rgba(0,0,0,0.45)] md:backdrop-blur-xl dark:backdrop-blur-xl">
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 md:h-[68px] md:gap-3 md:px-3 lg:px-4">
+
         <Link to="/" className="flex shrink-0 items-center gap-2.5">
           <img src={taletailsLogo} alt="โลโก้ Taletails Collectibles — ตลาดและประมูลการ์ดสะสม" width={36} height={36} className="h-9 w-9 rounded-lg object-cover" />
           <span className="font-display text-lg font-bold tracking-tight">
