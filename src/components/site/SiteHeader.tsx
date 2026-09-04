@@ -84,8 +84,11 @@ export function SiteHeader() {
             )}
             <ThemeToggle />
             <WatchlistMenu />
-            <NotificationsMenu />
           </div>
+
+          {/* การแจ้งเตือน: แสดงทุกขนาดหน้าจอ (มุมขวาบนบนมือถือ) */}
+          <NotificationsMenu />
+
 
           <Button
             asChild
