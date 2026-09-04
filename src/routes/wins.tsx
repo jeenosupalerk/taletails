@@ -126,6 +126,15 @@ function WinsPage() {
               <Skeleton key={i} className="h-28 w-full rounded-2xl" />
             ))}
           </div>
+        ) : wins.isError ? (
+          <div className="rounded-3xl border border-dashed border-destructive/40 py-14 text-center">
+            <p className="text-sm text-muted-foreground">
+              โหลดรายการที่ชนะประมูลไม่สำเร็จ กรุณาลองอีกครั้ง
+            </p>
+            <Button className="mt-4 h-11 rounded-xl px-5" onClick={() => void wins.refetch()}>
+              ลองอีกครั้ง
+            </Button>
+          </div>
         ) : rows.length === 0 ? (
           <div className="rounded-3xl border border-dashed border-border py-16 text-center">
             <Trophy className="mx-auto h-8 w-8 text-muted-foreground" />
