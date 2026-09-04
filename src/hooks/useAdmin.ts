@@ -379,6 +379,9 @@ export interface AdminMemberRow {
   username: string | null;
   phone: string | null;
   is_banned: boolean;
+  auction_strikes: number;
+  auction_banned_until: string | null;
+  auction_ban_forever: boolean;
   created_at: string;
 }
 
@@ -388,7 +391,9 @@ export function useAdminMembers() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("users")
-        .select("id, email, username, phone, is_banned, created_at")
+        .select(
+          "id, email, username, phone, is_banned, auction_strikes, auction_banned_until, auction_ban_forever, created_at",
+        )
         .order("created_at", { ascending: false })
         .limit(200);
       if (error) throw error;
