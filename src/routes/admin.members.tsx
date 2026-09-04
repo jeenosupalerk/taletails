@@ -97,6 +97,18 @@ function AdminMembersPage() {
                     สมัคร {new Date(m.created_at).toLocaleDateString("th-TH")}
                     {m.phone ? ` • ${m.phone}` : ""}
                   </p>
+                  {(m.auction_strikes ?? 0) > 0 && (
+                    <p className="mt-0.5 text-[11px] text-muted-foreground">
+                      ผิดนัดชำระ {m.auction_strikes} ครั้ง
+                      {isAuctionBanned(m) && (
+                        <span className="ml-1.5 rounded-full bg-destructive/15 px-2 py-0.5 font-semibold text-destructive">
+                          {m.auction_ban_forever
+                            ? "ห้ามประมูลถาวร"
+                            : `ห้ามประมูลถึง ${new Date(m.auction_banned_until!).toLocaleString("th-TH")}`}
+                        </span>
+                      )}
+                    </p>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
@@ -110,6 +122,32 @@ function AdminMembersPage() {
                     className={`h-3.5 w-3.5 transition-transform ${openId === m.id ? "rotate-180" : ""}`}
                   />
                 </Button>
+
+                {(isAuctionBanned(m) || (m.auction_strikes ?? 0) > 0) && (
+                  <ConfirmDialog
+                    title="ยกเลิกการห้ามประมูล"
+                    description={`ยกเลิกการห้ามประมูลและล้างประวัติการผิดนัดชำระของ ${m.username ?? m.email ?? "สมาชิกนี้"} หรือไม่?`}
+                    confirmLabel="ยกเลิกการห้ามประมูล"
+                    disabled={clearBan.isPending}
+                    onConfirm={() =>
+                      clearBan.mutate(m.id, {
+                        onSuccess: () => toast.success("ยกเลิกการห้ามประมูลแล้ว"),
+                        onError: (e) => toast.error(e instanceof Error ? e.message : "ไม่สำเร็จ"),
+                      })
+                    }
+                    trigger={
+                      <Button
+                        variant="secondary"
+                        className="h-10 w-full justify-center rounded-xl px-3 text-xs sm:w-auto"
+                        disabled={clearBan.isPending}
+                      >
+                        <Gavel className="h-3.5 w-3.5" />
+                        ปลดห้ามประมูล
+                      </Button>
+                    }
+                  />
+                )}
+
 
                 <ConfirmDialog
                   title={roles.data?.[m.id]?.seller ? "ยกเลิกสิทธิ์ร้านค้า" : "อนุญาตให้เปิดร้าน"}
