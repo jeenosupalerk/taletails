@@ -45,9 +45,6 @@ export function ProductGridCard({ product }: { product: Product }) {
 
           <div className="mt-auto pt-4 pr-12">
             <p className="font-display text-base font-bold">{thb.format(product.price)}</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              ขายไปแล้ว {product.soldCount} ชิ้น
-            </p>
           </div>
         </div>
       </Link>
