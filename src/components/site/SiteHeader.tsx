@@ -122,7 +122,7 @@ export function SiteHeader() {
           ) : (
             <Button
               asChild
-              className="hidden h-10 rounded-xl bg-gradient-ember font-semibold text-primary-foreground shadow-glow hover:opacity-90 md:inline-flex"
+              className="hidden h-10 rounded-full bg-gradient-ember font-semibold text-primary-foreground shadow-glow hover:opacity-90 md:inline-flex"
             >
               <Link to="/auth">เข้าสู่ระบบ</Link>
             </Button>
