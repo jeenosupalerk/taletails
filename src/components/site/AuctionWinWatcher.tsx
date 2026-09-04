@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { useAuctionBanStatus, useAuctionWins, useWinsRealtime } from "@/hooks/useAuctionWins";
 import { useAuthUserId } from "@/hooks/useCardDetail";
+import { supabase } from "@/integrations/supabase/client";
 import { thb } from "@/lib/cart";
 import { flushPendingPush } from "@/lib/push.functions";
 
@@ -51,6 +52,18 @@ export function AuctionWinWatcher() {
     if (!userId) return;
     void flushPush({}).catch(() => undefined);
   }, [userId, pending.length, flushPush]);
+
+  // ปิดรอบที่หมดเวลาและยกเลิกรายการที่เลยกำหนดชำระ (สำรองกรณีไม่มีตัวตั้งเวลา)
+  useEffect(() => {
+    if (!userId) return;
+    const sweep = () => {
+      void supabase.rpc("close_expired_auctions").then(() => undefined);
+      void supabase.rpc("expire_unpaid_orders").then(() => undefined);
+    };
+    sweep();
+    const id = window.setInterval(sweep, 60_000);
+    return () => window.clearInterval(id);
+  }, [userId]);
 
   // ป๊อบอัพเตือนชำระเงินครั้งแรกที่เข้าเว็บ
   useEffect(() => {
