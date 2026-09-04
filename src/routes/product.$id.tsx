@@ -318,7 +318,7 @@ function ProductPage() {
       </div>
 
       {/* แถบซื้อด้านล่าง — บนมือถือยกขึ้นเหนือเมนูล่าง (MobileBottomNav) */}
-      <div className="fixed inset-x-0 bottom-[calc(64px+max(0.75rem,env(safe-area-inset-bottom)))] z-40 px-4 lg:bottom-0 lg:border-t lg:border-border lg:bg-background/95 lg:px-0 lg:backdrop-blur">
+      <div className="fixed inset-x-0 bottom-[calc(88px+max(1rem,env(safe-area-inset-bottom)))] z-40 px-4 lg:bottom-0 lg:border-t lg:border-border lg:bg-background/95 lg:px-0 lg:backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center gap-4 rounded-2xl border border-border/70 bg-card/95 px-4 py-3 shadow-glow backdrop-blur sm:px-6 lg:rounded-none lg:border-0 lg:bg-transparent lg:py-3 lg:shadow-none lg:backdrop-blur-none">
           <button
             type="button"
