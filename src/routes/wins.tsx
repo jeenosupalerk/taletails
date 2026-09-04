@@ -8,12 +8,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  formatWinTime,
   penaltyLabel,
   useAuctionBanStatus,
   useAuctionWins,
   useMyPenalties,
   useWinsRealtime,
+  winOutcome,
+  winTimeline,
 } from "@/hooks/useAuctionWins";
+
 import { useAuthUserId } from "@/hooks/useCardDetail";
 import { thb } from "@/lib/cart";
 
