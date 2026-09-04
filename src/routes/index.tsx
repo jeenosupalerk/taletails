@@ -4,7 +4,6 @@ import { ArticlesSection } from "@/components/sections/ArticlesSection";
 import { FeaturedMarketplace } from "@/components/sections/FeaturedMarketplace";
 import { HeroCarousel } from "@/components/sections/HeroCarousel";
 import { LiveAuctionSlider } from "@/components/sections/LiveAuctionSlider";
-import { TrustStrip } from "@/components/sections/TrustStrip";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 
@@ -53,7 +52,6 @@ function Index() {
         </h1>
         <HeroCarousel />
         <LiveAuctionSlider />
-        <TrustStrip />
         <FeaturedMarketplace />
         <ArticlesSection />
       </main>
