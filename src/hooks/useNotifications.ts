@@ -55,9 +55,11 @@ export function useNotifications() {
     enabled: Boolean(userId),
     refetchInterval: 30_000,
     queryFn: async () => {
+      // กรองเฉพาะของผู้ใช้ปัจจุบันเสมอ (กันกรณีบัญชีแอดมินเห็นของคนอื่นปนมา)
       const { data, error } = await supabase
         .from("notifications")
         .select("id, user_id, type, title, body, link, read_at, created_at")
+        .eq("user_id", userId!)
         .order("created_at", { ascending: false })
         .limit(30);
       if (error) throw error;
