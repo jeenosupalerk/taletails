@@ -1,5 +1,5 @@
-import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
-import { BadgeCheck, ChevronRight, Heart, ShoppingBag, Star } from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { BadgeCheck, ChevronRight, Heart, Loader2, ShoppingBag, Star } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -12,26 +12,26 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { getProductById, getRelatedProducts, type Product } from "@/data/products";
+import { useBuyNow } from "@/hooks/useCardDetail";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
+import { useLiveProduct, useMarketplaceCards } from "@/hooks/useSupabaseCatalog";
 import { thb, useCart } from "@/lib/cart";
+import { useWatchlist } from "@/lib/watchlist";
 import { SmartImage } from "@/components/ui/smart-image";
 
 const SITE_URL = "https://taletails-test.lovable.app";
 
 export const Route = createFileRoute("/product/$id")({
-  loader: ({ params }) => {
-    const product = getProductById(params.id);
-    if (!product) throw notFound();
-    return product;
-  },
+  loader: ({ params }) => getProductById(params.id) ?? null,
   head: ({ loaderData }) => {
     const title = loaderData
       ? `${loaderData.cardName} — ตลาดซื้อขาย Taletails`
       : "รายละเอียดการ์ด — Taletails";
     const description = loaderData
       ? `${loaderData.cardName} ชุด ${loaderData.setName} เกรด ${loaderData.grade} ราคา ${loaderData.price.toLocaleString("th-TH")} บาท จากร้าน ${loaderData.storeName}`
-      : "รายละเอียดการ์ดสะสมบน Taletails";
+      : "รายละเอียดการ์ดสะสมบน Taletails ดูสภาพ เกรด ใบรับรอง และราคาขายจริง";
     return {
       meta: [
         { title },
@@ -41,6 +41,7 @@ export const Route = createFileRoute("/product/$id")({
         { property: "og:type", content: "product" },
         { name: "twitter:card", content: "summary_large_image" },
       ],
+      links: [{ rel: "canonical", href: `${SITE_URL}/product` }],
     };
   },
   component: ProductPage,
@@ -50,7 +51,7 @@ function SpecRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-start justify-between gap-4 border-b border-border/70 py-2.5 last:border-0">
       <span className="text-sm text-muted-foreground">{label}</span>
-      <span className="text-right text-sm font-semibold">{value}</span>
+      <span className="text-right text-sm font-semibold break-words">{value}</span>
     </div>
   );
 }
@@ -69,13 +70,57 @@ function Stars({ rating }: { rating: number }) {
 }
 
 function ProductPage() {
-  const product = Route.useLoaderData() as Product;
-  const related = getRelatedProducts(product.id);
+  const { id } = Route.useParams();
+  const demo = Route.useLoaderData() as Product | null;
+
+  const liveQuery = useLiveProduct(id, !demo);
+  const live = liveQuery.data ?? null;
+  const product = demo ?? live?.product ?? null;
+  const isLive = !demo && Boolean(live);
+
+  const { data: liveCards } = useMarketplaceCards();
+  const related = demo
+    ? getRelatedProducts(demo.id)
+    : (liveCards ?? []).filter((c) => c.id !== id).slice(0, 4);
+
   const { add } = useCart();
   const requireAuth = useRequireAuth();
   const navigate = useNavigate();
+  const buyNow = useBuyNow();
+  const watchlist = useWatchlist();
   const [active, setActive] = useState(0);
-  const [wished, setWished] = useState(false);
+
+  if (!demo && liveQuery.isLoading) {
+    return (
+      <PageShell eyebrow="ตลาดซื้อขาย" title="กำลังโหลดรายละเอียด" description="โปรดรอสักครู่">
+        <div className="flex h-56 items-center justify-center text-muted-foreground">
+          <Loader2 className="h-5 w-5 animate-spin" />
+        </div>
+      </PageShell>
+    );
+  }
+
+  if (!product) {
+    return (
+      <PageShell
+        eyebrow="ตลาดซื้อขาย"
+        title="ไม่พบการ์ดใบนี้"
+        description="การ์ดอาจถูกขายหรือปิดการขายไปแล้ว"
+      >
+        <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
+          <Link
+            to="/marketplace"
+            className="inline-flex min-h-10 items-center rounded-full border border-border px-5 text-sm font-medium"
+          >
+            กลับไปตลาดซื้อขาย
+          </Link>
+        </div>
+      </PageShell>
+    );
+  }
+
+  const wished = watchlist.has(product.id);
+  const soldOut = isLive && live?.status !== "available";
 
   const addToCart = () => {
     if (!requireAuth("กรุณาเข้าสู่ระบบก่อนสั่งซื้อ")) return false;
@@ -89,9 +134,20 @@ function ProductPage() {
     return true;
   };
 
+  const buyLive = () => {
+    if (!requireAuth("กรุณาเข้าสู่ระบบก่อนสั่งซื้อ")) return;
+    buyNow.mutate(product.id, {
+      onSuccess: (order) => {
+        toast.success("จองการ์ดสำเร็จ กำลังไปหน้าชำระเงิน");
+        void navigate({ to: "/checkout/$id", params: { id: order.id } });
+      },
+      onError: (e) => toast.error(e.message),
+    });
+  };
+
   return (
     <PageShell
-      eyebrow={product.storeName}
+      eyebrow="ตลาดซื้อขาย"
       title={product.cardName}
       description={`${product.setName} • ${product.grade}`}
     >
@@ -107,37 +163,48 @@ function ProductPage() {
               className="object-cover object-center"
             />
           </div>
-          <div className="mt-4 flex gap-3 overflow-x-auto pb-1">
-            {product.images.map((img, i) => (
-              <button
-                key={img}
-                type="button"
-                onClick={() => setActive(i)}
-                aria-label={`ดูรูปที่ ${i + 1}`}
-                className={`relative h-20 w-16 shrink-0 overflow-hidden rounded-lg border-2 bg-secondary/40 transition-colors ${
-                  i === active ? "border-primary" : "border-border"
-                }`}
-              >
-                <SmartImage src={img} alt="" transformWidth={160} className="object-cover object-center" />
-              </button>
-            ))}
-          </div>
+          {product.images.length > 1 && (
+            <div className="mt-4 flex gap-3 overflow-x-auto pb-1">
+              {product.images.map((img, i) => (
+                <button
+                  key={img}
+                  type="button"
+                  onClick={() => setActive(i)}
+                  aria-label={`ดูรูปที่ ${i + 1}`}
+                  className={`relative h-20 w-16 shrink-0 overflow-hidden rounded-lg border-2 bg-secondary/40 transition-colors ${
+                    i === active ? "border-primary" : "border-border"
+                  }`}
+                >
+                  <SmartImage src={img} alt="" transformWidth={160} className="object-cover object-center" />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* ชื่อ + ราคา */}
         <div className="mt-6">
-          <h2 className="font-display text-xl font-bold sm:text-2xl">{product.cardName}</h2>
-          <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
-            {product.storeName}
-            {product.isVerified && <BadgeCheck className="h-4 w-4 text-accent" />}
-          </p>
-          <div className="mt-2 flex items-center gap-2 text-sm">
-            <Stars rating={product.rating} />
-            <span className="font-semibold">{product.rating.toFixed(1)}</span>
-            <span className="text-muted-foreground underline">
-              ({product.reviews.length} รีวิว)
-            </span>
+          <h2 className="font-display text-xl font-bold break-words sm:text-2xl">
+            {product.cardName}
+          </h2>
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+            <span>ขายไปแล้ว {product.soldCount} ชิ้น</span>
+            {product.isVerified && (
+              <span className="inline-flex items-center gap-1 text-accent">
+                <BadgeCheck className="h-4 w-4" />
+                ตรวจสอบแล้ว
+              </span>
+            )}
           </div>
+          {product.reviews.length > 0 && (
+            <div className="mt-2 flex items-center gap-2 text-sm">
+              <Stars rating={product.rating} />
+              <span className="font-semibold">{product.rating.toFixed(1)}</span>
+              <span className="text-muted-foreground underline">
+                ({product.reviews.length} รีวิว)
+              </span>
+            </div>
+          )}
 
           <div className="mt-4 grid grid-cols-3 divide-x divide-border rounded-xl border border-border bg-card">
             <div className="px-3 py-3">
@@ -151,10 +218,8 @@ function ProductPage() {
               </p>
             </div>
             <div className="px-3 py-3">
-              <p className="text-xs text-muted-foreground">ขายล่าสุด</p>
-              <p className="mt-1 font-display text-lg font-bold">
-                {thb.format(product.lastSalePrice)}
-              </p>
+              <p className="text-xs text-muted-foreground">ขายไปแล้ว</p>
+              <p className="mt-1 font-display text-lg font-bold">{product.soldCount} ชิ้น</p>
             </div>
           </div>
         </div>
@@ -174,39 +239,43 @@ function ProductPage() {
             <SpecRow label="Certification No." value={product.certificationNo} />
             <SpecRow label="สภาพ/ตำหนิ" value={product.conditionNote} />
           </div>
-          <div className="mt-3 rounded-xl bg-secondary/50 p-3">
-            <p className="text-xs font-semibold text-muted-foreground">รายละเอียดจากผู้ขาย</p>
-            <p className="mt-1 text-sm">{product.sellerNote}</p>
-          </div>
+          {product.sellerNote && (
+            <div className="mt-3 rounded-xl bg-secondary/50 p-3">
+              <p className="text-xs font-semibold text-muted-foreground">รายละเอียดจากผู้ขาย</p>
+              <p className="mt-1 text-sm break-words">{product.sellerNote}</p>
+            </div>
+          )}
         </section>
 
         {/* รีวิว */}
-        <section className="surface-panel mt-6 p-4">
-          <div className="flex items-center justify-between rounded-xl bg-secondary/50 px-4 py-3">
-            <div>
-              <p className="font-display text-2xl font-bold">{product.rating.toFixed(1)}</p>
-              <p className="text-xs text-muted-foreground">จาก 5 คะแนน</p>
+        {product.reviews.length > 0 && (
+          <section className="surface-panel mt-6 p-4">
+            <div className="flex items-center justify-between rounded-xl bg-secondary/50 px-4 py-3">
+              <div>
+                <p className="font-display text-2xl font-bold">{product.rating.toFixed(1)}</p>
+                <p className="text-xs text-muted-foreground">จาก 5 คะแนน</p>
+              </div>
+              <div className="text-right">
+                <Stars rating={product.rating} />
+                <p className="mt-1 text-xs text-muted-foreground underline">
+                  {product.reviews.length} รีวิว
+                </p>
+              </div>
             </div>
-            <div className="text-right">
-              <Stars rating={product.rating} />
-              <p className="mt-1 text-xs text-muted-foreground underline">
-                {product.reviews.length} รีวิว
-              </p>
-            </div>
-          </div>
-          <ul className="mt-4 space-y-4">
-            {product.reviews.map((review) => (
-              <li key={review.id} className="border-b border-border pb-4 last:border-0 last:pb-0">
-                <div className="flex items-center gap-2">
-                  <Stars rating={review.rating} />
-                  <span className="text-xs text-muted-foreground">{review.timeAgo}</span>
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground">{review.condition}</p>
-                <p className="mt-1 text-sm">{review.comment}</p>
-              </li>
-            ))}
-          </ul>
-        </section>
+            <ul className="mt-4 space-y-4">
+              {product.reviews.map((review) => (
+                <li key={review.id} className="border-b border-border pb-4 last:border-0 last:pb-0">
+                  <div className="flex items-center gap-2">
+                    <Stars rating={review.rating} />
+                    <span className="text-xs text-muted-foreground">{review.timeAgo}</span>
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">{review.condition}</p>
+                  <p className="mt-1 text-sm">{review.comment}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         {/* ข้อมูลเพิ่มเติม */}
         <Accordion type="multiple" className="surface-panel mt-6 px-4">
@@ -225,25 +294,27 @@ function ProductPage() {
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="sales">
-            <AccordionTrigger className="text-sm font-semibold">ประวัติการขายล่าสุด</AccordionTrigger>
+            <AccordionTrigger className="text-sm font-semibold">ประวัติการขาย</AccordionTrigger>
             <AccordionContent className="text-sm text-muted-foreground">
-              ขายไปแล้ว {product.soldCount} รายการ ราคาขายล่าสุด {thb.format(product.lastSalePrice)}
+              ขายไปแล้ว {product.soldCount} ชิ้น ราคาขายปัจจุบัน {thb.format(product.price)}
             </AccordionContent>
           </AccordionItem>
         </Accordion>
 
         {/* สินค้าที่คุณอาจจะชอบ */}
-        <section className="mt-10">
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="font-display text-lg font-bold">สินค้าที่คุณอาจจะชอบ</h3>
-            <ChevronRight className="h-5 w-5 text-muted-foreground" />
-          </div>
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            {related.map((item) => (
-              <ProductGridCard key={item.id} product={item} />
-            ))}
-          </div>
-        </section>
+        {related.length > 0 && (
+          <section className="mt-10">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="font-display text-lg font-bold">สินค้าที่คุณอาจจะชอบ</h3>
+              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+              {related.map((item) => (
+                <ProductGridCard key={item.id} product={item} />
+              ))}
+            </div>
+          </section>
+        )}
       </div>
 
       {/* แถบซื้อด้านล่าง — บนมือถือยกขึ้นเหนือเมนูล่าง (MobileBottomNav) */}
@@ -252,8 +323,18 @@ function ProductPage() {
           <button
             type="button"
             onClick={() => {
-              setWished((v) => !v);
-              if (!wished) toast.success("เพิ่มลงรายการที่อยากได้แล้ว");
+              const added = watchlist.toggle({
+                id: product.id,
+                name: product.cardName,
+                subtitle: product.setName,
+                imageUrl: product.imageUrl,
+                price: product.price,
+                kind: "product",
+              });
+              toast[added ? "success" : "info"](
+                added ? "เพิ่มลงรายการที่อยากได้แล้ว" : "นำออกจากรายการที่อยากได้แล้ว",
+                { description: product.cardName },
+              );
             }}
             className="flex min-h-11 shrink-0 flex-col items-center justify-center px-1 text-[10px] text-muted-foreground"
             aria-label="เพิ่มลงรายการที่อยากได้"
@@ -264,20 +345,40 @@ function ProductPage() {
           <Button
             variant="secondary"
             onClick={addToCart}
+            disabled={soldOut}
             className="min-h-11 flex-1 rounded-xl font-semibold"
           >
             <ShoppingBag className="h-4 w-4" />
             เพิ่มลงตะกร้า
           </Button>
-          <Button
-            onClick={() => {
-              if (!addToCart()) return;
-              navigate({ to: "/checkout" });
-            }}
-            className="min-h-11 flex-1 rounded-xl bg-gradient-ember font-semibold text-primary-foreground hover:opacity-90"
-          >
-            ซื้อเลย
-          </Button>
+          {isLive ? (
+            <ConfirmDialog
+              title="ยืนยันการซื้อการ์ด"
+              description={`ยืนยันซื้อ "${product.cardName}" ราคา ${thb.format(product.price)} ระบบจะล็อกการ์ดใบนี้ไว้ให้คุณและพาไปหน้าชำระเงิน`}
+              confirmLabel="ซื้อเลย"
+              disabled={buyNow.isPending || soldOut}
+              onConfirm={buyLive}
+              trigger={
+                <Button
+                  disabled={buyNow.isPending || soldOut}
+                  className="min-h-11 flex-1 rounded-xl bg-gradient-ember font-semibold text-primary-foreground hover:opacity-90"
+                >
+                  {buyNow.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {soldOut ? "ไม่พร้อมขาย" : "ซื้อเลย"}
+                </Button>
+              }
+            />
+          ) : (
+            <Button
+              onClick={() => {
+                if (!addToCart()) return;
+                navigate({ to: "/checkout" });
+              }}
+              className="min-h-11 flex-1 rounded-xl bg-gradient-ember font-semibold text-primary-foreground hover:opacity-90"
+            >
+              ซื้อเลย
+            </Button>
+          )}
         </div>
       </div>
     </PageShell>

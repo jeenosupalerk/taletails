@@ -9,18 +9,15 @@ import { thb } from "@/lib/cart";
 import { useWatchlist } from "@/lib/watchlist";
 import { SmartImage } from "@/components/ui/smart-image";
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export function ProductGridCard({ product }: { product: Product }) {
   const watchlist = useWatchlist();
   const wished = watchlist.has(product.id);
-  // Live Supabase listings (UUID ids) have their own detail page; demo rows use /product.
-  const isLive = UUID_RE.test(product.id);
 
   return (
     <article className="group surface-panel relative flex flex-col overflow-hidden transition-shadow duration-300 hover:shadow-card">
       <Link
-        to={isLive ? "/card/$id" : "/product/$id"}
+        to="/product/$id"
         params={{ id: product.id }}
         className="flex flex-1 flex-col"
         aria-label={product.cardName}
@@ -41,17 +38,16 @@ export function ProductGridCard({ product }: { product: Product }) {
         </div>
 
         <div className="flex flex-1 flex-col px-3 pt-1 pb-3">
-          <p className="flex items-center gap-1 text-sm font-semibold">
-            <span className="truncate">{product.storeName}</span>
-            {product.isVerified && <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-accent" />}
-          </p>
-          <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">
-            {product.cardName} — {product.setName}
+          <p className="flex items-start gap-1 text-sm font-semibold">
+            <span className="line-clamp-2 break-words">{product.cardName}</span>
+            {product.isVerified && <BadgeCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" />}
           </p>
 
-          <div className="mt-auto pt-4">
-            <p className="text-xs text-muted-foreground">เริ่มต้นที่</p>
+          <div className="mt-auto pt-4 pr-12">
             <p className="font-display text-base font-bold">{thb.format(product.price)}</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              ขายไปแล้ว {product.soldCount} ชิ้น
+            </p>
           </div>
         </div>
       </Link>
