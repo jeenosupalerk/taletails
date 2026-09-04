@@ -13,12 +13,21 @@ export interface WonOrderRow {
   status: "pending" | "paid" | "shipped" | "cancelled";
   payment_due_at: string;
   created_at: string;
+  updated_at: string | null;
+  paid_at: string | null;
+  shipped_at: string | null;
+  tracking_number: string | null;
   cards: {
     id: string;
     name: string;
     set_name: string | null;
     grade: string | null;
     images: string[];
+  } | null;
+  auctions: {
+    id: string;
+    status: string;
+    winner_id: string | null;
   } | null;
 }
 
@@ -33,7 +42,7 @@ export function useAuctionWins() {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id, auction_id, card_id, total_amount, status, payment_due_at, created_at, cards:cards!orders_card_id_fkey (id, name, set_name, grade, images)",
+          "id, auction_id, card_id, total_amount, status, payment_due_at, created_at, updated_at, paid_at, shipped_at, tracking_number, cards:cards!orders_card_id_fkey (id, name, set_name, grade, images), auctions:auctions!orders_auction_id_fkey (id, status, winner_id)",
         )
         .eq("user_id", userId!)
         .not("auction_id", "is", null)
@@ -45,6 +54,7 @@ export function useAuctionWins() {
       }
       return (data ?? []) as unknown as WonOrderRow[];
     },
+
     retry: 1,
     staleTime: 5_000,
     refetchInterval: 10_000,
@@ -191,3 +201,68 @@ export const penaltyLabel = (level: string) =>
     ban_1_month: "ห้ามประมูล 1 เดือน",
     ban_permanent: "ห้ามประมูลถาวร",
   })[level] ?? level;
+
+export interface WinTimelineEntry {
+  at: string;
+  label: string;
+  detail?: string | undefined;
+  tone: "muted" | "primary" | "success" | "danger";
+}
+
+export interface WinOutcome {
+  label: string;
+  className: string;
+}
+
+/** สรุปผลของแต่ละใบ: ชำระแล้ว / หมดเวลา / ถูกยกสิทธิ์ */
+export function winOutcome(order: WonOrderRow, userId: string | null): WinOutcome {
+  if (order.status === "paid") return { label: "ชำระแล้ว", className: "bg-emerald-500/15 text-emerald-600" };
+  if (order.status === "shipped") return { label: "ชำระแล้ว • จัดส่งแล้ว", className: "bg-sky-500/15 text-sky-600" };
+  if (order.status === "cancelled") {
+    const passed = Boolean(
+      order.auctions && userId && order.auctions.winner_id && order.auctions.winner_id !== userId,
+    );
+    return passed
+      ? { label: "ถูกยกสิทธิ์ให้ผู้เสนอราคาถัดไป", className: "bg-amber-500/15 text-amber-600" }
+      : { label: "หมดเวลาชำระเงิน", className: "bg-destructive/15 text-destructive" };
+  }
+  return { label: "รอชำระเงิน", className: "bg-primary/15 text-primary" };
+}
+
+const fmt = (iso: string) => new Date(iso).toLocaleString("th-TH");
+
+/** ประวัติการชำระเงินของคำสั่งซื้อที่ได้จากการประมูล (เรียงจากเก่าไปใหม่) */
+export function winTimeline(order: WonOrderRow, userId: string | null): WinTimelineEntry[] {
+  const items: WinTimelineEntry[] = [
+    { at: order.created_at, label: "ชนะการประมูล • ออกรายการชำระเงิน", tone: "primary" },
+    { at: order.payment_due_at, label: "กำหนดชำระเงินภายใน", tone: "muted" },
+  ];
+
+  if (order.paid_at) {
+    items.push({ at: order.paid_at, label: "ยืนยันการชำระเงินแล้ว", tone: "success" });
+  }
+  if (order.shipped_at) {
+    items.push({
+      at: order.shipped_at,
+      label: "จัดส่งพัสดุแล้ว",
+      detail: order.tracking_number ? `เลขพัสดุ ${order.tracking_number}` : undefined,
+      tone: "success",
+    });
+  }
+  if (order.status === "cancelled") {
+    const outcome = winOutcome(order, userId);
+    items.push({
+      at: order.updated_at ?? order.payment_due_at,
+      label: outcome.label,
+      detail: "ไม่พบการชำระเงินภายในเวลาที่กำหนด",
+      tone: "danger",
+    });
+  }
+
+  return items
+    .filter((i) => Boolean(i.at))
+    .sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime())
+    ;
+}
+
+export const formatWinTime = fmt;

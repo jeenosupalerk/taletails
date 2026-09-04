@@ -8,12 +8,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  formatWinTime,
   penaltyLabel,
   useAuctionBanStatus,
   useAuctionWins,
   useMyPenalties,
   useWinsRealtime,
+  winOutcome,
+  winTimeline,
 } from "@/hooks/useAuctionWins";
+
 import { useAuthUserId } from "@/hooks/useCardDetail";
 import { thb } from "@/lib/cart";
 
@@ -108,12 +112,8 @@ function WinsError({ error, reset }: ErrorComponentProps) {
   );
 }
 
-const statusMeta: Record<string, { label: string; className: string }> = {
-  pending: { label: "รอชำระเงิน", className: "bg-primary/15 text-primary" },
-  paid: { label: "ชำระเงินแล้ว", className: "bg-emerald-500/15 text-emerald-600" },
-  shipped: { label: "จัดส่งแล้ว", className: "bg-sky-500/15 text-sky-600" },
-  cancelled: { label: "ยกเลิก (ไม่ชำระตามเวลา)", className: "bg-destructive/15 text-destructive" },
-};
+
+
 
 function WinsPage() {
   const userId = useAuthUserId();
@@ -200,8 +200,9 @@ function WinsPage() {
 
             <ul className="space-y-3">
               {rows.map((o) => {
-                const meta = statusMeta[o.status] ?? statusMeta["pending"]!;
+                const outcome = winOutcome(o, userId);
                 const image = o.cards?.images?.[0] ?? "/taletails-logo.jpg";
+                const timeline = winTimeline(o, userId);
                 return (
                   <li
                     key={o.id}
@@ -216,8 +217,8 @@ function WinsPage() {
                       />
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <Badge className={`h-5 rounded-full px-2 text-[10px] ${meta.className}`}>
-                            {meta.label}
+                          <Badge className={`h-5 rounded-full px-2 text-[10px] ${outcome.className}`}>
+                            {outcome.label}
                           </Badge>
                           {o.status === "pending" && <PaymentCountdown dueAt={o.payment_due_at} />}
                         </div>
@@ -233,11 +234,41 @@ function WinsPage() {
                         </p>
                         {o.status === "pending" && (
                           <p className="mt-1 text-[11px] text-muted-foreground">
-                            ต้องชำระภายใน {new Date(o.payment_due_at).toLocaleString("th-TH")}
+                            ต้องชำระภายใน {formatWinTime(o.payment_due_at)}
                           </p>
                         )}
                       </div>
                     </div>
+
+                    <div className="mt-3 rounded-xl border border-border/70 bg-background/60 p-3">
+                      <p className="font-display text-xs font-semibold">ประวัติการชำระและสถานะ</p>
+                      <ol className="mt-2 space-y-2">
+                        {timeline.map((t, i) => (
+                          <li key={`${o.id}-${i}`} className="flex gap-2.5">
+                            <span
+                              className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
+                                t.tone === "success"
+                                  ? "bg-emerald-500"
+                                  : t.tone === "danger"
+                                    ? "bg-destructive"
+                                    : t.tone === "primary"
+                                      ? "bg-primary"
+                                      : "bg-muted-foreground/50"
+                              }`}
+                              aria-hidden="true"
+                            />
+                            <div className="min-w-0">
+                              <p className="text-xs font-medium">{t.label}</p>
+                              <p className="text-[11px] text-muted-foreground">
+                                {formatWinTime(t.at)}
+                                {t.detail ? ` • ${t.detail}` : ""}
+                              </p>
+                            </div>
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+
 
                     <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:justify-end">
                       {o.status === "pending" ? (
