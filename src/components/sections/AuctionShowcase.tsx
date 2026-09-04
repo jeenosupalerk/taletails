@@ -30,6 +30,7 @@ import { pad, useCountdown } from "@/hooks/useCountdown";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { thb } from "@/lib/cart";
 import { useWatchlist } from "@/lib/watchlist";
+import { SmartImage } from "@/components/ui/smart-image";
 
 export function AuctionShowcase({
   auction,
@@ -145,15 +146,16 @@ export function AuctionShowcase({
             <div className="relative flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-card">
               <div className="relative aspect-[3/4] w-full min-h-[320px] bg-gradient-vault lg:aspect-auto lg:min-h-0 lg:flex-1">
                 {gallery.map((src, i) => (
-                  <img
+                  <SmartImage
                     key={src + i}
                     src={src}
-                    alt={`${auction.cardName} เกรด ${auction.grade} รูปที่ ${i + 1}`}
-                    width={768}
-                    height={1024}
-                    className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${
+                    alt={i === shot ? `${auction.cardName} เกรด ${auction.grade} รูปที่ ${i + 1}` : ""}
+                    transformWidth={800}
+                    priority={i === 0}
+                    wrapperClassName={`absolute inset-0 transition-opacity duration-500 ${
                       i === shot ? "opacity-100" : "opacity-0"
                     }`}
+                    className="object-cover"
                   />
                 ))}
 
@@ -195,11 +197,11 @@ export function AuctionShowcase({
                           : "opacity-50 hover:opacity-80"
                       }`}
                     >
-                      <img
+                      <SmartImage
                         src={src}
                         alt=""
-                        className="h-full w-full object-cover"
-                        loading="lazy"
+                        transformWidth={96}
+                        className="object-cover"
                       />
                     </button>
                   ))}

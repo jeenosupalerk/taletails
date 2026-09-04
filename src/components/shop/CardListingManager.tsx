@@ -35,6 +35,7 @@ import {
   type NewCardInput,
 } from "@/hooks/useAdmin";
 import { thb } from "@/lib/cart";
+import { SmartImage } from "@/components/ui/smart-image";
 
 const EMPTY: NewCardInput = {
   name: "",
@@ -363,7 +364,7 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                 <div className="flex items-start gap-3">
                   <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-secondary">
                     {c.images?.[0] && (
-                      <img src={c.images[0]} alt={c.name} className="h-full w-full object-cover" />
+                      <SmartImage src={c.images[0]} alt={c.name} transformWidth={160} className="object-cover" />
                     )}
                   </div>
                   <div className="min-w-0 flex-1">

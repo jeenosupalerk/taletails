@@ -7,6 +7,7 @@ import { getFeaturedProducts, type Product } from "@/data/products";
 import { useMarketplaceCards } from "@/hooks/useSupabaseCatalog";
 import { thb } from "@/lib/cart";
 import { useWatchlist } from "@/lib/watchlist";
+import { SmartImage } from "@/components/ui/smart-image";
 
 export function ProductGridCard({ product }: { product: Product }) {
   const watchlist = useWatchlist();
@@ -21,13 +22,11 @@ export function ProductGridCard({ product }: { product: Product }) {
         aria-label={product.cardName}
       >
         <div className="relative aspect-[3/4] overflow-hidden rounded-t-2xl border-b border-border bg-secondary/40">
-          <img
+          <SmartImage
             src={product.imageUrl}
             alt={`${product.cardName} — ${product.setName}`}
-            width={768}
-            height={1024}
-            loading="lazy"
-            className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+            transformWidth={600}
+            className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
           />
           {product.soldCount > 0 && (
             <span className="absolute top-2 right-3 rounded-full bg-white px-2 py-0.5 text-[11px] font-semibold text-primary shadow-sm backdrop-blur">

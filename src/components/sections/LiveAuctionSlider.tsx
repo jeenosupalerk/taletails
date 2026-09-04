@@ -9,6 +9,7 @@ import { useLiveAuctions } from "@/hooks/useLiveAuctions";
 import { thb } from "@/lib/cart";
 import { pad, useCountdown } from "@/hooks/useCountdown";
 import { cn } from "@/lib/utils";
+import { SmartImage } from "@/components/ui/smart-image";
 
 
 function BigCountdown({ endTime }: { endTime: string }) {
@@ -71,13 +72,13 @@ export function LiveAuctionSlider() {
         <div className="mx-auto max-w-3xl overflow-hidden rounded-3xl border border-border bg-card shadow-card">
           <div className="grid gap-0 sm:grid-cols-[1fr_1.1fr]">
             <div className="relative aspect-[4/5] overflow-hidden bg-gradient-vault">
-              <img
+              <SmartImage
                 key={active.id}
                 src={active.imageUrl}
                 alt={active.cardName}
-                width={768}
-                height={1024}
-                className="h-full w-full object-cover"
+                transformWidth={800}
+                priority
+                className="object-cover"
               />
               <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-gradient-ember px-2.5 py-1 text-xs font-bold text-primary-foreground">
                 <Radio className="h-3.5 w-3.5" />

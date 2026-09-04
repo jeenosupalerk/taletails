@@ -20,6 +20,7 @@ import {
 
 import { useAuthUserId } from "@/hooks/useCardDetail";
 import { thb } from "@/lib/cart";
+import { SmartImage } from "@/components/ui/smart-image";
 
 const SITE_URL = "https://taletails-test.lovable.app";
 const title = "ของที่ประมูลชนะ | Taletails";
@@ -209,11 +210,12 @@ function WinsPage() {
                     className="rounded-2xl border border-border bg-card p-3.5 transition-colors hover:border-primary/30 sm:p-4"
                   >
                     <div className="flex gap-3.5">
-                      <img
+                      <SmartImage
                         src={image}
                         alt={o.cards?.name ?? "การ์ดที่ชนะประมูล"}
-                        loading="lazy"
-                        className="h-24 w-20 shrink-0 rounded-xl object-cover"
+                        transformWidth={200}
+                        wrapperClassName="h-24 w-20 shrink-0 rounded-xl"
+                        className="object-cover"
                       />
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">

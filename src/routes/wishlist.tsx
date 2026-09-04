@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { thb } from "@/lib/cart";
 import { useWatchlist } from "@/lib/watchlist";
+import { SmartImage } from "@/components/ui/smart-image";
 
 const SITE_URL = "https://taletails-test.lovable.app";
 const title = "รายการโปรดของฉัน | Taletails";
@@ -72,10 +73,12 @@ function WishlistPage() {
                   {...(item.kind === "auction" ? {} : { params: { id: item.id } })}
                   className="block"
                 >
-                  <img
+                  <SmartImage
                     src={item.imageUrl}
                     alt={item.name}
-                    className="aspect-[3/4] w-full object-cover"
+                    transformWidth={500}
+                    wrapperClassName="aspect-[3/4] w-full"
+                    className="object-cover"
                   />
                   <div className="p-3">
                     <p className="truncate text-sm font-semibold">{item.name}</p>

@@ -25,6 +25,7 @@ import { products } from "@/data/products";
 import { thb, useCart } from "@/lib/cart";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { StatusDialog } from "@/components/ui/status-dialog";
+import { SmartImage } from "@/components/ui/smart-image";
 
 const SITE_URL = "https://taletails-test.lovable.app";
 const title = "ชำระเงิน — Taletails";
@@ -151,12 +152,12 @@ function CheckoutPage() {
                   return (
                     <li key={line.id} className="space-y-3">
                       <div className="flex gap-3">
-                        <img
+                        <SmartImage
                           src={line.imageUrl}
                           alt={line.name}
-                          width={96}
-                          height={128}
-                          className="h-32 w-24 shrink-0 rounded-xl border border-border object-cover"
+                          transformWidth={240}
+                          wrapperClassName="h-32 w-24 shrink-0 rounded-xl border border-border"
+                          className="object-cover"
                         />
                         <div className="min-w-0 flex-1">
                           <p className="text-xs text-muted-foreground">

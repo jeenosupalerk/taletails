@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { thb } from "@/lib/cart";
 import { useWatchlist } from "@/lib/watchlist";
+import { SmartImage } from "@/components/ui/smart-image";
 
 export function WatchlistMenu() {
   const [open, setOpen] = useState(false);
@@ -42,12 +43,12 @@ export function WatchlistMenu() {
                   onClick={() => setOpen(false)}
                   className="flex min-w-0 flex-1 items-center gap-3"
                 >
-                  <img
+                  <SmartImage
                     src={item.imageUrl}
                     alt={item.name}
-                    width={40}
-                    height={53}
-                    className="h-13 w-10 shrink-0 rounded-md border border-border object-cover"
+                    transformWidth={120}
+                    wrapperClassName="h-13 w-10 shrink-0 rounded-md border border-border"
+                    className="object-cover"
                   />
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-semibold">{item.name}</span>

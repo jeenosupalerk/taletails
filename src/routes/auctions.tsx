@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { getLiveAuctions, type Auction } from "@/data/auctions";
 import { useLiveAuctions, type LiveAuction } from "@/hooks/useLiveAuctions";
 import { thb } from "@/lib/cart";
+import { SmartImage } from "@/components/ui/smart-image";
 
 const SITE_URL = "https://taletails-test.lovable.app";
 const OG_IMAGE = `${SITE_URL}/taletails-logo.jpg`;
@@ -133,13 +134,11 @@ function AuctionsPage() {
                 }`}
               >
                 <div className="relative aspect-[4/3] overflow-hidden bg-gradient-vault">
-                  <img
+                  <SmartImage
                     src={auction.imageUrl}
                     alt={`${auction.cardName} — ${auction.grade}`}
-                    width={768}
-                    height={1024}
-                    loading="lazy"
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    transformWidth={600}
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   <span className="absolute top-3 right-3 rounded-full border border-accent/40 bg-background/85 px-2.5 py-1 font-display text-[11px] font-bold text-accent">
                     {auction.grade}

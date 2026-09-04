@@ -13,6 +13,7 @@ import {
   type AdminOrderRow,
 } from "@/hooks/useAdmin";
 import { thb } from "@/lib/cart";
+import { SmartImage } from "@/components/ui/smart-image";
 
 export const Route = createFileRoute("/admin/orders")({
   component: AdminOrdersPage,
@@ -91,10 +92,11 @@ function AdminOrdersPage() {
               <div className="flex flex-wrap items-start gap-3 sm:gap-4">
                 <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-secondary">
                   {o.cards?.images?.[0] && (
-                    <img
+                    <SmartImage
                       src={o.cards.images[0]}
                       alt={o.cards.name}
-                      className="h-full w-full object-cover"
+                      transformWidth={160}
+                      className="object-cover"
                     />
                   )}
                 </div>

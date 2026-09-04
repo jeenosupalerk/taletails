@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuctionWins, useWinsRealtime } from "@/hooks/useAuctionWins";
 import { useAuthUserId } from "@/hooks/useCardDetail";
 import { thb } from "@/lib/cart";
+import { SmartImage } from "@/components/ui/smart-image";
 
 /**
  * รายการที่ชนะประมูลและยังรอชำระเงิน — แสดงในตะกร้า/หน้าชำระเงิน
@@ -61,11 +62,12 @@ export function WonAuctionsPanel({ className }: { className?: string }) {
           return (
             <li key={o.id} className="rounded-2xl border border-border bg-background/60 p-3">
               <div className="flex gap-3">
-                <img
+                <SmartImage
                   src={image}
                   alt={o.cards?.name ?? "การ์ดที่ชนะประมูล"}
-                  loading="lazy"
-                  className="h-20 w-16 shrink-0 rounded-xl border border-border object-cover"
+                  transformWidth={160}
+                  wrapperClassName="h-20 w-16 shrink-0 rounded-xl border border-border"
+                  className="object-cover"
                 />
                 <div className="min-w-0 flex-1">
                   <PaymentCountdown dueAt={o.payment_due_at} />
