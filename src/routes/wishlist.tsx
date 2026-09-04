@@ -43,7 +43,7 @@ function WishlistPage() {
             <p className="text-sm text-muted-foreground">
               ยังไม่มีรายการโปรด กดรูปหัวใจบนการ์ดที่สนใจเพื่อบันทึกไว้
             </p>
-            <Button asChild className="h-11 rounded-xl bg-gradient-ember font-semibold text-primary-foreground">
+            <Button asChild className="min-h-11 rounded-xl bg-gradient-ember font-semibold text-primary-foreground">
               <Link to="/marketplace">ไปที่ตลาดซื้อขาย</Link>
             </Button>
           </div>

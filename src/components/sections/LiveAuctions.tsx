@@ -63,7 +63,7 @@ function AuctionCard({ auction }: { auction: Auction }) {
 
         <Button
           asChild
-          className="mt-4 h-11 w-full rounded-xl bg-gradient-ember font-semibold text-primary-foreground shadow-glow hover:opacity-90"
+          className="mt-4 min-h-11 w-full rounded-xl bg-gradient-ember font-semibold text-primary-foreground shadow-glow hover:opacity-90"
         >
           <Link to="/auctions" search={{ id: auction.id }}>
             <Gavel className="h-4 w-4" />

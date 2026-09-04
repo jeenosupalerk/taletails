@@ -64,7 +64,7 @@ export function StatusDialog({
 
         <DialogFooter className="mt-2 flex-col gap-2 sm:flex-col">
           <Button
-            className="h-11 w-full rounded-xl font-semibold"
+            className="min-h-11 w-full rounded-xl font-semibold"
             onClick={() => {
               onOpenChange(false);
               onAction?.();
@@ -75,7 +75,7 @@ export function StatusDialog({
           {secondaryLabel ? (
             <Button
               variant="outline"
-              className="h-10 w-full rounded-xl"
+              className="min-h-10 w-full rounded-xl"
               onClick={() => {
                 onOpenChange(false);
                 onSecondary?.();

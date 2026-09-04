@@ -65,7 +65,7 @@ function ProfilePage() {
       <section className="mx-auto max-w-2xl px-4 py-6 pb-28 sm:px-6 lg:px-8">
         {!isAuthenticated || !user ? (
           <div className="surface-panel flex flex-col items-center gap-4 px-6 py-14 text-center">
-            <User className="h-10 w-10 text-primary" />
+            <User className="min-h-10 w-10 text-primary" />
             <div>
               <p className="font-semibold">ยังไม่ได้เข้าสู่ระบบ</p>
               <p className="text-sm text-muted-foreground">
@@ -74,7 +74,7 @@ function ProfilePage() {
             </div>
             <Button
               asChild
-              className="h-11 rounded-xl bg-gradient-ember font-semibold text-primary-foreground"
+              className="min-h-11 rounded-xl bg-gradient-ember font-semibold text-primary-foreground"
             >
               <Link to="/auth">เข้าสู่ระบบ / สมัครสมาชิก</Link>
             </Button>
@@ -103,7 +103,7 @@ function ProfilePage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-9 rounded-lg px-3 text-sm font-semibold text-primary hover:bg-primary/10"
+                  className="min-h-9 rounded-lg px-3 text-sm font-semibold text-primary hover:bg-primary/10"
                 >
                   ดูประวัติแต้ม
                 </Button>
@@ -195,7 +195,7 @@ function ProfilePage() {
               trigger={
                 <Button
                   variant="ghost"
-                  className="h-11 w-full justify-center gap-2 rounded-2xl text-sm font-semibold text-destructive hover:bg-destructive/10"
+                  className="min-h-11 w-full justify-center gap-2 rounded-2xl text-sm font-semibold text-destructive hover:bg-destructive/10"
                 >
                   <LogOut className="h-5 w-5" />
                   ออกจากระบบ
@@ -234,7 +234,7 @@ function MenuItem({
   return (
     <Link
       to={to}
-      className="flex h-11 items-center justify-between gap-3 rounded-xl px-3 transition-colors hover:bg-secondary/60"
+      className="flex min-h-11 items-center justify-between gap-3 rounded-xl px-3 transition-colors hover:bg-secondary/60"
     >
       <div className="flex items-center gap-3">
         <span className="text-muted-foreground">{icon}</span>
@@ -253,7 +253,7 @@ function ThemeRow() {
   const isDark = theme === "dark";
 
   return (
-    <div className="flex h-11 items-center justify-between gap-3 rounded-xl px-3">
+    <div className="flex min-h-11 items-center justify-between gap-3 rounded-xl px-3">
       <div className="flex items-center gap-3">
         <span className="text-muted-foreground">
           {isDark ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}

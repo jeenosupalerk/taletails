@@ -69,7 +69,7 @@ export function ProductGridCard({ product }: { product: Product }) {
             { description: product.cardName },
           );
         }}
-        className="absolute right-3 bottom-3 flex h-10 w-10 items-center justify-center rounded-full border border-border bg-white shadow-sm transition-colors hover:bg-secondary"
+        className="absolute right-3 bottom-3 flex min-h-10 w-10 items-center justify-center rounded-full border border-border bg-white shadow-sm transition-colors hover:bg-secondary"
       >
         <Heart className={`h-4 w-4 ${wished ? "fill-primary text-primary" : "text-muted-foreground"}`} />
       </button>

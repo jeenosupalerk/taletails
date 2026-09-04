@@ -95,7 +95,7 @@ export function CardGallery({
                       aria-label={`ดูรูปที่ ${i + 1}`}
                       aria-current={i === active ? "true" : undefined}
                       className={cn(
-                        "relative h-10 w-10 shrink-0 overflow-hidden rounded-xl transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
+                        "relative min-h-10 w-10 shrink-0 overflow-hidden rounded-xl transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
                         i === active
                           ? "opacity-100 ring-2 ring-white/90 shadow-[0_4px_14px_-4px_oklch(0.3_0.03_55/0.6)]"
                           : "opacity-50 hover:opacity-90 ring-1 ring-white/10",

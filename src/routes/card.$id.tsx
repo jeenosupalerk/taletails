@@ -147,7 +147,7 @@ function CardDetailPage() {
         </p>
         <Link
           to="/marketplace"
-          className="mt-6 inline-flex h-10 items-center rounded-full border border-border px-5 text-sm font-medium"
+          className="mt-6 inline-flex min-h-10 items-center rounded-full border border-border px-5 text-sm font-medium"
         >
           กลับไปตลาดซื้อขาย
         </Link>
@@ -309,11 +309,11 @@ function CardDetailPage() {
                         min={minNext}
                         step={Number(auction.bid_increment)}
                         onChange={(e) => setAmount(Number(e.target.value))}
-                        className="h-11 min-w-0 flex-1 rounded-xl text-base font-medium"
+                        className="min-h-11 min-w-0 flex-1 rounded-xl text-base font-medium"
                       />
                       <Button
                         variant="secondary"
-                        className="h-11 rounded-xl px-3 text-xs"
+                        className="min-h-11 rounded-xl px-3 text-xs"
                         onClick={() => setAmount((a) => a + Number(auction.bid_increment))}
                       >
                         +{thb.format(Number(auction.bid_increment))}
@@ -326,7 +326,7 @@ function CardDetailPage() {
                         onConfirm={submitBid}
                         trigger={
                           <Button
-                            className="h-11 w-full rounded-xl sm:w-auto"
+                            className="min-h-11 w-full rounded-xl sm:w-auto"
                             disabled={placeBid.isPending}
                           >
                             {placeBid.isPending ? (
@@ -341,7 +341,7 @@ function CardDetailPage() {
                     </div>
                   ) : (
                     <div className="mt-6 space-y-3">
-                      <Button disabled className="h-11 w-full rounded-xl">
+                      <Button disabled className="min-h-11 w-full rounded-xl">
                         <Lock className="h-4 w-4" />
                         ปิดประมูลแล้ว
                       </Button>
@@ -365,7 +365,7 @@ function CardDetailPage() {
                     onConfirm={submitBuyNow}
                     trigger={
                       <Button
-                        className="h-11 w-full rounded-xl"
+                        className="min-h-11 w-full rounded-xl"
                         disabled={buyNow.isPending || card.status !== "available"}
                       >
                         {buyNow.isPending ? (

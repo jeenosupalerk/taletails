@@ -112,7 +112,7 @@ export function AuctionWinWatcher() {
       <Dialog open={openWins && !!first} onOpenChange={setOpenWins}>
         <DialogContent className="max-w-sm rounded-2xl">
           <DialogHeader>
-            <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+            <span className="mx-auto flex min-h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 text-primary">
               <Trophy className="h-6 w-6" />
             </span>
             <DialogTitle className="text-center font-display text-base">
@@ -144,7 +144,7 @@ export function AuctionWinWatcher() {
 
           <DialogFooter className="gap-2 sm:flex-col">
             <Button
-              className="h-11 w-full rounded-xl text-sm font-semibold"
+              className="min-h-11 w-full rounded-xl text-sm font-semibold"
               onClick={() => {
                 setOpenWins(false);
                 if (first) void navigate({ to: "/checkout/$id", params: { id: first.id } });
@@ -154,7 +154,7 @@ export function AuctionWinWatcher() {
             </Button>
             <Button
               variant="secondary"
-              className="h-11 w-full rounded-xl text-sm"
+              className="min-h-11 w-full rounded-xl text-sm"
               onClick={() => {
                 setOpenWins(false);
                 void navigate({ to: "/wins" });
@@ -169,7 +169,7 @@ export function AuctionWinWatcher() {
       <Dialog open={openBan} onOpenChange={setOpenBan}>
         <DialogContent className="max-w-sm rounded-2xl">
           <DialogHeader>
-            <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-destructive/15 text-destructive">
+            <span className="mx-auto flex min-h-12 w-12 items-center justify-center rounded-2xl bg-destructive/15 text-destructive">
               <ShieldAlert className="h-6 w-6" />
             </span>
             <DialogTitle className="text-center font-display text-base">
@@ -187,7 +187,7 @@ export function AuctionWinWatcher() {
           </DialogHeader>
           <DialogFooter>
             <Button
-              className="h-11 w-full rounded-xl text-sm font-semibold"
+              className="min-h-11 w-full rounded-xl text-sm font-semibold"
               onClick={() => setOpenBan(false)}
             >
               รับทราบ

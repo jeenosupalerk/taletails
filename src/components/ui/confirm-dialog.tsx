@@ -51,10 +51,10 @@ export function ConfirmDialog({
           ) : null}
         </AlertDialogHeader>
         <AlertDialogFooter className="gap-2">
-          <AlertDialogCancel className="h-10 rounded-xl text-sm">{cancelLabel}</AlertDialogCancel>
+          <AlertDialogCancel className="min-h-10 rounded-xl text-sm">{cancelLabel}</AlertDialogCancel>
           <AlertDialogAction
             className={cn(
-              "h-10 rounded-xl text-sm",
+              "min-h-10 rounded-xl text-sm",
               tone === "destructive" &&
                 "bg-destructive text-destructive-foreground hover:bg-destructive/90",
             )}

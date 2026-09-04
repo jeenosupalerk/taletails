@@ -32,7 +32,7 @@ export function SiteHeader() {
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 md:h-[68px] md:gap-3 md:px-3 lg:px-4">
 
         <Link to="/" className="flex shrink-0 items-center gap-2.5 md:pl-2">
-          <img src={taletailsLogo} alt="โลโก้ Taletails Collectibles — ตลาดและประมูลการ์ดสะสม" width={36} height={36} className="h-9 w-9 rounded-lg object-cover" />
+          <img src={taletailsLogo} alt="โลโก้ Taletails Collectibles — ตลาดและประมูลการ์ดสะสม" width={36} height={36} className="min-h-9 w-9 rounded-lg object-cover" />
           <span className="font-display text-lg font-bold tracking-tight">
             Tale<span className="text-gradient-ember">tails</span>
           </span>
@@ -58,7 +58,7 @@ export function SiteHeader() {
             type="search"
             aria-label="ค้นหาการ์ด"
             placeholder="ค้นหาการ์ด ชุด หรือรหัสการ์ด…"
-            className="h-10 rounded-full border-border bg-white pl-9"
+            className="min-h-10 rounded-full border-border bg-white pl-9"
           />
         </div>
 
@@ -68,7 +68,7 @@ export function SiteHeader() {
             variant="ghost"
             size="icon"
             aria-label="ค้นหา"
-            className="h-11 w-11 md:hidden"
+            className="min-h-11 w-11 md:hidden"
             onClick={() => setOpen((v) => !v)}
           >
             {open ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
@@ -76,7 +76,7 @@ export function SiteHeader() {
 
           <div className="hidden items-center gap-1 md:flex">
             {isAdmin && (
-              <Button asChild variant="ghost" size="icon" aria-label="หลังบ้าน" className="h-11 w-11">
+              <Button asChild variant="ghost" size="icon" aria-label="หลังบ้าน" className="min-h-11 w-11">
                 <Link to="/admin">
                   <LayoutDashboard className="h-5 w-5" />
                 </Link>
@@ -95,7 +95,7 @@ export function SiteHeader() {
             variant="ghost"
             size="icon"
             aria-label="ตะกร้าสินค้า"
-            className="relative h-11 w-11"
+            className="relative min-h-11 w-11"
           >
             <Link to="/checkout">
               <ShoppingBag className="h-5 w-5" />
@@ -112,10 +112,10 @@ export function SiteHeader() {
               variant="ghost"
               size="icon"
               aria-label="บัญชีของฉัน"
-              className="hidden h-10 w-10 rounded-full md:inline-flex"
+              className="hidden min-h-10 w-10 rounded-full md:inline-flex"
             >
               <Link to="/profile">
-                <Avatar className="h-9 w-9">
+                <Avatar className="min-h-9 w-9">
                   <AvatarFallback className="bg-gradient-ember text-xs font-bold text-primary-foreground">
                     {initials(user.name)}
                   </AvatarFallback>
@@ -125,7 +125,7 @@ export function SiteHeader() {
           ) : (
             <Button
               asChild
-              className="hidden h-10 rounded-full bg-gradient-ember font-semibold text-primary-foreground shadow-glow hover:opacity-90 md:inline-flex"
+              className="hidden min-h-10 rounded-full bg-gradient-ember font-semibold text-primary-foreground shadow-glow hover:opacity-90 md:inline-flex"
             >
               <Link to="/auth">เข้าสู่ระบบ</Link>
             </Button>
@@ -142,7 +142,7 @@ export function SiteHeader() {
               type="search"
               aria-label="ค้นหาการ์ด"
               placeholder="ค้นหาการ์ด ชุด หรือรหัสการ์ด…"
-              className="h-11 rounded-full border-border bg-white pl-9"
+              className="min-h-11 rounded-full border-border bg-white pl-9"
             />
           </div>
         </div>

@@ -29,7 +29,7 @@ export function AuthDialog({ trigger }: { trigger: ReactNode }) {
               alt=""
               width={36}
               height={36}
-              className="h-9 w-9 rounded-xl object-cover"
+              className="min-h-9 w-9 rounded-xl object-cover"
             />
             <span className="font-display text-lg font-bold">
               Tale<span className="text-gradient-ember">tails</span>
@@ -56,7 +56,7 @@ export function AuthDialog({ trigger }: { trigger: ReactNode }) {
               type="email"
               required
               placeholder="you@example.com"
-              className="h-11 rounded-xl"
+              className="min-h-11 rounded-xl"
             />
           </div>
           <div className="space-y-1.5">
@@ -66,12 +66,12 @@ export function AuthDialog({ trigger }: { trigger: ReactNode }) {
               type="password"
               required
               placeholder="••••••••"
-              className="h-11 rounded-xl"
+              className="min-h-11 rounded-xl"
             />
           </div>
           <Button
             type="submit"
-            className="h-11 w-full rounded-xl bg-gradient-ember font-semibold text-primary-foreground shadow-glow hover:opacity-90"
+            className="min-h-11 w-full rounded-xl bg-gradient-ember font-semibold text-primary-foreground shadow-glow hover:opacity-90"
           >
             {mode === "login" ? "เข้าสู่ระบบ" : "สร้างบัญชี"}
           </Button>

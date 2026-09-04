@@ -108,7 +108,7 @@ export function LiveAuctionSlider() {
 
               <Button
                 asChild
-                className="h-11 w-full rounded-2xl bg-gradient-ember font-semibold text-primary-foreground shadow-glow hover:opacity-90"
+                className="min-h-11 w-full rounded-2xl bg-gradient-ember font-semibold text-primary-foreground shadow-glow hover:opacity-90"
               >
                 <Link to="/auctions" search={{ id: active.id }}>
                   <Gavel className="h-4 w-4" />
@@ -122,14 +122,14 @@ export function LiveAuctionSlider() {
         <button
           onClick={() => go(-1)}
           aria-label="รายการก่อนหน้า"
-          className="absolute top-1/2 left-0 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/90 shadow-card backdrop-blur transition-colors hover:bg-secondary lg:-left-4"
+          className="absolute top-1/2 left-0 flex min-h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/90 shadow-card backdrop-blur transition-colors hover:bg-secondary lg:-left-4"
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
         <button
           onClick={() => go(1)}
           aria-label="รายการถัดไป"
-          className="absolute top-1/2 right-0 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/90 shadow-card backdrop-blur transition-colors hover:bg-secondary lg:-right-4"
+          className="absolute top-1/2 right-0 flex min-h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/90 shadow-card backdrop-blur transition-colors hover:bg-secondary lg:-right-4"
         >
           <ChevronRight className="h-5 w-5" />
         </button>

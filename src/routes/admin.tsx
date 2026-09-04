@@ -82,7 +82,7 @@ function AdminLayout() {
             <p className="mt-2 text-sm text-muted-foreground">
               บัญชีนี้ยังไม่มีสิทธิ์ผู้ดูแลระบบ กรุณาเข้าสู่ระบบด้วยบัญชีแอดมิน
             </p>
-            <Button asChild className="mt-5 h-11 rounded-xl">
+            <Button asChild className="mt-5 min-h-11 rounded-xl">
               <Link to="/auth">เข้าสู่ระบบ</Link>
             </Button>
           </div>
@@ -107,7 +107,7 @@ function AdminLayout() {
                     >
                       <span
                         className={cn(
-                          "grid h-9 w-9 shrink-0 place-items-center rounded-xl",
+                          "grid min-h-9 w-9 shrink-0 place-items-center rounded-xl",
                           isActive ? "bg-primary-foreground/15" : "bg-secondary",
                         )}
                       >
@@ -143,7 +143,7 @@ function AdminLayout() {
                       key={t.to}
                       to={t.to}
                       className={cn(
-                        "flex h-11 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-medium transition-colors",
+                        "flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-medium transition-colors",
                         isActive
                           ? "border-transparent bg-primary text-primary-foreground shadow-sm"
                           : "border-border bg-card text-muted-foreground",

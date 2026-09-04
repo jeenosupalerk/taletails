@@ -126,7 +126,7 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
         <h2 className="font-display text-lg font-semibold">
           {scope === "shop" ? "สินค้าในร้านของฉัน" : "การ์ดในระบบ"}
         </h2>
-        <Button className="h-11 rounded-xl" onClick={() => setOpen((o) => !o)}>
+        <Button className="min-h-11 rounded-xl" onClick={() => setOpen((o) => !o)}>
           <Plus className="h-4 w-4" />
           ลงการ์ดใหม่
         </Button>
@@ -139,35 +139,35 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <Field label="ชื่อการ์ด *">
               <Input
-                className="h-11 rounded-xl"
+                className="min-h-11 rounded-xl"
                 value={form.name}
                 onChange={(e) => set("name", e.target.value)}
               />
             </Field>
             <Field label="ชุด / เซ็ต">
               <Input
-                className="h-11 rounded-xl"
+                className="min-h-11 rounded-xl"
                 value={form.setName}
                 onChange={(e) => set("setName", e.target.value)}
               />
             </Field>
             <Field label="เลขการ์ด">
               <Input
-                className="h-11 rounded-xl"
+                className="min-h-11 rounded-xl"
                 value={form.cardNo}
                 onChange={(e) => set("cardNo", e.target.value)}
               />
             </Field>
             <Field label="ภาษา">
               <Input
-                className="h-11 rounded-xl"
+                className="min-h-11 rounded-xl"
                 value={form.language}
                 onChange={(e) => set("language", e.target.value)}
               />
             </Field>
             <Field label="ความหายาก">
               <Input
-                className="h-11 rounded-xl"
+                className="min-h-11 rounded-xl"
                 value={form.rarity}
                 onChange={(e) => set("rarity", e.target.value)}
               />
@@ -175,14 +175,14 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
             <Field label="ปี">
               <Input
                 type="number"
-                className="h-11 rounded-xl"
+                className="min-h-11 rounded-xl"
                 value={form.year}
                 onChange={(e) => set("year", e.target.value)}
               />
             </Field>
             <Field label="สภาพ">
               <Input
-                className="h-11 rounded-xl"
+                className="min-h-11 rounded-xl"
                 placeholder="Near Mint"
                 value={form.condition}
                 onChange={(e) => set("condition", e.target.value)}
@@ -190,7 +190,7 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
             </Field>
             <Field label="เกรด">
               <Input
-                className="h-11 rounded-xl"
+                className="min-h-11 rounded-xl"
                 placeholder="PSA 10"
                 value={form.grade}
                 onChange={(e) => set("grade", e.target.value)}
@@ -198,14 +198,14 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
             </Field>
             <Field label="บริษัทเกรด">
               <Input
-                className="h-11 rounded-xl"
+                className="min-h-11 rounded-xl"
                 value={form.gradingCompany}
                 onChange={(e) => set("gradingCompany", e.target.value)}
               />
             </Field>
             <Field label="เลขใบรับรอง">
               <Input
-                className="h-11 rounded-xl"
+                className="min-h-11 rounded-xl"
                 value={form.certificationNo}
                 onChange={(e) => set("certificationNo", e.target.value)}
               />
@@ -225,7 +225,7 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
 
           <div className="mt-4">
             <Label className="text-xs font-medium text-muted-foreground">รูปการ์ด (หลายรูปได้)</Label>
-            <label className="mt-1.5 flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-dashed border-border px-4 text-sm text-muted-foreground transition-colors hover:bg-secondary/50">
+            <label className="mt-1.5 flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-dashed border-border px-4 text-sm text-muted-foreground transition-colors hover:bg-secondary/50">
               <ImagePlus className="h-4 w-4" />
               {form.files.length ? `เลือกแล้ว ${form.files.length} รูป` : "เลือกไฟล์รูปภาพ"}
               <input
@@ -244,7 +244,7 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                 value={form.saleType}
                 onValueChange={(v) => set("saleType", v as "auction" | "fixed_price")}
               >
-                <SelectTrigger className="h-11 rounded-xl">
+                <SelectTrigger className="min-h-11 rounded-xl">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -258,7 +258,7 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
               <Field label="ราคาขาย (บาท) *">
                 <Input
                   type="number"
-                  className="h-11 rounded-xl"
+                  className="min-h-11 rounded-xl"
                   value={form.price}
                   onChange={(e) => set("price", e.target.value)}
                 />
@@ -268,7 +268,7 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                 <Field label="ราคาเริ่มต้น (บาท)">
                   <Input
                     type="number"
-                    className="h-11 rounded-xl"
+                    className="min-h-11 rounded-xl"
                     value={form.startingPrice}
                     onChange={(e) => set("startingPrice", e.target.value)}
                   />
@@ -276,7 +276,7 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                 <Field label="ขั้นต่ำการเคาะ (บาท)">
                   <Input
                     type="number"
-                    className="h-11 rounded-xl"
+                    className="min-h-11 rounded-xl"
                     value={form.bidIncrement}
                     onChange={(e) => set("bidIncrement", e.target.value)}
                   />
@@ -284,7 +284,7 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                 <Field label="วันเวลาปิดประมูล *">
                   <Input
                     type="datetime-local"
-                    className="h-11 rounded-xl"
+                    className="min-h-11 rounded-xl"
                     value={form.endTime}
                     onChange={(e) => set("endTime", e.target.value)}
                   />
@@ -294,11 +294,11 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
           </div>
 
           <div className="mt-6 flex gap-2">
-            <Button className="h-11 rounded-xl" disabled={create.isPending} onClick={submit}>
+            <Button className="min-h-11 rounded-xl" disabled={create.isPending} onClick={submit}>
               {create.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               บันทึกการ์ด
             </Button>
-            <Button variant="ghost" className="h-11 rounded-xl" onClick={() => setOpen(false)}>
+            <Button variant="ghost" className="min-h-11 rounded-xl" onClick={() => setOpen(false)}>
               ยกเลิก
             </Button>
           </div>
@@ -322,8 +322,8 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                 <Skeleton className="h-4 w-16 shrink-0" />
               </div>
               <div className="mt-3 flex flex-wrap gap-2 border-t border-dashed border-border pt-3">
-                <Skeleton className="h-10 flex-1 rounded-xl" />
-                <Skeleton className="h-10 w-10 rounded-xl" />
+                <Skeleton className="min-h-10 flex-1 rounded-xl" />
+                <Skeleton className="min-h-10 w-10 rounded-xl" />
               </div>
             </li>
           ))}
@@ -339,7 +339,7 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
           <p className="max-w-sm text-sm text-muted-foreground">
             เริ่มต้นด้วยการลงการ์ดใบแรก เลือกได้ว่าจะขายราคาปกติหรือเปิดประมูล
           </p>
-          <Button className="h-11 rounded-xl" onClick={() => setOpen(true)}>
+          <Button className="min-h-11 rounded-xl" onClick={() => setOpen(true)}>
             <Plus className="h-4 w-4" />
             สร้างรายการใหม่
           </Button>
@@ -407,13 +407,13 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                           },
                         )
                       }
-                      className="h-10 w-full rounded-xl text-xs sm:w-auto sm:flex-1"
+                      className="min-h-10 w-full rounded-xl text-xs sm:w-auto sm:flex-1"
                     />
                   )}
                   <Button
                     asChild
                     variant="secondary"
-                    className="h-10 flex-1 rounded-xl px-3 text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:flex-none"
+                    className="min-h-10 flex-1 rounded-xl px-3 text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:flex-none"
                   >
                     <Link to="/card/$id" params={{ id: c.id }} data-action="view" title="ดูหน้าขาย (V)">
                       ดูหน้าขาย
@@ -439,7 +439,7 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                           aria-label="ลบการ์ด"
                           title="ลบการ์ด (Delete)"
                           data-action="delete"
-                          className="h-10 w-10 shrink-0 rounded-xl text-destructive focus-visible:ring-2 focus-visible:ring-destructive focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                          className="min-h-10 w-10 shrink-0 rounded-xl text-destructive focus-visible:ring-2 focus-visible:ring-destructive focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -456,7 +456,7 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
           <nav className="flex items-center justify-between gap-2" aria-label="แบ่งหน้ารายการสินค้า">
             <Button
               variant="secondary"
-              className="h-10 rounded-xl px-3 text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="min-h-10 rounded-xl px-3 text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               disabled={safePage === 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
             >
@@ -468,7 +468,7 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
             </span>
             <Button
               variant="secondary"
-              className="h-10 rounded-xl px-3 text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="min-h-10 rounded-xl px-3 text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               disabled={safePage === pageCount}
               onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
             >

@@ -86,7 +86,7 @@ export function WonAuctionsPanel({ className }: { className?: string }) {
               </div>
               <Button
                 asChild
-                className="mt-3 h-11 w-full rounded-xl text-sm font-semibold"
+                className="mt-3 min-h-11 w-full rounded-xl text-sm font-semibold"
                 disabled={expired}
               >
                 <Link to="/checkout/$id" params={{ id: o.id }}>

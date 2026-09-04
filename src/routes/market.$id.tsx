@@ -156,7 +156,7 @@ function MarketDetailPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex h-11 items-center gap-1 rounded-xl border border-border bg-card p-1">
+        <div className="flex min-h-11 items-center gap-1 rounded-xl border border-border bg-card p-1">
           <button
             type="button"
             onClick={() => setTab("chart")}
@@ -187,7 +187,7 @@ function MarketDetailPage() {
 
         {!hasData ? (
           <div className="surface-panel flex flex-col items-center gap-3 px-6 py-16 text-center">
-            <ChartLine className="h-10 w-10 text-muted-foreground/50" />
+            <ChartLine className="min-h-10 w-10 text-muted-foreground/50" />
             <p className="font-semibold">ยังไม่มีข้อมูลการซื้อขายสำหรับการ์ดใบนี้บนตลาดกลาง</p>
             <p className="text-sm text-muted-foreground">
               เมื่อมีธุรกรรมเกิดขึ้น ระบบจะแสดงกราฟและประวัติที่นี่
@@ -196,7 +196,7 @@ function MarketDetailPage() {
         ) : tab === "chart" ? (
           <div className="surface-panel p-4 sm:p-5">
             {/* Range filter */}
-            <div className="mb-4 flex h-10 items-center gap-1 self-start rounded-xl border border-border bg-background p-1 sm:inline-flex">
+            <div className="mb-4 flex min-h-10 items-center gap-1 self-start rounded-xl border border-border bg-background p-1 sm:inline-flex">
               {rangeLabels.map((r) => (
                 <button
                   key={r.key}

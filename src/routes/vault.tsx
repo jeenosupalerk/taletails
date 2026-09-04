@@ -79,7 +79,7 @@ function VaultPage() {
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map(({ icon: Icon, title: stepTitle, copy }) => (
             <div key={stepTitle} className="surface-panel p-5">
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/15 text-primary">
+              <span className="flex min-h-11 w-11 items-center justify-center rounded-xl bg-primary/15 text-primary">
                 <Icon className="h-5 w-5" />
               </span>
               <h2 className="mt-4 font-display text-base font-semibold">{stepTitle}</h2>

@@ -21,7 +21,7 @@ export function CheckoutStepper({ current }: { current: 1 | 2 | 3 }) {
             <div className="flex min-w-0 flex-1 flex-col items-center gap-1.5">
               <span
                 className={cn(
-                  "grid h-10 w-10 shrink-0 place-items-center rounded-full border transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+                  "grid min-h-10 w-10 shrink-0 place-items-center rounded-full border transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
                   done && "border-transparent bg-gradient-ember text-primary-foreground",
                   active &&
                     "border-primary/50 bg-primary/10 text-primary shadow-glow ring-4 ring-primary/10",

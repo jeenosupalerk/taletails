@@ -46,7 +46,7 @@ export function MobileBottomNav() {
                 layout
                 transition={{ type: "spring", stiffness: 420, damping: 34 }}
                 className={cn(
-                  "flex h-11 items-center justify-center gap-1.5 rounded-full px-3",
+                  "flex min-h-11 items-center justify-center gap-1.5 rounded-full px-3",
                   active ? "bg-gradient-ember text-primary-foreground" : "text-foreground",
                 )}
               >

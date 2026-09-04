@@ -401,7 +401,7 @@ function AuthPage() {
         variant="outline"
         onClick={() => void handleSocialLogin("google", "Google")}
         disabled={isLoading || socialLoading !== null}
-        className="h-11 w-full gap-3 rounded-2xl border border-border bg-card text-foreground shadow-sm transition-all hover:border-primary/40 hover:bg-secondary/50 hover:shadow-md disabled:opacity-60 disabled:hover:shadow-sm"
+        className="min-h-11 w-full gap-3 rounded-2xl border border-border bg-card text-foreground shadow-sm transition-all hover:border-primary/40 hover:bg-secondary/50 hover:shadow-md disabled:opacity-60 disabled:hover:shadow-sm"
       >
         {socialLoading === "google" ? (
           <Loader2 className="h-5 w-5 animate-spin text-primary" />
@@ -414,7 +414,7 @@ function AuthPage() {
         type="button"
         onClick={() => void handleSocialLogin("facebook", "Facebook")}
         disabled={isLoading || socialLoading !== null}
-        className="h-11 w-full gap-3 rounded-2xl bg-[#1877F2] text-white shadow-sm transition-all hover:bg-[#166fe5] hover:shadow-md disabled:opacity-60 disabled:hover:shadow-sm"
+        className="min-h-11 w-full gap-3 rounded-2xl bg-[#1877F2] text-white shadow-sm transition-all hover:bg-[#166fe5] hover:shadow-md disabled:opacity-60 disabled:hover:shadow-sm"
       >
         {socialLoading === "facebook" ? (
           <Loader2 className="h-5 w-5 animate-spin" />
@@ -435,7 +435,7 @@ function AuthPage() {
             type="button"
             onClick={goBack}
             aria-label="ย้อนกลับ"
-            className="absolute top-4 left-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-white/15 text-white shadow-sm backdrop-blur-sm transition-colors hover:bg-white/25"
+            className="absolute top-4 left-4 inline-flex min-h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-white/15 text-white shadow-sm backdrop-blur-sm transition-colors hover:bg-white/25"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
@@ -488,7 +488,7 @@ function AuthPage() {
                     value={forgotEmail}
                     onChange={(e) => setForgotEmail(e.target.value)}
                     disabled={isLoading}
-                    className="h-11 rounded-xl border-border bg-secondary/40 pl-10"
+                    className="min-h-11 rounded-xl border-border bg-secondary/40 pl-10"
                   />
                 </div>
               </div>
@@ -496,7 +496,7 @@ function AuthPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="h-11 w-full rounded-xl bg-gradient-ember font-semibold text-primary-foreground shadow-glow hover:opacity-90 disabled:opacity-70"
+                className="min-h-11 w-full rounded-xl bg-gradient-ember font-semibold text-primary-foreground shadow-glow hover:opacity-90 disabled:opacity-70"
               >
                 {isLoading ? (
                   <>
@@ -530,7 +530,7 @@ function AuthPage() {
                   value={forgotCode}
                   onChange={(e) => setForgotCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                   disabled={isLoading}
-                  className="h-11 rounded-xl border-border bg-secondary/40 text-center font-display text-lg tracking-[0.4em]"
+                  className="min-h-11 rounded-xl border-border bg-secondary/40 text-center font-display text-lg tracking-[0.4em]"
                 />
               </div>
 
@@ -548,7 +548,7 @@ function AuthPage() {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     disabled={isLoading}
-                    className="h-11 rounded-xl border-border bg-secondary/40 pr-10 pl-10"
+                    className="min-h-11 rounded-xl border-border bg-secondary/40 pr-10 pl-10"
                   />
                   <button
                     type="button"
@@ -575,7 +575,7 @@ function AuthPage() {
                     value={confirmNewPassword}
                     onChange={(e) => setConfirmNewPassword(e.target.value)}
                     disabled={isLoading}
-                    className="h-11 rounded-xl border-border bg-secondary/40 pr-10 pl-10"
+                    className="min-h-11 rounded-xl border-border bg-secondary/40 pr-10 pl-10"
                   />
                   <button
                     type="button"
@@ -592,7 +592,7 @@ function AuthPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="h-11 w-full rounded-xl bg-gradient-ember font-semibold text-primary-foreground shadow-glow hover:opacity-90 disabled:opacity-70"
+                className="min-h-11 w-full rounded-xl bg-gradient-ember font-semibold text-primary-foreground shadow-glow hover:opacity-90 disabled:opacity-70"
               >
                 {isLoading ? (
                   <>
@@ -632,7 +632,7 @@ function AuthPage() {
                     onKeyDown={(e) => {
                       if (e.key === "Backspace" && !otp[i] && i > 0) otpRefs.current[i - 1]?.focus();
                     }}
-                    className="h-11 w-11 rounded-xl border border-border bg-secondary/40 text-center font-display text-lg font-bold text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
+                    className="min-h-11 w-11 rounded-xl border border-border bg-secondary/40 text-center font-display text-lg font-bold text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
                   />
                 ))}
               </div>
@@ -640,7 +640,7 @@ function AuthPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="h-11 w-full rounded-xl bg-gradient-ember font-semibold text-primary-foreground shadow-glow hover:opacity-90 disabled:opacity-70"
+                className="min-h-11 w-full rounded-xl bg-gradient-ember font-semibold text-primary-foreground shadow-glow hover:opacity-90 disabled:opacity-70"
               >
                 {isLoading ? (
                   <>
@@ -706,7 +706,7 @@ function AuthPage() {
                           required
                           maxLength={60}
                           disabled={isLoading}
-                          className="h-11 rounded-xl border-border bg-secondary/40 pl-10"
+                          className="min-h-11 rounded-xl border-border bg-secondary/40 pl-10"
                         />
                       </div>
                     </div>
@@ -723,7 +723,7 @@ function AuthPage() {
                           required
                           maxLength={60}
                           disabled={isLoading}
-                          className="h-11 rounded-xl border-border bg-secondary/40 pl-10"
+                          className="min-h-11 rounded-xl border-border bg-secondary/40 pl-10"
                         />
                       </div>
                     </div>
@@ -742,7 +742,7 @@ function AuthPage() {
                           placeholder="08X-XXX-XXXX"
                           required
                           disabled={isLoading}
-                          className="h-11 rounded-xl border-border bg-secondary/40 pl-10"
+                          className="min-h-11 rounded-xl border-border bg-secondary/40 pl-10"
                         />
                       </div>
                     </div>
@@ -762,7 +762,7 @@ function AuthPage() {
                       required
                       maxLength={255}
                       disabled={isLoading}
-                      className="h-11 rounded-xl border-border bg-secondary/40 pl-10 pr-4"
+                      className="min-h-11 rounded-xl border-border bg-secondary/40 pl-10 pr-4"
                     />
                   </div>
                 </div>
@@ -781,7 +781,7 @@ function AuthPage() {
                       required
                       disabled={isLoading}
                       onChange={(e) => setPasswordValue(e.target.value)}
-                      className="h-11 rounded-xl border-border bg-secondary/40 pl-10 pr-11"
+                      className="min-h-11 rounded-xl border-border bg-secondary/40 pl-10 pr-11"
                     />
                     <button
                       type="button"
@@ -811,7 +811,7 @@ function AuthPage() {
                         placeholder="••••••••"
                         required
                         disabled={isLoading}
-                        className="h-11 rounded-xl border-border bg-secondary/40 pl-10 pr-11"
+                        className="min-h-11 rounded-xl border-border bg-secondary/40 pl-10 pr-11"
                       />
                       <button
                         type="button"
@@ -863,7 +863,7 @@ function AuthPage() {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="h-11 w-full rounded-xl bg-gradient-ember font-semibold text-primary-foreground shadow-glow hover:opacity-90 disabled:opacity-70"
+                  className="min-h-11 w-full rounded-xl bg-gradient-ember font-semibold text-primary-foreground shadow-glow hover:opacity-90 disabled:opacity-70"
                 >
                   {isLoading ? (
                     <>

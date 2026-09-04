@@ -53,14 +53,14 @@ export function HeroBanner() {
           <div className="mt-7 flex flex-wrap gap-3">
             <Button
               asChild
-              className="h-11 rounded-2xl bg-gradient-ember px-6 font-semibold text-primary-foreground shadow-glow hover:opacity-90"
+              className="min-h-11 rounded-2xl bg-gradient-ember px-6 font-semibold text-primary-foreground shadow-glow hover:opacity-90"
             >
               <Link to={slide.ctaLink as LinkTo}>{slide.ctaText}</Link>
             </Button>
             <Button
               asChild
               variant="secondary"
-              className="h-11 rounded-2xl border border-border bg-background/80 px-6 font-semibold backdrop-blur"
+              className="min-h-11 rounded-2xl border border-border bg-background/80 px-6 font-semibold backdrop-blur"
             >
               <Link to="/marketplace">ดูตลาดซื้อขาย</Link>
             </Button>
@@ -105,7 +105,7 @@ export function HeroBanner() {
 
           {/* pedestal */}
           <div className="relative -mt-6 h-16">
-            <div className="absolute inset-x-6 top-2 h-10 rounded-[50%] bg-foreground/15 blur-md" />
+            <div className="absolute inset-x-6 top-2 min-h-10 rounded-[50%] bg-foreground/15 blur-md" />
             <div className="absolute inset-x-10 top-0 h-8 rounded-[50%] border border-border/60 bg-gradient-ember opacity-80" />
           </div>
 
