@@ -278,9 +278,9 @@ function ProductPage() {
         )}
 
         {/* ข้อมูลเพิ่มเติม */}
-        <Accordion type="multiple" className="surface-panel mt-6 px-4">
+        <Accordion type="multiple" className="surface-panel mt-6 px-4 py-2">
           <AccordionItem value="authenticity">
-            <AccordionTrigger className="text-sm font-semibold">การตรวจสอบของแท้</AccordionTrigger>
+            <AccordionTrigger className="py-5 text-sm font-semibold">การตรวจสอบของแท้</AccordionTrigger>
             <AccordionContent className="text-sm text-muted-foreground">
               ทุกใบผ่านการตรวจสอบโดยทีม Taletails และยืนยันรหัสจาก {product.gradingCompany} ก่อนส่งถึงมือผู้ซื้อ
               รหัสรายการ: {product.cardIdCode}
