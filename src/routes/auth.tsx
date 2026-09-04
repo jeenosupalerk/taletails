@@ -82,6 +82,8 @@ function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [socialLoading, setSocialLoading] = useState<"google" | "facebook" | null>(null);
+
   const [rememberMe, setRememberMe] = useState(false);
   const [forgotStep, setForgotStep] = useState<null | "email" | "code">(null);
   const [forgotEmail, setForgotEmail] = useState("");
@@ -220,11 +222,29 @@ function AuthPage() {
     }
   };
 
-  const handleSocialLogin = (provider: string) => {
-    toast.info(`ยังไม่ได้เปิดใช้งาน ${provider}`, {
-      description: "กรุณาเปิดใช้งานผู้ให้บริการนี้ใน Supabase Auth ก่อน แล้วแจ้งให้เชื่อมต่อได้เลย",
-    });
+  const handleSocialLogin = async (provider: "google" | "facebook", label: string) => {
+    setSocialLoading(provider);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/`,
+          ...(provider === "google" ? { queryParams: { prompt: "select_account" } } : {}),
+        },
+      });
+      if (error) throw new Error(error.message);
+    } catch (error) {
+      setSocialLoading(null);
+      const message = errText(error);
+      const notEnabled = /provider is not enabled|unsupported provider/i.test(message);
+      toast.error(`เข้าสู่ระบบด้วย ${label} ไม่สำเร็จ`, {
+        description: notEnabled
+          ? `กรุณาเปิดใช้งาน ${label} ใน Supabase Dashboard → Authentication → Providers ก่อน`
+          : message,
+      });
+    }
   };
+
 
   const setOtpDigit = (index: number, value: string) => {
     const digit = value.replace(/\D/g, "").slice(-1);
@@ -362,20 +382,28 @@ function AuthPage() {
       <Button
         type="button"
         variant="outline"
-        onClick={() => handleSocialLogin("Google")}
-        disabled={isLoading}
+        onClick={() => void handleSocialLogin("google", "Google")}
+        disabled={isLoading || socialLoading !== null}
         className="h-11 gap-2 rounded-xl border-border bg-card text-foreground hover:bg-secondary/60 disabled:opacity-70"
       >
-        <GoogleIcon className="h-5 w-5" />
+        {socialLoading === "google" ? (
+          <Loader2 className="h-5 w-5 animate-spin" />
+        ) : (
+          <GoogleIcon className="h-5 w-5" />
+        )}
         <span className="font-medium">Google</span>
       </Button>
       <Button
         type="button"
-        onClick={() => handleSocialLogin("Facebook")}
-        disabled={isLoading}
+        onClick={() => void handleSocialLogin("facebook", "Facebook")}
+        disabled={isLoading || socialLoading !== null}
         className="h-11 gap-2 rounded-xl border-0 bg-[#1877F2] text-white hover:bg-[#166fe5] disabled:opacity-70"
       >
-        <FacebookIcon className="h-5 w-5" />
+        {socialLoading === "facebook" ? (
+          <Loader2 className="h-5 w-5 animate-spin" />
+        ) : (
+          <FacebookIcon className="h-5 w-5" />
+        )}
         <span className="font-medium">Facebook</span>
       </Button>
     </div>
