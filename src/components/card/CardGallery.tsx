@@ -2,6 +2,7 @@ import { Radio, Lock } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { cn } from "@/lib/utils";
+import { SmartImage } from "@/components/ui/smart-image";
 
 export interface CardGalleryProps {
   images: string[];
@@ -48,18 +49,21 @@ export function CardGallery({
           <div className="relative aspect-[4/5]">
             {/* Main image */}
             {images.map((src, i) => (
-              <img
+              <SmartImage
                 key={`${src}-${i}`}
                 src={src}
                 alt={i === active ? `${alt}` : ""}
                 aria-hidden={i !== active}
-                className={cn(
-                  "absolute inset-0 h-full w-full object-contain p-8 transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]",
+                transformWidth={900}
+                transformResize="contain"
+                priority={i === 0}
+                wrapperClassName={cn(
+                  "absolute inset-0 transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]",
                   i === active
-                    ? "opacity-100 blur-0 scale-100"
-                    : "opacity-0 blur-md scale-[1.03] pointer-events-none",
+                    ? "opacity-100 scale-100"
+                    : "opacity-0 scale-[1.03] pointer-events-none",
                 )}
-                loading={i === 0 ? "eager" : "lazy"}
+                className="object-contain p-8"
               />
             ))}
 
@@ -101,11 +105,11 @@ export function CardGallery({
                           : "opacity-50 hover:opacity-90 ring-1 ring-white/10",
                       )}
                     >
-                      <img
+                      <SmartImage
                         src={src}
                         alt=""
-                        className="h-full w-full object-cover"
-                        loading="lazy"
+                        transformWidth={96}
+                        className="object-cover"
                       />
                     </button>
                   ))}

@@ -5,6 +5,7 @@ import { CountdownBadge } from "@/components/site/CountdownBadge";
 import { SectionHeading } from "@/components/site/SectionHeading";
 import { Button } from "@/components/ui/button";
 import { getLiveAuctions, type Auction } from "@/data/auctions";
+import { SmartImage } from "@/components/ui/smart-image";
 
 const currency = new Intl.NumberFormat("th-TH", {
   style: "currency",
@@ -16,13 +17,11 @@ function AuctionCard({ auction }: { auction: Auction }) {
   return (
     <article className="group overflow-hidden rounded-3xl border border-border bg-card transition-transform duration-300 hover:-translate-y-1 hover:shadow-glow">
       <div className="relative aspect-[4/5] overflow-hidden bg-gradient-vault">
-        <img
+        <SmartImage
           src={auction.imageUrl}
           alt={`${auction.cardName} — ${auction.grade}`}
-          width={768}
-          height={1024}
-          loading="lazy"
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          transformWidth={600}
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
         <div className="absolute top-3 left-3 flex gap-2">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-ember px-2.5 py-1 text-xs font-bold text-primary-foreground">

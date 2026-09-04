@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { SectionHeading } from "@/components/site/SectionHeading";
 import { type Article } from "@/data/articles";
 import { usePublishedArticles } from "@/hooks/useArticles";
+import { SmartImage } from "@/components/ui/smart-image";
 
 const dateFormatter = new Intl.DateTimeFormat("th-TH", {
   day: "numeric",
@@ -15,13 +16,11 @@ function ArticleCard({ article }: { article: Article }) {
     <article className="group overflow-hidden rounded-3xl border border-border bg-card transition-transform duration-300 hover:-translate-y-1 hover:shadow-card">
       <Link to="/news/$id" params={{ id: article.id }} className="block">
       <div className="aspect-[16/10] overflow-hidden">
-        <img
+        <SmartImage
           src={article.thumbnailUrl}
           alt={article.title}
-          width={1024}
-          height={640}
-          loading="lazy"
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          transformWidth={800}
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
       </div>
       <div className="p-4">

@@ -6,6 +6,7 @@ import { PageShell } from "@/components/site/PageShell";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatThb, marketCards, marketSummary } from "@/data/market";
 import { cn } from "@/lib/utils";
+import { SmartImage } from "@/components/ui/smart-image";
 
 const SITE_URL = "https://taletails-test.lovable.app";
 const title = "สถิติตลาด — Taletails";
@@ -130,11 +131,12 @@ function MarketPage() {
                             params={{ id: card.id }}
                             className="flex items-center gap-3"
                           >
-                            <img
+                            <SmartImage
                               src={card.imageUrl}
                               alt={card.cardName}
-                              loading="lazy"
-                              className="min-h-12 w-9 rounded-md border border-border object-cover"
+                              transformWidth={120}
+                              wrapperClassName="min-h-12 w-9 shrink-0 rounded-md border border-border"
+                              className="object-cover"
                             />
                             <span className="min-w-0">
                               <span className="block truncate font-semibold group-hover:text-primary">
