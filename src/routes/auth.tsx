@@ -382,20 +382,28 @@ function AuthPage() {
       <Button
         type="button"
         variant="outline"
-        onClick={() => handleSocialLogin("Google")}
-        disabled={isLoading}
+        onClick={() => void handleSocialLogin("google", "Google")}
+        disabled={isLoading || socialLoading !== null}
         className="h-11 gap-2 rounded-xl border-border bg-card text-foreground hover:bg-secondary/60 disabled:opacity-70"
       >
-        <GoogleIcon className="h-5 w-5" />
+        {socialLoading === "google" ? (
+          <Loader2 className="h-5 w-5 animate-spin" />
+        ) : (
+          <GoogleIcon className="h-5 w-5" />
+        )}
         <span className="font-medium">Google</span>
       </Button>
       <Button
         type="button"
-        onClick={() => handleSocialLogin("Facebook")}
-        disabled={isLoading}
+        onClick={() => void handleSocialLogin("facebook", "Facebook")}
+        disabled={isLoading || socialLoading !== null}
         className="h-11 gap-2 rounded-xl border-0 bg-[#1877F2] text-white hover:bg-[#166fe5] disabled:opacity-70"
       >
-        <FacebookIcon className="h-5 w-5" />
+        {socialLoading === "facebook" ? (
+          <Loader2 className="h-5 w-5 animate-spin" />
+        ) : (
+          <FacebookIcon className="h-5 w-5" />
+        )}
         <span className="font-medium">Facebook</span>
       </Button>
     </div>
