@@ -38,8 +38,8 @@ export function AuctionShowcase({
 }: {
   auction: Auction;
   /** รหัสรอบประมูลจริงใน Supabase — ถ้ามี จะเคาะราคาลงฐานข้อมูลจริง */
-  auctionId?: string;
-  bidIncrement?: number;
+  auctionId?: string | undefined;
+  bidIncrement?: number | undefined;
 }) {
   const c = useCountdown(auction.endTime);
   const [shot, setShot] = useState(0);
