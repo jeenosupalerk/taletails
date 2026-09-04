@@ -26,7 +26,7 @@ export function MobileBottomNav() {
       aria-label="เมนูหลักบนมือถือ"
       className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden"
     >
-      <div className="pointer-events-auto flex min-h-13 max-w-full flex-nowrap items-center gap-1 overflow-hidden rounded-full border border-border/70 bg-card px-1.5 shadow-glow">
+      <div className="pointer-events-auto flex w-full max-w-md min-h-13 flex-nowrap items-center justify-between gap-0.5 overflow-hidden rounded-full border border-border/70 bg-card px-1.5 shadow-glow">
 
         {items.map((item) => {
           const active =
@@ -46,7 +46,7 @@ export function MobileBottomNav() {
                 layout
                 transition={{ type: "spring", stiffness: 420, damping: 34 }}
                 className={cn(
-                  "flex min-h-11 items-center justify-center gap-1.5 rounded-full px-2.5 sm:px-3",
+                  "flex min-h-11 items-center justify-center gap-1.5 rounded-full px-2 sm:px-3",
                   active ? "bg-gradient-ember text-primary-foreground" : "text-foreground",
                 )}
               >
@@ -59,7 +59,7 @@ export function MobileBottomNav() {
                       animate={{ opacity: 1, width: "auto" }}
                       exit={{ opacity: 0, width: 0 }}
                       transition={{ duration: 0.18 }}
-                      className="max-w-[6rem] truncate overflow-hidden text-sm font-semibold"
+                      className="max-w-[4.5rem] truncate overflow-hidden text-sm font-semibold"
                     >
                       {item.label}
                     </motion.span>
