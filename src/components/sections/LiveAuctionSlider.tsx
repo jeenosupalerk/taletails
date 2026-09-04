@@ -29,7 +29,7 @@ function BigCountdown({ endTime }: { endTime: string }) {
   return (
     <div className="rounded-2xl bg-gradient-ember p-3 text-primary-foreground shadow-glow">
       <p className="text-[11px] font-semibold tracking-wide opacity-90">⏱ เหลือเวลา</p>
-      <div className="mt-1 flex items-end gap-2 tabular-nums">
+      <div className="mt-1 flex flex-wrap items-end gap-x-2 gap-y-1 tabular-nums">
         {parts.map((p, i) => (
           <div key={p.l} className="flex items-end gap-2">
             {i > 0 && <span className="pb-1.5 font-display text-xl font-bold opacity-70">:</span>}
@@ -69,9 +69,9 @@ export function LiveAuctionSlider() {
       />
 
       <div className="relative">
-        <div className="mx-auto max-w-3xl overflow-hidden rounded-3xl border border-border bg-card shadow-card">
-          <div className="grid gap-0 sm:grid-cols-[1fr_1.1fr]">
-            <div className="relative aspect-[4/5] overflow-hidden bg-gradient-vault">
+        <div className="mx-auto w-full max-w-3xl overflow-hidden rounded-3xl border border-border bg-card shadow-card">
+          <div className="grid w-full min-w-0 gap-0 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+            <div className="relative aspect-[4/5] w-full min-w-0 overflow-hidden bg-gradient-vault">
               <SmartImage
                 key={active.id}
                 src={active.imageUrl}
@@ -89,7 +89,7 @@ export function LiveAuctionSlider() {
               </span>
             </div>
 
-            <div className="flex flex-col justify-center gap-4 p-5 sm:p-6">
+            <div className="flex min-w-0 flex-col justify-center gap-4 p-4 sm:p-6">
               <div className="min-w-0">
                 <h3 className="truncate font-display text-xl font-bold">{active.cardName}</h3>
                 <p className="truncate text-sm text-muted-foreground">{active.setName}</p>
