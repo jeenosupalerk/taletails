@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthUserId } from "@/hooks/useCardDetail";
 import { getLatestArticles, type Article } from "@/data/articles";
+import { isPermissionError } from "@/lib/query-guards";
 
 const TEN_YEARS = 60 * 60 * 24 * 365 * 10;
 
@@ -46,7 +47,10 @@ export function usePublishedArticles() {
         .eq("is_published", true)
         .order("published_at", { ascending: false })
         .limit(50);
-      if (error) throw error;
+      if (error) {
+        if (isPermissionError(error)) return [] as DbArticle[];
+        throw error;
+      }
       return (data ?? []) as DbArticle[];
     },
   });
