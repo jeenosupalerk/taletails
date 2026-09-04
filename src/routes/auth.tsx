@@ -220,11 +220,29 @@ function AuthPage() {
     }
   };
 
-  const handleSocialLogin = (provider: string) => {
-    toast.info(`ยังไม่ได้เปิดใช้งาน ${provider}`, {
-      description: "กรุณาเปิดใช้งานผู้ให้บริการนี้ใน Supabase Auth ก่อน แล้วแจ้งให้เชื่อมต่อได้เลย",
-    });
+  const handleSocialLogin = async (provider: "google" | "facebook", label: string) => {
+    setSocialLoading(provider);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/`,
+          queryParams: provider === "google" ? { prompt: "select_account" } : undefined,
+        },
+      });
+      if (error) throw new Error(error.message);
+    } catch (error) {
+      setSocialLoading(null);
+      const message = errText(error);
+      const notEnabled = /provider is not enabled|unsupported provider/i.test(message);
+      toast.error(`เข้าสู่ระบบด้วย ${label} ไม่สำเร็จ`, {
+        description: notEnabled
+          ? `กรุณาเปิดใช้งาน ${label} ใน Supabase Dashboard → Authentication → Providers ก่อน`
+          : message,
+      });
+    }
   };
+
 
   const setOtpDigit = (index: number, value: string) => {
     const digit = value.replace(/\D/g, "").slice(-1);
