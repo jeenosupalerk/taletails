@@ -146,7 +146,7 @@ function ProfilePage() {
                 suffix={<Badge className="h-5 min-w-5 rounded-full bg-destructive px-1.5 text-[10px] text-destructive-foreground">2</Badge>}
               />
               <MenuItem
-                to="/checkout"
+                to="/orders"
                 icon={<Package className="h-5 w-5" />}
                 label="คำสั่งซื้อของฉัน"
               />
