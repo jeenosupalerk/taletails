@@ -139,9 +139,9 @@ const CheckoutIndexRoute = CheckoutIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutIdRoute = CheckoutIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => CheckoutRoute,
+  id: '/checkout/$id',
+  path: '/checkout/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const MarketIndexRoute = MarketIndexRouteImport.update({
   id: '/',
@@ -375,6 +375,7 @@ export interface RootRouteChildren {
   WishlistRoute: typeof WishlistRoute
   AuctionIdRoute: typeof AuctionIdRoute
   CardIdRoute: typeof CardIdRoute
+  CheckoutIdRoute: typeof CheckoutIdRoute
   OrderIdRoute: typeof OrderIdRoute
   ProductIdRoute: typeof ProductIdRoute
   CheckoutIndexRoute: typeof CheckoutIndexRoute
@@ -526,10 +527,10 @@ declare module '@tanstack/react-router' {
     }
     '/checkout/$id': {
       id: '/checkout/$id'
-      path: '/$id'
+      path: '/checkout/$id'
       fullPath: '/checkout/$id'
       preLoaderRoute: typeof CheckoutIdRouteImport
-      parentRoute: typeof CheckoutRoute
+      parentRoute: typeof rootRouteImport
     }
     '/market/': {
       id: '/market/'
@@ -638,6 +639,7 @@ const rootRouteChildren: RootRouteChildren = {
   WishlistRoute: WishlistRoute,
   AuctionIdRoute: AuctionIdRoute,
   CardIdRoute: CardIdRoute,
+  CheckoutIdRoute: CheckoutIdRoute,
   OrderIdRoute: OrderIdRoute,
   ProductIdRoute: ProductIdRoute,
   CheckoutIndexRoute: CheckoutIndexRoute,
