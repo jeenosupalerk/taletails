@@ -12,7 +12,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+
 import { getProductById, getRelatedProducts, type Product } from "@/data/products";
 import { useBuyNow } from "@/hooks/useCardDetail";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
@@ -376,34 +376,14 @@ function ProductPage() {
             <ShoppingBag className="h-4 w-4" />
             เพิ่มลงตะกร้า
           </Button>
-          {isLive ? (
-            <ConfirmDialog
-              title="ยืนยันการซื้อการ์ด"
-              description={`ยืนยันซื้อ "${product.cardName}" ราคา ${thb.format(product.price)} ระบบจะล็อกการ์ดใบนี้ไว้ให้คุณและพาไปหน้าชำระเงิน`}
-              confirmLabel="ซื้อเลย"
-              disabled={buyNow.isPending || soldOut}
-              onConfirm={buyLive}
-              trigger={
-                <Button
-                  disabled={buyNow.isPending || soldOut}
-                  className="min-h-11 flex-1 rounded-xl bg-gradient-ember font-semibold text-primary-foreground hover:opacity-90"
-                >
-                  {buyNow.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {soldOut ? "ไม่พร้อมขาย" : "ซื้อเลย"}
-                </Button>
-              }
-            />
-          ) : (
-            <Button
-              onClick={() => {
-                if (!addToCart()) return;
-                navigate({ to: "/checkout" });
-              }}
-              className="min-h-11 flex-1 rounded-xl bg-gradient-ember font-semibold text-primary-foreground hover:opacity-90"
-            >
-              ซื้อเลย
-            </Button>
-          )}
+          <Button
+            onClick={buyLive}
+            disabled={buyNow.isPending || soldOut}
+            className="min-h-11 flex-1 rounded-xl bg-gradient-ember font-semibold text-primary-foreground hover:opacity-90"
+          >
+            {buyNow.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+            {soldOut ? "ไม่พร้อมขาย" : "ดำเนินการชำระเงิน"}
+          </Button>
         </div>
       </div>
     </PageShell>
