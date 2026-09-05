@@ -171,7 +171,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
       {
         userId,
         file,
-        method: "qr_promptpay",
+        method,
         shipping: { name: ship.name, phone: ship.phone, address: fullAddress },
       },
       {
@@ -370,13 +370,44 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                   </label>
                 </section>
 
-                {/* ชำระเงินด้วย QR */}
+                {/* เลือกวิธีชำระเงิน */}
                 <section className="space-y-4 rounded-3xl border border-border/70 bg-card p-4">
                   <h2 className="font-display text-sm tracking-[0.16em] uppercase">
-                    ชำระเงินด้วย QR PromptPay
+                    เลือกวิธีชำระเงิน
                   </h2>
 
-                  <PromptPayQR amount={total} reference={order.id.slice(0, 8).toUpperCase()} />
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setMethod("qr_promptpay")}
+                      className={cn(
+                        "flex min-h-[64px] flex-col items-center justify-center gap-1.5 rounded-2xl border px-3 py-2.5 text-sm font-medium transition-all",
+                        method === "qr_promptpay"
+                          ? "border-primary bg-primary/10 text-primary shadow-[0_14px_35px_-24px_hsl(var(--primary)/0.9)]"
+                          : "border-border/70 bg-secondary/25 text-muted-foreground hover:border-primary/40",
+                      )}
+                    >
+                      <QrCode className="h-5 w-5" />
+                      QR PromptPay
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMethod("slip")}
+                      className={cn(
+                        "flex min-h-[64px] flex-col items-center justify-center gap-1.5 rounded-2xl border px-3 py-2.5 text-sm font-medium transition-all",
+                        method === "slip"
+                          ? "border-primary bg-primary/10 text-primary shadow-[0_14px_35px_-24px_hsl(var(--primary)/0.9)]"
+                          : "border-border/70 bg-secondary/25 text-muted-foreground hover:border-primary/40",
+                      )}
+                    >
+                      <Landmark className="h-5 w-5" />
+                      โอนบัญชีธนาคาร
+                    </button>
+                  </div>
+
+                  {method === "qr_promptpay" && (
+                    <PromptPayQR amount={total} reference={order.id.slice(0, 8).toUpperCase()} />
+                  )}
 
                   <div className="space-y-2 rounded-2xl border border-border/70 bg-secondary/25 p-4 text-sm">
                     <Row label="ธนาคาร" value={bankAccount.bank} />
