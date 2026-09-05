@@ -27,7 +27,6 @@ import { pad, useCountdown } from "@/hooks/useCountdown";
 import { bankAccount } from "@/lib/bank";
 import { thb } from "@/lib/cart";
 import { cn } from "@/lib/utils";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { StatusDialog } from "@/components/ui/status-dialog";
 
 const STORAGE_KEY = "taletails.shipping";
@@ -108,8 +107,10 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
   const [ship, setShip] = useState<Shipping>(emptyShipping);
   const [remember, setRemember] = useState(true);
   const [method, setMethod] = useState<"qr_promptpay" | "slip">("qr_promptpay");
+  const [stage, setStage] = useState<"details" | "pay">("details");
   const [done, setDone] = useState(false);
   const [paidOpen, setPaidOpen] = useState(false);
+
 
   useEffect(() => {
     try {
@@ -144,6 +145,29 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
   );
 
   const total = Number(order?.total_amount ?? 0);
+
+  const goToPayment = () => {
+    if (!userId) {
+      toast.error("กรุณาเข้าสู่ระบบก่อนชำระเงิน");
+      void navigate({ to: "/auth" });
+      return;
+    }
+    if (!addressComplete) {
+      toast.error("กรุณากรอกข้อมูลที่อยู่จัดส่งให้ครบถ้วน");
+      return;
+    }
+    if (remember) {
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(ship));
+      } catch {
+        /* ignore */
+      }
+    }
+    setStage("pay");
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+
 
   const send = () => {
     if (!userId) {
@@ -228,7 +252,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
             )}
 
             <CheckoutStepper
-              current={done || order.status !== "pending" ? 3 : addressComplete ? 2 : 1}
+              current={done || order.status !== "pending" ? 3 : stage === "pay" ? 2 : 1}
             />
 
             {/* สรุปรายการสั่งซื้อ */}
@@ -300,7 +324,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                   ดูคำสั่งซื้อของฉัน
                 </Link>
               </section>
-            ) : (
+            ) : stage === "details" ? (
               <>
                 {/* ที่อยู่จัดส่ง */}
                 <section className="space-y-3 rounded-3xl border border-border/70 bg-card p-4">
@@ -404,6 +428,35 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                       โอนบัญชีธนาคาร
                     </button>
                   </div>
+                </section>
+
+                <Button
+                  onClick={goToPayment}
+                  className="h-12 w-full rounded-2xl bg-gradient-ember text-base font-semibold shadow-glow"
+                >
+                  <ShieldCheck className="h-4 w-4" />
+                  ยืนยันการชำระเงิน
+                </Button>
+                <p className="text-center text-[11px] text-muted-foreground">
+                  ขั้นต่อไปจะแสดง QR / เลขบัญชี สำหรับโอนเงินและแนบสลิป
+                </p>
+              </>
+            ) : (
+              <>
+                {/* ขั้นตอนชำระเงิน: QR / บัญชี + แนบสลิป */}
+                <section className="space-y-4 rounded-3xl border border-border/70 bg-card p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h2 className="font-display text-sm tracking-[0.16em] uppercase">
+                      {method === "qr_promptpay" ? "สแกน QR เพื่อชำระเงิน" : "โอนเข้าบัญชีธนาคาร"}
+                    </h2>
+                    <button
+                      type="button"
+                      onClick={() => setStage("details")}
+                      className="text-xs font-semibold text-primary"
+                    >
+                      แก้ไขข้อมูล
+                    </button>
+                  </div>
 
                   {method === "qr_promptpay" && (
                     <PromptPayQR amount={total} reference={order.id.slice(0, 8).toUpperCase()} />
@@ -413,6 +466,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                     <Row label="ธนาคาร" value={bankAccount.bank} />
                     <Row label="ชื่อบัญชี" value={bankAccount.name} />
                     <Row label="เลขที่บัญชี" value={bankAccount.number} mono />
+                    <Row label="ยอดที่ต้องโอน" value={thb.format(total)} />
                     <Button
                       type="button"
                       variant="outline"
@@ -470,31 +524,24 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                   </div>
                 </section>
 
-                <ConfirmDialog
-                  title="ยืนยันการชำระเงิน"
-                  description="ยืนยันการส่งหลักฐานการชำระเงินให้ทีมงานตรวจสอบหรือไม่?"
-                  confirmLabel="ส่งหลักฐาน"
+                <Button
+                  onClick={send}
+                  className="h-12 w-full rounded-2xl bg-gradient-ember text-base font-semibold shadow-glow"
                   disabled={submit.isPending}
-                  onConfirm={send}
-                  trigger={
-                    <Button
-                      className="h-12 w-full rounded-2xl bg-gradient-ember text-base font-semibold shadow-glow"
-                      disabled={submit.isPending}
-                    >
-                      {submit.isPending ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <ShieldCheck className="h-4 w-4" />
-                      )}
-                      ยืนยันการชำระเงิน
-                    </Button>
-                  }
-                />
+                >
+                  {submit.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <ShieldCheck className="h-4 w-4" />
+                  )}
+                  ยืนยันการชำระเงินสำเร็จ
+                </Button>
                 <p className="text-center text-[11px] text-muted-foreground">
-                  ข้อมูลของคุณถูกเข้ารหัส และสลิปจะถูกเก็บเป็นความลับ
+                  สลิปของคุณจะถูกส่งให้ทีมงานตรวจสอบในระบบหลังบ้าน
                 </p>
               </>
             )}
+
           </>
         )}
       </main>
