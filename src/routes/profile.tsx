@@ -14,6 +14,7 @@ import {
   Store,
   Sun,
   Trophy,
+  Truck,
   User,
 } from "lucide-react";
 import type { ReactNode } from "react";
@@ -149,6 +150,11 @@ function ProfilePage() {
                 to="/orders"
                 icon={<Package className="h-5 w-5" />}
                 label="คำสั่งซื้อของฉัน"
+              />
+              <MenuItem
+                to="/purchases"
+                icon={<Truck className="h-5 w-5" />}
+                label="สถานะการซื้อสินค้า"
               />
               <MenuItem
                 to="/wishlist"
