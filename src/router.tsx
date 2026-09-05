@@ -9,16 +9,18 @@ import { routeTree } from "./routeTree.gen";
 function installChunkReloadGuard() {
   if (typeof window === "undefined") return;
   const KEY = "tt-chunk-reload";
+  const MAX_RETRIES = 3;
   const looksLikeChunkError = (message?: string) =>
     !!message &&
-    /Importing a module script failed|Failed to fetch dynamically imported module|error loading dynamically imported module|ChunkLoadError/i.test(
+    /Importing a module script failed|Failed to fetch dynamically imported module|error loading dynamically imported module|ChunkLoadError|Failed to load module script|dynamically imported module/i.test(
       message,
     );
 
   const recover = (message?: string) => {
     if (!looksLikeChunkError(message)) return;
-    if (sessionStorage.getItem(KEY)) return;
-    sessionStorage.setItem(KEY, "1");
+    const tries = Number(sessionStorage.getItem(KEY) ?? "0");
+    if (tries >= MAX_RETRIES) return;
+    sessionStorage.setItem(KEY, String(tries + 1));
     window.location.reload();
   };
 
@@ -28,7 +30,11 @@ function installChunkReloadGuard() {
     const reason = e.reason as { message?: string } | string | undefined;
     recover(typeof reason === "string" ? reason : reason?.message);
   });
-  window.addEventListener("load", () => sessionStorage.removeItem(KEY));
+  // เคลียร์ตัวนับเมื่อหน้าโหลดสำเร็จและอยู่ได้เกิน 5 วินาที
+  window.addEventListener("load", () => {
+    window.setTimeout(() => sessionStorage.removeItem(KEY), 5_000);
+  });
+
 }
 
 installChunkReloadGuard();
