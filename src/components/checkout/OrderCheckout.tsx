@@ -147,6 +147,29 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
 
   const total = Number(order?.total_amount ?? 0);
 
+  const goToPayment = () => {
+    if (!userId) {
+      toast.error("กรุณาเข้าสู่ระบบก่อนชำระเงิน");
+      void navigate({ to: "/auth" });
+      return;
+    }
+    if (!addressComplete) {
+      toast.error("กรุณากรอกข้อมูลที่อยู่จัดส่งให้ครบถ้วน");
+      return;
+    }
+    if (remember) {
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(ship));
+      } catch {
+        /* ignore */
+      }
+    }
+    setStage("pay");
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+
+
   const send = () => {
     if (!userId) {
       toast.error("กรุณาเข้าสู่ระบบก่อนชำระเงิน");
