@@ -12,7 +12,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+
 import { getProductById, getRelatedProducts, type Product } from "@/data/products";
 import { useBuyNow } from "@/hooks/useCardDetail";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
