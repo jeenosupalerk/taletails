@@ -23,7 +23,6 @@ export default defineConfig({
         "@tanstack/router-core/ssr/client",
         "@tanstack/react-router",
         "@tanstack/react-query",
-        "@tanstack/react-start",
         "@supabase/supabase-js",
         "seroval",
         "sonner",
