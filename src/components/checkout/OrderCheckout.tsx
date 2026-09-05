@@ -27,7 +27,6 @@ import { pad, useCountdown } from "@/hooks/useCountdown";
 import { bankAccount } from "@/lib/bank";
 import { thb } from "@/lib/cart";
 import { cn } from "@/lib/utils";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { StatusDialog } from "@/components/ui/status-dialog";
 
 const STORAGE_KEY = "taletails.shipping";
@@ -253,7 +252,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
             )}
 
             <CheckoutStepper
-              current={done || order.status !== "pending" ? 3 : addressComplete ? 2 : 1}
+              current={done || order.status !== "pending" ? 3 : stage === "pay" ? 2 : 1}
             />
 
             {/* สรุปรายการสั่งซื้อ */}
