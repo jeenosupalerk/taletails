@@ -40,6 +40,8 @@ export interface Product {
   soldCount: number;
   rating: number;
   reviews: ProductReview[];
+  /** สถานะการ์ดจริงจากฐานข้อมูล (ถ้ามี) */
+  status?: "available" | "locked" | "sold";
 }
 
 const baseReviews: ProductReview[] = [
