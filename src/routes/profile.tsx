@@ -151,6 +151,11 @@ function ProfilePage() {
                 label="คำสั่งซื้อของฉัน"
               />
               <MenuItem
+                to="/purchases"
+                icon={<Truck className="h-5 w-5" />}
+                label="สถานะการซื้อสินค้า"
+              />
+              <MenuItem
                 to="/wishlist"
                 icon={<Heart className="h-5 w-5" />}
                 label="รายการโปรด"
