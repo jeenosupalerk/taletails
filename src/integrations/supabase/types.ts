@@ -419,6 +419,7 @@ export type Database = {
           paid_at: string | null
           payment_due_at: string
           payment_method: Database["public"]["Enums"]["payment_method"]
+          received_at: string | null
           shipped_at: string | null
           shipping_address: string | null
           shipping_name: string | null
@@ -439,6 +440,7 @@ export type Database = {
           paid_at?: string | null
           payment_due_at?: string
           payment_method?: Database["public"]["Enums"]["payment_method"]
+          received_at?: string | null
           shipped_at?: string | null
           shipping_address?: string | null
           shipping_name?: string | null
@@ -459,6 +461,7 @@ export type Database = {
           paid_at?: string | null
           payment_due_at?: string
           payment_method?: Database["public"]["Enums"]["payment_method"]
+          received_at?: string | null
           shipped_at?: string | null
           shipping_address?: string | null
           shipping_name?: string | null
@@ -599,6 +602,7 @@ export type Database = {
         Args: { _auction_id: string; _order_id: string; _user_id: string }
         Returns: undefined
       }
+      auto_complete_shipped_orders: { Args: never; Returns: number }
       award_auction: {
         Args: { _amount: number; _auction_id: string; _user_id: string }
         Returns: string
@@ -608,6 +612,36 @@ export type Database = {
         Returns: undefined
       }
       close_expired_auctions: { Args: never; Returns: number }
+      confirm_order_received: {
+        Args: { _order_id: string }
+        Returns: {
+          auction_id: string | null
+          card_id: string
+          created_at: string
+          id: string
+          note: string | null
+          paid_at: string | null
+          payment_due_at: string
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          received_at: string | null
+          shipped_at: string | null
+          shipping_address: string | null
+          shipping_name: string | null
+          shipping_phone: string | null
+          slip_url: string | null
+          status: Database["public"]["Enums"]["order_status"]
+          total_amount: number
+          tracking_number: string | null
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "orders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       create_auction_order: {
         Args: {
           _auction_id: string
@@ -626,6 +660,7 @@ export type Database = {
           paid_at: string | null
           payment_due_at: string
           payment_method: Database["public"]["Enums"]["payment_method"]
+          received_at: string | null
           shipped_at: string | null
           shipping_address: string | null
           shipping_name: string | null
@@ -705,6 +740,7 @@ export type Database = {
           paid_at: string | null
           payment_due_at: string
           payment_method: Database["public"]["Enums"]["payment_method"]
+          received_at: string | null
           shipped_at: string | null
           shipping_address: string | null
           shipping_name: string | null
@@ -728,7 +764,7 @@ export type Database = {
       app_role: "customer" | "admin" | "seller"
       auction_status: "active" | "ended" | "waiting_payment" | "passed_to_next"
       card_status: "available" | "locked" | "sold"
-      order_status: "pending" | "paid" | "shipped" | "cancelled"
+      order_status: "pending" | "paid" | "shipped" | "cancelled" | "completed"
       payment_method: "slip" | "qr_promptpay"
       sale_type: "auction" | "fixed_price"
     }
@@ -861,7 +897,7 @@ export const Constants = {
       app_role: ["customer", "admin", "seller"],
       auction_status: ["active", "ended", "waiting_payment", "passed_to_next"],
       card_status: ["available", "locked", "sold"],
-      order_status: ["pending", "paid", "shipped", "cancelled"],
+      order_status: ["pending", "paid", "shipped", "cancelled", "completed"],
       payment_method: ["slip", "qr_promptpay"],
       sale_type: ["auction", "fixed_price"],
     },
