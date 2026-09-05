@@ -37,6 +37,7 @@ async function run(request: Request) {
     ok: true,
     auctionsClosed: closed.error ? closed.error.message : closed.data,
     ordersExpired: expired.error ? expired.error.message : expired.data,
+    ordersAutoCompleted: autoCompleted.error ? autoCompleted.error.message : autoCompleted.data,
     emailsSent: emails,
   });
 }
