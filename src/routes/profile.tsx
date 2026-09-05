@@ -14,6 +14,7 @@ import {
   Store,
   Sun,
   Trophy,
+  Truck,
   User,
 } from "lucide-react";
 import type { ReactNode } from "react";

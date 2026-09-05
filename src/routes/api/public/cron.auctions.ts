@@ -29,6 +29,7 @@ async function run(request: Request) {
 
   const closed = await supabaseAdmin.rpc("close_expired_auctions");
   const expired = await supabaseAdmin.rpc("expire_unpaid_orders");
+  const autoCompleted = await supabaseAdmin.rpc("auto_complete_shipped_orders");
 
   const emails = await sendPendingEmails(supabaseAdmin);
 
