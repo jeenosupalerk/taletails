@@ -205,6 +205,16 @@ export function useBuyNow() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (cardId: string) => {
+      // ตรวจสถานะล่าสุดก่อนเสมอ กันการแย่งซื้อซ้ำ (race condition)
+      const { data: fresh } = await supabase
+        .from("cards")
+        .select("status")
+        .eq("id", cardId)
+        .maybeSingle();
+      if (fresh?.status === "sold") throw new Error("สินค้าถูกซื้อแล้ว");
+      if (fresh?.status === "locked")
+        throw new Error("การ์ดใบนี้กำลังรอการชำระเงินจากผู้ซื้อรายอื่น");
+
       const { data, error } = await supabase.rpc("purchase_fixed_price_card", {
         _card_id: cardId,
         _payment_method: "slip",

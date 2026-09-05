@@ -13,6 +13,8 @@ import { SmartImage } from "@/components/ui/smart-image";
 export function ProductGridCard({ product }: { product: Product }) {
   const watchlist = useWatchlist();
   const wished = watchlist.has(product.id);
+  const isSold = product.status === "sold";
+  const isPending = product.status === "locked";
 
   return (
     <article className="group surface-panel relative flex flex-col overflow-hidden transition-shadow duration-300 hover:shadow-card">
@@ -28,9 +30,21 @@ export function ProductGridCard({ product }: { product: Product }) {
             src={product.imageUrl}
             alt={`${product.cardName} — ${product.setName}`}
             transformWidth={600}
-            className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
+            className={`object-cover object-center transition-transform duration-500 group-hover:scale-105 ${
+              isSold ? "opacity-50" : ""
+            }`}
           />
-          {product.soldCount > 0 && (
+          {isSold && (
+            <span className="absolute inset-x-0 top-1/2 mx-auto w-fit -translate-y-1/2 rounded-full bg-foreground/85 px-4 py-1.5 text-xs font-bold tracking-wide text-background shadow-lg">
+              ขายแล้ว (Sold Out)
+            </span>
+          )}
+          {isPending && (
+            <span className="absolute top-2 left-2 rounded-full bg-amber-500 px-2 py-0.5 text-[11px] font-semibold text-white shadow-sm">
+              กำลังรอการชำระเงิน
+            </span>
+          )}
+          {!isSold && product.soldCount > 0 && (
             <span className="absolute top-2 right-3 rounded-full bg-white px-2 py-0.5 text-[11px] font-semibold text-primary shadow-sm backdrop-blur">
               ขายแล้ว {product.soldCount}
             </span>

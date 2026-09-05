@@ -121,7 +121,9 @@ function ProductPage() {
   }
 
   const wished = watchlist.has(product.id);
-  const soldOut = isLive && live?.status !== "available";
+  const cardStatus = isLive ? live?.status : product.status;
+  const soldOut = cardStatus === "sold";
+  const pendingPayment = cardStatus === "locked";
 
   const addToCart = () => {
     if (!requireAuth("กรุณาเข้าสู่ระบบก่อนสั่งซื้อ")) return false;
@@ -185,8 +187,18 @@ function ProductPage() {
               alt={`${product.cardName} รูปที่ ${active + 1}`}
               transformWidth={900}
               priority
-              className="object-cover object-center"
+              className={`object-cover object-center ${soldOut ? "opacity-50" : ""}`}
             />
+            {soldOut && (
+              <span className="absolute inset-x-0 top-1/2 mx-auto w-fit -translate-y-1/2 rounded-full bg-foreground/85 px-5 py-2 font-display text-sm font-bold text-background shadow-lg">
+                ขายแล้ว (Sold Out)
+              </span>
+            )}
+            {!soldOut && pendingPayment && (
+              <span className="absolute top-3 left-3 rounded-full bg-amber-500 px-3 py-1 text-xs font-semibold text-white shadow">
+                กำลังรอการชำระเงิน
+              </span>
+            )}
           </div>
           {product.images.length > 1 && (
             <div className="mt-4 flex gap-3 overflow-x-auto pb-1">
@@ -370,7 +382,7 @@ function ProductPage() {
           <Button
             variant="secondary"
             onClick={addToCart}
-            disabled={soldOut}
+            disabled={soldOut || pendingPayment}
             className="min-h-11 flex-1 rounded-xl font-semibold"
           >
             <ShoppingBag className="h-4 w-4" />
@@ -378,11 +390,11 @@ function ProductPage() {
           </Button>
           <Button
             onClick={buyLive}
-            disabled={buyNow.isPending || soldOut}
+            disabled={buyNow.isPending || soldOut || pendingPayment}
             className="min-h-11 flex-1 rounded-xl bg-gradient-ember font-semibold text-primary-foreground hover:opacity-90"
           >
             {buyNow.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-            {soldOut ? "ไม่พร้อมขาย" : "ดำเนินการชำระเงิน"}
+            {soldOut ? "สินค้าถูกซื้อแล้ว" : pendingPayment ? "กำลังรอการชำระเงิน" : "ดำเนินการชำระเงิน"}
           </Button>
         </div>
       </div>
