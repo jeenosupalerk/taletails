@@ -56,6 +56,7 @@ export function cardRowToProduct(row: CardRow, sellerName = "Taletails Store"): 
     soldCount: 0,
     rating: 5,
     reviews: [],
+    status: row.status,
   };
 }
 
@@ -93,7 +94,7 @@ export function useMarketplaceCards() {
         supabase
           .from("cards")
           .select(CARD_COLUMNS)
-          .eq("status", "available")
+          .in("status", ["available", "locked", "sold"])
           .eq("sale_type", "fixed_price")
           .order("created_at", { ascending: false })
           .limit(24),
