@@ -19,6 +19,7 @@ import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { useLiveProduct, useMarketplaceCards } from "@/hooks/useSupabaseCatalog";
 import { thb, useCart } from "@/lib/cart";
 import { useWatchlist } from "@/lib/watchlist";
+import { supabase } from "@/integrations/supabase/client";
 import { SmartImage } from "@/components/ui/smart-image";
 
 const SITE_URL = "https://taletails-test.lovable.app";
@@ -134,6 +135,26 @@ function ProductPage() {
     return true;
   };
 
+  const goToExistingOrder = async () => {
+    // ถ้าผู้ใช้เคยกดจองการ์ดใบนี้ไว้แล้ว ให้พาไปชำระเงินรายการเดิมแทนที่จะเงียบหาย
+    const { data: sessionData } = await supabase.auth.getSession();
+    const uid = sessionData.session?.user.id;
+    if (!uid) return false;
+    const { data: existing } = await supabase
+      .from("orders")
+      .select("id")
+      .eq("card_id", product.id)
+      .eq("user_id", uid)
+      .eq("status", "pending")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (!existing) return false;
+    toast.info("คุณมีคำสั่งซื้อที่รอชำระสำหรับการ์ดใบนี้อยู่แล้ว");
+    void navigate({ to: "/checkout/$id", params: { id: existing.id } });
+    return true;
+  };
+
   const buyLive = () => {
     if (!requireAuth("กรุณาเข้าสู่ระบบก่อนสั่งซื้อ")) return;
     buyNow.mutate(product.id, {
@@ -141,7 +162,11 @@ function ProductPage() {
         toast.success("จองการ์ดสำเร็จ กำลังไปหน้าชำระเงิน");
         void navigate({ to: "/checkout/$id", params: { id: order.id } });
       },
-      onError: (e) => toast.error(e.message),
+      onError: (e) => {
+        void goToExistingOrder().then((handled) => {
+          if (!handled) toast.error(e.message);
+        });
+      },
     });
   };
 
