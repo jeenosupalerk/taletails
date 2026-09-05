@@ -13,7 +13,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuctionsRouteImport } from './routes/auctions'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as MarketRouteImport } from './routes/market'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
 import { Route as NewsRouteImport } from './routes/news'
@@ -29,6 +28,7 @@ import { Route as AdminNewsRouteImport } from './routes/admin.news'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AuctionIdRouteImport } from './routes/auction.$id'
 import { Route as CardIdRouteImport } from './routes/card.$id'
+import { Route as CheckoutIndexRouteImport } from './routes/checkout.index'
 import { Route as CheckoutIdRouteImport } from './routes/checkout.$id'
 import { Route as MarketIndexRouteImport } from './routes/market.index'
 import { Route as MarketIdRouteImport } from './routes/market.$id'
@@ -56,11 +56,6 @@ const AuctionsRoute = AuctionsRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CheckoutRoute = CheckoutRouteImport.update({
-  id: '/checkout',
-  path: '/checkout',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MarketRoute = MarketRouteImport.update({
@@ -138,6 +133,11 @@ const CardIdRoute = CardIdRouteImport.update({
   path: '/card/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CheckoutIndexRoute = CheckoutIndexRouteImport.update({
+  id: '/checkout/',
+  path: '/checkout/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CheckoutIdRoute = CheckoutIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -184,7 +184,6 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/auctions': typeof AuctionsRoute
   '/auth': typeof AuthRoute
-  '/checkout': typeof CheckoutRouteWithChildren
   '/market': typeof MarketRouteWithChildren
   '/marketplace': typeof MarketplaceRoute
   '/news': typeof NewsRouteWithChildren
@@ -205,6 +204,7 @@ export interface FileRoutesByFullPath {
   '/order/$id': typeof OrderIdRoute
   '/product/$id': typeof ProductIdRoute
   '/admin/': typeof AdminIndexRoute
+  '/checkout/': typeof CheckoutIndexRoute
   '/market/': typeof MarketIndexRoute
   '/api/public/cron/auctions': typeof ApiPublicCronAuctionsRoute
   '/api/public/push/dispatch': typeof ApiPublicPushDispatchRoute
@@ -213,7 +213,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auctions': typeof AuctionsRoute
   '/auth': typeof AuthRoute
-  '/checkout': typeof CheckoutRouteWithChildren
   '/marketplace': typeof MarketplaceRoute
   '/news': typeof NewsRouteWithChildren
   '/profile': typeof ProfileRoute
@@ -233,6 +232,7 @@ export interface FileRoutesByTo {
   '/order/$id': typeof OrderIdRoute
   '/product/$id': typeof ProductIdRoute
   '/admin': typeof AdminIndexRoute
+  '/checkout': typeof CheckoutIndexRoute
   '/market': typeof MarketIndexRoute
   '/api/public/cron/auctions': typeof ApiPublicCronAuctionsRoute
   '/api/public/push/dispatch': typeof ApiPublicPushDispatchRoute
@@ -243,7 +243,6 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/auctions': typeof AuctionsRoute
   '/auth': typeof AuthRoute
-  '/checkout': typeof CheckoutRouteWithChildren
   '/market': typeof MarketRouteWithChildren
   '/marketplace': typeof MarketplaceRoute
   '/news': typeof NewsRouteWithChildren
@@ -264,6 +263,7 @@ export interface FileRoutesById {
   '/order/$id': typeof OrderIdRoute
   '/product/$id': typeof ProductIdRoute
   '/admin/': typeof AdminIndexRoute
+  '/checkout/': typeof CheckoutIndexRoute
   '/market/': typeof MarketIndexRoute
   '/api/public/cron/auctions': typeof ApiPublicCronAuctionsRoute
   '/api/public/push/dispatch': typeof ApiPublicPushDispatchRoute
@@ -275,7 +275,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auctions'
     | '/auth'
-    | '/checkout'
     | '/market'
     | '/marketplace'
     | '/news'
@@ -296,6 +295,7 @@ export interface FileRouteTypes {
     | '/order/$id'
     | '/product/$id'
     | '/admin/'
+    | '/checkout/'
     | '/market/'
     | '/api/public/cron/auctions'
     | '/api/public/push/dispatch'
@@ -304,7 +304,6 @@ export interface FileRouteTypes {
     | '/'
     | '/auctions'
     | '/auth'
-    | '/checkout'
     | '/marketplace'
     | '/news'
     | '/profile'
@@ -324,6 +323,7 @@ export interface FileRouteTypes {
     | '/order/$id'
     | '/product/$id'
     | '/admin'
+    | '/checkout'
     | '/market'
     | '/api/public/cron/auctions'
     | '/api/public/push/dispatch'
@@ -333,7 +333,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auctions'
     | '/auth'
-    | '/checkout'
     | '/market'
     | '/marketplace'
     | '/news'
@@ -354,6 +353,7 @@ export interface FileRouteTypes {
     | '/order/$id'
     | '/product/$id'
     | '/admin/'
+    | '/checkout/'
     | '/market/'
     | '/api/public/cron/auctions'
     | '/api/public/push/dispatch'
@@ -364,7 +364,6 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   AuctionsRoute: typeof AuctionsRoute
   AuthRoute: typeof AuthRoute
-  CheckoutRoute: typeof CheckoutRouteWithChildren
   MarketRoute: typeof MarketRouteWithChildren
   MarketplaceRoute: typeof MarketplaceRoute
   NewsRoute: typeof NewsRouteWithChildren
@@ -378,6 +377,7 @@ export interface RootRouteChildren {
   CardIdRoute: typeof CardIdRoute
   OrderIdRoute: typeof OrderIdRoute
   ProductIdRoute: typeof ProductIdRoute
+  CheckoutIndexRoute: typeof CheckoutIndexRoute
   ApiPublicCronAuctionsRoute: typeof ApiPublicCronAuctionsRoute
   ApiPublicPushDispatchRoute: typeof ApiPublicPushDispatchRoute
 }
@@ -410,13 +410,6 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/checkout': {
-      id: '/checkout'
-      path: '/checkout'
-      fullPath: '/checkout'
-      preLoaderRoute: typeof CheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/market': {
@@ -524,6 +517,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CardIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/checkout/': {
+      id: '/checkout/'
+      path: '/checkout'
+      fullPath: '/checkout/'
+      preLoaderRoute: typeof CheckoutIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/checkout/$id': {
       id: '/checkout/$id'
       path: '/$id'
@@ -599,18 +599,6 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
-interface CheckoutRouteChildren {
-  CheckoutIdRoute: typeof CheckoutIdRoute
-}
-
-const CheckoutRouteChildren: CheckoutRouteChildren = {
-  CheckoutIdRoute: CheckoutIdRoute,
-}
-
-const CheckoutRouteWithChildren = CheckoutRoute._addFileChildren(
-  CheckoutRouteChildren,
-)
-
 interface MarketRouteChildren {
   MarketIdRoute: typeof MarketIdRoute
   MarketIndexRoute: typeof MarketIndexRoute
@@ -639,7 +627,6 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   AuctionsRoute: AuctionsRoute,
   AuthRoute: AuthRoute,
-  CheckoutRoute: CheckoutRouteWithChildren,
   MarketRoute: MarketRouteWithChildren,
   MarketplaceRoute: MarketplaceRoute,
   NewsRoute: NewsRouteWithChildren,
@@ -653,6 +640,7 @@ const rootRouteChildren: RootRouteChildren = {
   CardIdRoute: CardIdRoute,
   OrderIdRoute: OrderIdRoute,
   ProductIdRoute: ProductIdRoute,
+  CheckoutIndexRoute: CheckoutIndexRoute,
   ApiPublicCronAuctionsRoute: ApiPublicCronAuctionsRoute,
   ApiPublicPushDispatchRoute: ApiPublicPushDispatchRoute,
 }
