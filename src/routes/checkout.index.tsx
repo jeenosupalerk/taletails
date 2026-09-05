@@ -12,7 +12,7 @@ const SITE_URL = "https://taletails-test.lovable.app";
 const title = "ตะกร้าสินค้า — Taletails";
 const description = "ดูรายการการ์ดที่คุณเพิ่มไว้ในตะกร้า และกดดำเนินการชำระเงินได้ทันที";
 
-export const Route = createFileRoute("/checkout")({
+export const Route = createFileRoute("/checkout/")({
   head: () => ({
     meta: [
       { title },
