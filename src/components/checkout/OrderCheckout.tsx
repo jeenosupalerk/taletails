@@ -4,8 +4,10 @@ import {
   CheckCircle2,
   ChevronLeft,
   Copy,
+  Landmark,
   Loader2,
   Lock,
+  QrCode,
   Receipt,
   ShieldCheck,
   Trash2,
@@ -105,6 +107,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
   const [preview, setPreview] = useState<string | null>(null);
   const [ship, setShip] = useState<Shipping>(emptyShipping);
   const [remember, setRemember] = useState(true);
+  const [method, setMethod] = useState<"qr_promptpay" | "slip">("qr_promptpay");
   const [done, setDone] = useState(false);
   const [paidOpen, setPaidOpen] = useState(false);
 
