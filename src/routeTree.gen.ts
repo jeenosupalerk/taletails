@@ -16,6 +16,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as MarketRouteImport } from './routes/market'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
 import { Route as NewsRouteImport } from './routes/news'
+import { Route as OrdersRouteImport } from './routes/orders'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
@@ -71,6 +72,11 @@ const MarketplaceRoute = MarketplaceRouteImport.update({
 const NewsRoute = NewsRouteImport.update({
   id: '/news',
   path: '/news',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrdersRoute = OrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileRoute = ProfileRouteImport.update({
@@ -187,6 +193,7 @@ export interface FileRoutesByFullPath {
   '/market': typeof MarketRouteWithChildren
   '/marketplace': typeof MarketplaceRoute
   '/news': typeof NewsRouteWithChildren
+  '/orders': typeof OrdersRoute
   '/profile': typeof ProfileRoute
   '/shop': typeof ShopRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -215,6 +222,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/marketplace': typeof MarketplaceRoute
   '/news': typeof NewsRouteWithChildren
+  '/orders': typeof OrdersRoute
   '/profile': typeof ProfileRoute
   '/shop': typeof ShopRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -246,6 +254,7 @@ export interface FileRoutesById {
   '/market': typeof MarketRouteWithChildren
   '/marketplace': typeof MarketplaceRoute
   '/news': typeof NewsRouteWithChildren
+  '/orders': typeof OrdersRoute
   '/profile': typeof ProfileRoute
   '/shop': typeof ShopRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -278,6 +287,7 @@ export interface FileRouteTypes {
     | '/market'
     | '/marketplace'
     | '/news'
+    | '/orders'
     | '/profile'
     | '/shop'
     | '/sitemap.xml'
@@ -306,6 +316,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/marketplace'
     | '/news'
+    | '/orders'
     | '/profile'
     | '/shop'
     | '/sitemap.xml'
@@ -336,6 +347,7 @@ export interface FileRouteTypes {
     | '/market'
     | '/marketplace'
     | '/news'
+    | '/orders'
     | '/profile'
     | '/shop'
     | '/sitemap.xml'
@@ -367,6 +379,7 @@ export interface RootRouteChildren {
   MarketRoute: typeof MarketRouteWithChildren
   MarketplaceRoute: typeof MarketplaceRoute
   NewsRoute: typeof NewsRouteWithChildren
+  OrdersRoute: typeof OrdersRoute
   ProfileRoute: typeof ProfileRoute
   ShopRoute: typeof ShopRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -432,6 +445,13 @@ declare module '@tanstack/react-router' {
       path: '/news'
       fullPath: '/news'
       preLoaderRoute: typeof NewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/orders': {
+      id: '/orders'
+      path: '/orders'
+      fullPath: '/orders'
+      preLoaderRoute: typeof OrdersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile': {
@@ -631,6 +651,7 @@ const rootRouteChildren: RootRouteChildren = {
   MarketRoute: MarketRouteWithChildren,
   MarketplaceRoute: MarketplaceRoute,
   NewsRoute: NewsRouteWithChildren,
+  OrdersRoute: OrdersRoute,
   ProfileRoute: ProfileRoute,
   ShopRoute: ShopRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
