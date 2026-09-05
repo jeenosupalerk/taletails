@@ -122,7 +122,7 @@ function ProductPage() {
 
   const wished = watchlist.has(product.id);
   const cardStatus = isLive ? live?.status : product.status;
-  const soldOut = cardStatus === "sold" || (isLive && live?.status !== "available");
+  const soldOut = cardStatus === "sold";
   const pendingPayment = cardStatus === "locked";
 
   const addToCart = () => {
