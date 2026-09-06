@@ -759,6 +759,29 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      relist_auction: {
+        Args: { _auction_id: string; _end_time: string }
+        Returns: {
+          bid_count: number
+          bid_increment: number
+          card_id: string
+          created_at: string
+          current_price: number
+          end_time: string
+          id: string
+          start_time: string
+          starting_price: number
+          status: Database["public"]["Enums"]["auction_status"]
+          updated_at: string
+          winner_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "auctions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       app_role: "customer" | "admin" | "seller"
