@@ -1,0 +1,12 @@
+REVOKE EXECUTE ON FUNCTION public.apply_auction_strike(uuid, uuid, uuid) FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.expire_unpaid_orders() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.close_expired_auctions() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.auto_complete_shipped_orders() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.award_auction(uuid, uuid, numeric) FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.notify_user(uuid, text, text, text, text) FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.relist_auction(uuid, timestamptz) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.clear_auction_ban(uuid, boolean) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.confirm_order_received(uuid) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.pass_auction_to_next_bidder(uuid) FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.create_auction_order(uuid, payment_method, text, text, text, text) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.purchase_fixed_price_card(uuid, payment_method, text, text, text, text) FROM anon;
