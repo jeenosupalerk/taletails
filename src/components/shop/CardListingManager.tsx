@@ -420,6 +420,10 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                       ดูหน้าขาย
                     </Link>
                   </Button>
+                  {scope === "admin" &&
+                    auction &&
+                    auction.status !== "active" &&
+                    c.status !== "sold" && <RelistAuctionControl auctionId={auction.id} />}
                   {c.status === "available" && (
                     <ConfirmDialog
                       title="ยืนยันการลบการ์ด"
