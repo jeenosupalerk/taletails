@@ -275,6 +275,26 @@ export function useUpdateAuctionEndTime() {
   });
 }
 
+/** แอดมินเปิดประมูลการ์ดใบนั้นใหม่ (ล้างราคาและประวัติเสนอราคาของรอบเดิม) */
+export function useRelistAuction() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ auctionId, endTime }: { auctionId: string; endTime: string }) => {
+      const { error } = await supabase.rpc("relist_auction", {
+        _auction_id: auctionId,
+        _end_time: new Date(endTime).toISOString(),
+      });
+      if (error) throw new Error(error.message);
+      return true;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["admin", "cards"] });
+      void queryClient.invalidateQueries({ queryKey: ["auctions"] });
+      void queryClient.invalidateQueries({ queryKey: ["auction", "by-card"] });
+    },
+  });
+}
+
 export function useDeleteCard() {
   const queryClient = useQueryClient();
   return useMutation({
