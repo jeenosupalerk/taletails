@@ -31,6 +31,7 @@ import {
   useCreateCard,
   useDeleteCard,
   useMyCards,
+  useRelistAuction,
   useUpdateAuctionEndTime,
   type NewCardInput,
 } from "@/hooks/useAdmin";
@@ -493,6 +494,48 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     <div>
       <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
       <div className="mt-1.5">{children}</div>
+    </div>
+  );
+}
+
+/** ปุ่มเปิดประมูลใหม่ สำหรับรอบที่ผู้ชนะไม่ชำระเงินหรือปิดไปแล้ว */
+function RelistAuctionControl({ auctionId }: { auctionId: string }) {
+  const relist = useRelistAuction();
+  const [endTime, setEndTime] = useState("");
+
+  return (
+    <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-1">
+      <Input
+        type="datetime-local"
+        aria-label="เวลาปิดประมูลรอบใหม่"
+        value={endTime}
+        onChange={(e) => setEndTime(e.target.value)}
+        className="min-h-10 w-full rounded-xl text-xs sm:w-auto sm:flex-1"
+      />
+      <Button
+        variant="secondary"
+        disabled={relist.isPending}
+        className="min-h-10 flex-1 rounded-xl px-3 text-xs sm:flex-none"
+        onClick={() => {
+          if (!endTime) {
+            toast.error("กรุณาระบุเวลาปิดประมูลรอบใหม่");
+            return;
+          }
+          relist.mutate(
+            { auctionId, endTime },
+            {
+              onSuccess: () => {
+                toast.success("เปิดประมูลรอบใหม่แล้ว");
+                setEndTime("");
+              },
+              onError: (e) => toast.error(e instanceof Error ? e.message : "ไม่สำเร็จ"),
+            },
+          );
+        }}
+      >
+        {relist.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Gavel className="h-4 w-4" />}
+        เปิดประมูลใหม่
+      </Button>
     </div>
   );
 }
