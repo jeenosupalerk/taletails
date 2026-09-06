@@ -196,6 +196,9 @@ export function useClearAuctionBan() {
 export const penaltyLabel = (level: string) =>
   ({
     warning: "คำเตือนครั้งที่ 1",
+    ban_7_days: "ห้ามประมูล 7 วัน",
+    ban_30_days: "ห้ามประมูล 30 วัน",
+    account_suspended: "ระงับบัญชี • ต้องยืนยันตัวตน",
     ban_3_days: "ห้ามประมูล 3 วัน",
     ban_1_week: "ห้ามประมูล 1 สัปดาห์",
     ban_1_month: "ห้ามประมูล 1 เดือน",
