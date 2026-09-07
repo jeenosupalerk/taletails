@@ -3,12 +3,22 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { isPermissionError } from "@/lib/query-guards";
 import type { Auction } from "@/data/auctions";
+import {
+  getAuctionOutcome,
+  type AuctionDbStatus,
+  type AuctionOutcomeInfo,
+  type CardDbStatus,
+} from "@/lib/auction-status";
 
 export interface LiveAuction extends Auction {
   /** รหัสรอบประมูลจริงในฐานข้อมูล (ใช้สำหรับเคาะราคา) */
   auctionId: string;
   cardId: string;
   bidIncrement: number;
+  auctionStatus: AuctionDbStatus;
+  cardStatus: CardDbStatus;
+  /** สถานะที่ผู้ใช้เห็น (กำลังประมูล / รอชำระ / เสร็จสมบูรณ์ / ไม่เป็นผล) */
+  outcome: AuctionOutcomeInfo;
 }
 
 interface AuctionJoinRow {
@@ -34,22 +44,36 @@ interface AuctionJoinRow {
     certification_no: string | null;
     condition: string | null;
     details: string | null;
+    status: string | null;
   } | null;
 }
 
 const SELECT =
-  "id, card_id, starting_price, current_price, bid_increment, bid_count, end_time, status, cards:card_id (id, name, set_name, images, grade, card_no, language, rarity, year, grading_company, certification_no, condition, details)";
+  "id, card_id, starting_price, current_price, bid_increment, bid_count, end_time, status, cards:card_id (id, name, set_name, images, grade, card_no, language, rarity, year, grading_company, certification_no, condition, details, status)";
+
+/** ลำดับการแสดง: กำลังประมูล → รอชำระ → ไม่เป็นผล → เสร็จสมบูรณ์ (ท้ายสุด) */
+const OUTCOME_RANK: Record<AuctionOutcomeInfo["outcome"], number> = {
+  live: 0,
+  waiting_payment: 1,
+  failed: 2,
+  completed: 3,
+};
 
 function toLiveAuction(row: AuctionJoinRow): LiveAuction | null {
   const card = row.cards;
   if (!card) return null;
   const images = card.images?.length ? card.images : ["/taletails-logo.jpg"];
   const endsIn = new Date(row.end_time).getTime() - Date.now();
+  const auctionStatus = (row.status ?? "active") as AuctionDbStatus;
+  const cardStatus = (card.status ?? "available") as CardDbStatus;
 
   return {
     auctionId: row.id,
     cardId: card.id,
     bidIncrement: Number(row.bid_increment ?? 50),
+    auctionStatus,
+    cardStatus,
+    outcome: getAuctionOutcome(auctionStatus, cardStatus, row.end_time),
     id: row.id,
     cardName: card.name,
     setName: card.set_name ?? "-",
@@ -73,29 +97,34 @@ function toLiveAuction(row: AuctionJoinRow): LiveAuction | null {
 }
 
 /**
- * รอบประมูลที่ยังเปิดอยู่จาก Supabase (ตาราง auctions + cards)
- * — RLS อนุญาตให้อ่านได้เมื่อผู้ใช้เข้าสู่ระบบแล้ว
+ * รอบประมูลทั้งหมดจาก Supabase (ตาราง auctions + cards)
+ * — รายการที่ปิดแล้วจะยังคงแสดงพร้อมสถานะ จนกว่าผู้ดูแลระบบจะลบออก
  */
 export function useLiveAuctions() {
   return useQuery({
-    queryKey: ["auctions", "live"],
+    queryKey: ["auctions", "all"],
     staleTime: 4_000,
     refetchInterval: 5_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("auctions")
         .select(SELECT)
-        .eq("status", "active")
-        .gt("end_time", new Date().toISOString())
         .order("end_time", { ascending: true })
-        .limit(24);
+        .limit(60);
       if (error) {
         if (isPermissionError(error)) return [] as LiveAuction[];
         throw error;
       }
       return ((data ?? []) as unknown as AuctionJoinRow[])
         .map(toLiveAuction)
-        .filter((a): a is LiveAuction => a !== null);
+        .filter((a): a is LiveAuction => a !== null)
+        .sort((a, b) => {
+          const rank = OUTCOME_RANK[a.outcome.outcome] - OUTCOME_RANK[b.outcome.outcome];
+          if (rank !== 0) return rank;
+          return a.outcome.outcome === "live"
+            ? new Date(a.endTime).getTime() - new Date(b.endTime).getTime()
+            : new Date(b.endTime).getTime() - new Date(a.endTime).getTime();
+        });
     },
     retry: false,
   });
