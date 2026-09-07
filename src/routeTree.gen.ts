@@ -21,6 +21,7 @@ import { Route as OrdersRouteImport } from './routes/orders'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as StepperPreviewRouteImport } from './routes/stepper-preview'
 import { Route as VaultRouteImport } from './routes/vault'
 import { Route as WinsRouteImport } from './routes/wins'
 import { Route as WishlistRouteImport } from './routes/wishlist'
@@ -101,6 +102,11 @@ const ShopRoute = ShopRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StepperPreviewRoute = StepperPreviewRouteImport.update({
+  id: '/stepper-preview',
+  path: '/stepper-preview',
   getParentRoute: () => rootRouteImport,
 } as any)
 const VaultRoute = VaultRouteImport.update({
@@ -223,6 +229,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/shop': typeof ShopRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/stepper-preview': typeof StepperPreviewRoute
   '/vault': typeof VaultRoute
   '/wins': typeof WinsRoute
   '/wishlist': typeof WishlistRoute
@@ -256,6 +263,7 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/shop': typeof ShopRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/stepper-preview': typeof StepperPreviewRoute
   '/vault': typeof VaultRoute
   '/wins': typeof WinsRoute
   '/wishlist': typeof WishlistRoute
@@ -292,6 +300,7 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/shop': typeof ShopRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/stepper-preview': typeof StepperPreviewRoute
   '/vault': typeof VaultRoute
   '/wins': typeof WinsRoute
   '/wishlist': typeof WishlistRoute
@@ -329,6 +338,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/shop'
     | '/sitemap.xml'
+    | '/stepper-preview'
     | '/vault'
     | '/wins'
     | '/wishlist'
@@ -362,6 +372,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/shop'
     | '/sitemap.xml'
+    | '/stepper-preview'
     | '/vault'
     | '/wins'
     | '/wishlist'
@@ -397,6 +408,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/shop'
     | '/sitemap.xml'
+    | '/stepper-preview'
     | '/vault'
     | '/wins'
     | '/wishlist'
@@ -433,6 +445,7 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   ShopRoute: typeof ShopRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  StepperPreviewRoute: typeof StepperPreviewRoute
   VaultRoute: typeof VaultRoute
   WinsRoute: typeof WinsRoute
   WishlistRoute: typeof WishlistRoute
@@ -533,6 +546,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/stepper-preview': {
+      id: '/stepper-preview'
+      path: '/stepper-preview'
+      fullPath: '/stepper-preview'
+      preLoaderRoute: typeof StepperPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/vault': {
@@ -737,6 +757,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   ShopRoute: ShopRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  StepperPreviewRoute: StepperPreviewRoute,
   VaultRoute: VaultRoute,
   WinsRoute: WinsRoute,
   WishlistRoute: WishlistRoute,
