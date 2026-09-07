@@ -339,6 +339,8 @@ function ProductPage() {
             </AccordionContent>
           </AccordionItem>
         </Accordion>
+        </div>
+        </div>
 
         {/* สินค้าที่คุณอาจจะชอบ */}
         {related.length > 0 && (
