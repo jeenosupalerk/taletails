@@ -52,9 +52,21 @@ function MarketPage() {
               <p className="text-2xl font-bold tracking-tight">
                 {formatThb(marketSummary.totalVolume)}
               </p>
-              <p className="mt-0.5 flex items-center gap-1 text-xs font-semibold text-success">
-                <ArrowUpRight className="h-3.5 w-3.5" />+{marketSummary.volumeChange24h}% จากเมื่อวาน
+              <p
+                className={cn(
+                  "mt-0.5 flex items-center gap-1 text-xs font-semibold",
+                  volumeUp ? "text-success" : "text-destructive",
+                )}
+              >
+                {volumeUp ? (
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                ) : (
+                  <ArrowDownRight className="h-3.5 w-3.5" />
+                )}
+                {volumeUp ? "+" : ""}
+                {marketSummary.volumeChange24h}% จากเมื่อวาน
               </p>
+
             </div>
           </div>
           <div className="surface-panel flex items-center gap-4 p-5">
