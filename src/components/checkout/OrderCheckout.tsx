@@ -115,6 +115,16 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
   const [done, setDone] = useState(false);
   const [paidOpen, setPaidOpen] = useState(false);
 
+  // สมุดที่อยู่จัดส่ง
+  const addressBook = useAddresses(userId ?? null);
+  const addAddress = useAddAddress(userId ?? null);
+  const setDefaultAddress = useSetDefaultAddress(userId ?? null);
+  const removeAddress = useDeleteAddress(userId ?? null);
+  const savedAddresses = addressBook.data ?? [];
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [addressLabel, setAddressLabel] = useState("บ้าน");
+  const [makeDefault, setMakeDefault] = useState(false);
+  const [editingNew, setEditingNew] = useState(false);
 
   useEffect(() => {
     try {
@@ -124,6 +134,38 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
       /* ignore */
     }
   }, []);
+
+  const applyAddress = (a: SavedAddress) => {
+    setSelectedAddressId(a.id);
+    setEditingNew(false);
+    setShip({
+      name: a.name,
+      phone: a.phone,
+      address: a.address,
+      subdistrict: a.subdistrict,
+      district: a.district,
+      province: a.province,
+      postcode: a.postcode,
+    });
+  };
+
+  // เลือกที่อยู่เริ่มต้นให้อัตโนมัติเมื่อโหลดสมุดที่อยู่ครั้งแรก
+  useEffect(() => {
+    if (selectedAddressId || editingNew || savedAddresses.length === 0) return;
+    const preferred = savedAddresses.find((a) => a.is_default) ?? savedAddresses[0]!;
+    applyAddress(preferred);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [savedAddresses.length]);
+
+  /** บันทึกที่อยู่ใหม่เข้าสมุดที่อยู่ (เมื่อผู้ใช้เลือกให้จำ) */
+  const rememberAddress = () => {
+    if (!remember || !userId || selectedAddressId) return;
+    addAddress.mutate({
+      ...ship,
+      label: addressLabel.trim() || "ที่อยู่จัดส่ง",
+      is_default: makeDefault || savedAddresses.length === 0,
+    });
+  };
 
   useEffect(() => {
     if (!file) return setPreview(null);
