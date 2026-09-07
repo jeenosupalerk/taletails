@@ -31,6 +31,7 @@ import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { thb } from "@/lib/cart";
 import { useWatchlist } from "@/lib/watchlist";
 import { SmartImage } from "@/components/ui/smart-image";
+import { ZoomableImage } from "@/components/ui/image-zoom";
 
 export function AuctionShowcase({
   auction,
