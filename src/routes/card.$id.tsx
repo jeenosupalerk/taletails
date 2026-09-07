@@ -351,8 +351,11 @@ function CardDetailPage() {
                     <div className="mt-6 space-y-3">
                       <Button disabled className="min-h-11 w-full rounded-xl">
                         <Lock className="h-4 w-4" />
-                        ปิดประมูลแล้ว
+                        {outcome?.label ?? "ปิดประมูลแล้ว"}
                       </Button>
+                      {outcome?.hint && (
+                        <p className="text-center text-xs text-muted-foreground">{outcome.hint}</p>
+                      )}
                       {isWinner && (
                         <p className="text-center text-xs text-primary">
                           คุณเป็นผู้ชนะ — กำลังพาไปหน้าชำระเงิน
@@ -360,6 +363,7 @@ function CardDetailPage() {
                       )}
                     </div>
                   )}
+
                 </>
               )}
 
