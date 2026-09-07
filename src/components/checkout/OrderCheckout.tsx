@@ -407,6 +407,98 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                 {/* ที่อยู่จัดส่ง */}
                 <section className="space-y-3 rounded-3xl border border-border/70 bg-card p-4">
                   <h2 className="font-display text-sm tracking-[0.16em] uppercase">ที่อยู่จัดส่ง</h2>
+
+                  {savedAddresses.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-xs text-muted-foreground">เลือกที่อยู่ที่บันทึกไว้</p>
+                      {savedAddresses.map((a) => {
+                        const selected = a.id === selectedAddressId;
+                        return (
+                          <div
+                            key={a.id}
+                            className={cn(
+                              "rounded-2xl border p-3 transition-colors",
+                              selected
+                                ? "border-primary/60 bg-primary/5"
+                                : "border-border/70 hover:border-primary/40",
+                            )}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => applyAddress(a)}
+                              className="flex w-full items-start gap-3 text-left"
+                            >
+                              <span
+                                className={cn(
+                                  "mt-1 grid h-4 w-4 shrink-0 place-items-center rounded-full border",
+                                  selected ? "border-primary" : "border-muted-foreground/50",
+                                )}
+                              >
+                                {selected && (
+                                  <span className="h-2 w-2 rounded-full bg-primary" />
+                                )}
+                              </span>
+                              <span className="min-w-0 flex-1">
+                                <span className="flex flex-wrap items-center gap-2">
+                                  <span className="text-sm font-semibold">{a.label}</span>
+                                  {a.is_default && (
+                                    <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">
+                                      ค่าเริ่มต้น
+                                    </span>
+                                  )}
+                                </span>
+                                <span className="mt-0.5 block text-xs text-muted-foreground">
+                                  {a.name} • {a.phone}
+                                </span>
+                                <span className="mt-0.5 block text-xs break-words text-muted-foreground">
+                                  {a.address} ต.{a.subdistrict} อ.{a.district} จ.{a.province}{" "}
+                                  {a.postcode}
+                                </span>
+                              </span>
+                            </button>
+                            <div className="mt-2 flex flex-wrap gap-2 border-t border-border/60 pt-2">
+                              {!a.is_default && (
+                                <button
+                                  type="button"
+                                  onClick={() => setDefaultAddress.mutate(a.id)}
+                                  className="min-h-9 rounded-lg border border-border px-3 text-xs font-medium hover:border-primary/50"
+                                >
+                                  ตั้งเป็นค่าเริ่มต้น
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  removeAddress.mutate(a.id);
+                                  if (selectedAddressId === a.id) setSelectedAddressId(null);
+                                }}
+                                className="min-h-9 rounded-lg border border-border px-3 text-xs font-medium text-destructive hover:border-destructive/50"
+                              >
+                                ลบ
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedAddressId(null);
+                          setEditingNew(true);
+                          setShip(emptyShipping);
+                        }}
+                        className={cn(
+                          "min-h-10 w-full rounded-2xl border border-dashed px-3 text-xs font-semibold",
+                          selectedAddressId
+                            ? "border-border text-muted-foreground hover:border-primary/50"
+                            : "border-primary text-primary",
+                        )}
+                      >
+                        + เพิ่มที่อยู่ใหม่
+                      </button>
+                    </div>
+                  )}
+
                   <div className="grid gap-3 sm:grid-cols-2">
                     <Field
                       id="ship-name"
