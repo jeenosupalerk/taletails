@@ -189,8 +189,12 @@ function ProductPage() {
               alt={`${product.cardName} รูปที่ ${active + 1}`}
               transformWidth={900}
               priority
+              galleryImages={product.images}
+              galleryIndex={active}
+              onGalleryIndexChange={setActive}
               className={`object-cover object-center ${soldOut ? "opacity-50" : ""}`}
             />
+
             {soldOut && (
               <span className="absolute inset-x-0 top-1/2 mx-auto w-fit -translate-y-1/2 rounded-full bg-foreground/85 px-5 py-2 font-display text-sm font-bold text-background shadow-lg">
                 ขายแล้ว (Sold Out)
