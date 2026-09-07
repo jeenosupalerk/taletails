@@ -10,8 +10,10 @@ import {
   ShieldCheck,
   Trash2,
   Upload,
+  Zap,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 
 import { CheckoutStepper } from "@/components/checkout/CheckoutStepper";
@@ -23,6 +25,7 @@ import { Label } from "@/components/ui/label";
 import { useAuthUserId, useOrder, useSubmitPayment } from "@/hooks/useCardDetail";
 import { pad, useCountdown } from "@/hooks/useCountdown";
 import { thb } from "@/lib/cart";
+import { startPromptPayPayment } from "@/lib/payments.functions";
 import { cn } from "@/lib/utils";
 import { StatusDialog } from "@/components/ui/status-dialog";
 
@@ -103,7 +106,9 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
   const [preview, setPreview] = useState<string | null>(null);
   const [ship, setShip] = useState<Shipping>(emptyShipping);
   const [remember, setRemember] = useState(true);
-  const method = "qr_promptpay" as const;
+  const [method, setMethod] = useState<"auto" | "manual">("auto");
+  const [redirecting, setRedirecting] = useState(false);
+  const startAutoPay = useServerFn(startPromptPayPayment);
   const [stage, setStage] = useState<"details" | "pay">("details");
   const [done, setDone] = useState(false);
   const [paidOpen, setPaidOpen] = useState(false);
@@ -160,8 +165,35 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
         /* ignore */
       }
     }
+    if (method === "auto") {
+      void startAuto();
+      return;
+    }
     setStage("pay");
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  /** ชำระผ่าน PromptPay อัตโนมัติ: ระบบตรวจเงินเข้าเอง ไม่ต้องแนบสลิป */
+  const startAuto = async () => {
+    setRedirecting(true);
+    try {
+      const fullAddress = `${ship.address} ต.${ship.subdistrict} อ.${ship.district} จ.${ship.province} ${ship.postcode}`;
+      const result = await startAutoPay({
+        data: {
+          orderId,
+          shipping: { name: ship.name, phone: ship.phone, address: fullAddress },
+        },
+      });
+      if ("error" in result && result.error) throw new Error(result.error);
+      if ("url" in result && result.url) {
+        window.location.href = result.url;
+        return;
+      }
+      throw new Error("ไม่สามารถเริ่มการชำระเงินได้");
+    } catch (e) {
+      setRedirecting(false);
+      toast.error(e instanceof Error ? e.message : "เริ่มการชำระเงินไม่สำเร็จ");
+    }
   };
 
 
@@ -192,7 +224,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
       {
         userId,
         file,
-        method,
+        method: "qr_promptpay",
         shipping: { name: ship.name, phone: ship.phone, address: fullAddress },
       },
       {
@@ -387,32 +419,74 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                   </label>
                 </section>
 
-                {/* วิธีชำระเงิน: PromptPay เท่านั้น */}
-                <section className="rounded-3xl border border-primary/30 bg-primary/5 p-4">
-                  <div className="flex items-center gap-3">
-                    <span className="grid min-h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
+                {/* วิธีชำระเงิน */}
+                <section className="space-y-3 rounded-3xl border border-border/70 bg-card p-4">
+                  <h2 className="font-display text-sm tracking-[0.16em] uppercase">วิธีชำระเงิน</h2>
+
+                  <button
+                    type="button"
+                    onClick={() => setMethod("auto")}
+                    className={cn(
+                      "flex w-full items-start gap-3 rounded-2xl border p-3 text-left transition-colors",
+                      method === "auto"
+                        ? "border-primary/60 bg-primary/5"
+                        : "border-border/70 hover:border-primary/40",
+                    )}
+                  >
+                    <span className="grid min-h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+                      <Zap className="h-5 w-5" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="flex flex-wrap items-center gap-2">
+                        <span className="text-sm font-semibold">PromptPay อัตโนมัติ</span>
+                        <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-medium text-primary">
+                          แนะนำ
+                        </span>
+                      </span>
+                      <span className="mt-0.5 block text-xs break-words text-muted-foreground">
+                        สแกน QR แล้วระบบตรวจเงินเข้าเอง ไม่ต้องแนบสลิป ไม่ต้องรอแอดมินยืนยัน
+                      </span>
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setMethod("manual")}
+                    className={cn(
+                      "flex w-full items-start gap-3 rounded-2xl border p-3 text-left transition-colors",
+                      method === "manual"
+                        ? "border-primary/60 bg-primary/5"
+                        : "border-border/70 hover:border-primary/40",
+                    )}
+                  >
+                    <span className="grid min-h-10 w-10 shrink-0 place-items-center rounded-xl bg-secondary text-foreground">
                       <QrCode className="h-5 w-5" />
                     </span>
-                    <div className="min-w-0 flex-1">
-                      <h2 className="font-display text-sm font-semibold tracking-[0.16em] uppercase">
-                        ชำระด้วย QR PromptPay
-                      </h2>
-                      <p className="mt-0.5 text-xs break-words text-muted-foreground">
-                        สแกนด้วยแอปธนาคารใดก็ได้ ยอดถูกใส่มาให้อัตโนมัติ แล้วแนบสลิปยืนยันในขั้นตอนถัดไป
-                      </p>
-                    </div>
-                  </div>
+                    <span className="min-w-0 flex-1">
+                      <span className="text-sm font-semibold">โอนเอง + แนบสลิป</span>
+                      <span className="mt-0.5 block text-xs break-words text-muted-foreground">
+                        สแกน QR PromptPay ของร้าน แล้วแนบสลิปให้ทีมงานตรวจสอบ
+                      </span>
+                    </span>
+                  </button>
                 </section>
 
                 <Button
                   onClick={goToPayment}
+                  disabled={redirecting}
                   className="h-12 w-full rounded-2xl bg-gradient-ember text-base font-semibold shadow-glow"
                 >
-                  <ShieldCheck className="h-4 w-4" />
-                  ยืนยันการชำระเงิน
+                  {redirecting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <ShieldCheck className="h-4 w-4" />
+                  )}
+                  ดำเนินการชำระเงิน
                 </Button>
                 <p className="text-center text-[11px] text-muted-foreground">
-                  ขั้นต่อไปจะแสดง QR PromptPay พร้อมยอดเงินสำหรับสแกนและแนบสลิป
+                  {method === "auto"
+                    ? "ขั้นต่อไปจะแสดง QR PromptPay ที่ระบบตรวจเงินเข้าให้อัตโนมัติ"
+                    : "ขั้นต่อไปจะแสดง QR PromptPay พร้อมยอดเงินสำหรับสแกนและแนบสลิป"}
                 </p>
               </>
             ) : (
