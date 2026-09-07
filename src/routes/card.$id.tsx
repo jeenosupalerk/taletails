@@ -30,8 +30,10 @@ import {
   usePlaceBid,
 } from "@/hooks/useCardDetail";
 import { pad, useCountdown } from "@/hooks/useCountdown";
+import { AUCTION_OUTCOME_TONE_CLASS, getAuctionOutcome } from "@/lib/auction-status";
 import { thb } from "@/lib/cart";
 import { cn } from "@/lib/utils";
+
 
 const SITE_URL = "https://taletails-test.lovable.app";
 /** Stable placeholder so the countdown hook is not re-armed on every render. */
@@ -91,6 +93,12 @@ function CardDetailPage() {
   const countdown = useCountdown(auction?.end_time ?? FAR_FUTURE);
   const closed =
     !!auction && (auction.status !== "active" || (!!countdown && countdown.isFinished));
+
+  const outcome =
+    auction && card
+      ? getAuctionOutcome(auction.status, card.status, auction.end_time)
+      : null;
+
 
   const minNext = auction
     ? auction.bid_count === 0
@@ -250,7 +258,18 @@ function CardDetailPage() {
                   {card.rarity}
                 </span>
               )}
+              {isAuction && outcome && (
+                <span
+                  className={cn(
+                    "rounded-full border px-3 py-1 font-semibold",
+                    AUCTION_OUTCOME_TONE_CLASS[outcome.tone],
+                  )}
+                >
+                  {outcome.label}
+                </span>
+              )}
             </div>
+
 
             {/* Price block */}
             <div className="mt-8 rounded-[24px] border border-border/70 bg-card p-6 shadow-[0_18px_50px_-38px_hsl(var(--foreground)/0.5)]">
@@ -343,8 +362,11 @@ function CardDetailPage() {
                     <div className="mt-6 space-y-3">
                       <Button disabled className="min-h-11 w-full rounded-xl">
                         <Lock className="h-4 w-4" />
-                        ปิดประมูลแล้ว
+                        {outcome?.label ?? "ปิดประมูลแล้ว"}
                       </Button>
+                      {outcome?.hint && (
+                        <p className="text-center text-xs text-muted-foreground">{outcome.hint}</p>
+                      )}
                       {isWinner && (
                         <p className="text-center text-xs text-primary">
                           คุณเป็นผู้ชนะ — กำลังพาไปหน้าชำระเงิน
@@ -352,6 +374,7 @@ function CardDetailPage() {
                       )}
                     </div>
                   )}
+
                 </>
               )}
 
