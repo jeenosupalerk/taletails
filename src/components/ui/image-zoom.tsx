@@ -118,15 +118,20 @@ export function ZoomableImage({
           clearHold();
           setLens(null);
         }}
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setCurrent(galleryIndex);
+          setOpen(true);
+        }}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
+            setCurrent(galleryIndex);
             setOpen(true);
           }
         }}
+
         aria-label={`ขยายรูป ${alt}`}
       >
         <SmartImage
