@@ -49,7 +49,8 @@ function BigCountdown({ endTime }: { endTime: string }) {
 export function LiveAuctionSlider() {
   const [index, setIndex] = useState(0);
   const live = useLiveAuctions();
-  const items: Auction[] = live.data?.length ? live.data : getLiveAuctions();
+  const liveOnly = (live.data ?? []).filter((a) => a.outcome.outcome === "live");
+  const items: Auction[] = liveOnly.length ? liveOnly : getLiveAuctions();
   const go = (d: number) => setIndex((i) => (i + d + items.length) % items.length);
   const active = items[Math.min(index, items.length - 1)]!;
 
