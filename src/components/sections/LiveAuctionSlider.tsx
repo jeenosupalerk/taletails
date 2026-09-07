@@ -1,10 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight, Gavel, Radio } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { SectionHeading } from "@/components/site/SectionHeading";
 import { Button } from "@/components/ui/button";
-import { getLiveAuctions, type Auction } from "@/data/auctions";
+import type { Auction } from "@/data/auctions";
 import { useLiveAuctions } from "@/hooks/useLiveAuctions";
 import { thb } from "@/lib/cart";
 import { pad, useCountdown } from "@/hooks/useCountdown";
