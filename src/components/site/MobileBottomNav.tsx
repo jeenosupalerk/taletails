@@ -44,11 +44,9 @@ export function MobileBottomNav() {
               aria-current={active ? "page" : undefined}
               className="relative block min-w-0 flex-1"
             >
-              <motion.span
-                whileTap={{ scale: 0.92 }}
-                transition={{ type: "spring", stiffness: 600, damping: 28, mass: 0.6 }}
+              <span
                 className={cn(
-                  "relative flex min-h-[3.75rem] w-full flex-col items-center justify-center gap-1 rounded-[1.6rem] px-1 py-1.5",
+                  "relative flex min-h-[3.75rem] w-full flex-col items-center justify-center gap-1 rounded-[1.6rem] px-1 py-1.5 transition-colors duration-200",
                   active ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
                 )}
               >
@@ -56,33 +54,36 @@ export function MobileBottomNav() {
                 {active && (
                   <motion.span
                     layoutId="mobile-nav-pill"
-                    className="absolute inset-0 rounded-full bg-gradient-ember"
-                    transition={{ type: "spring", stiffness: 380, damping: 32, mass: 0.9 }}
+                    className="absolute inset-0 rounded-full bg-gradient-ember will-change-transform"
+                    style={{ transformOrigin: "center" }}
+                    transition={{ type: "tween", ease: [0.22, 1, 0.36, 1], duration: 0.32 }}
                   />
                 )}
                 <motion.span
                   initial={false}
-                  animate={{ scale: active ? 1.08 : 1, y: active ? -1 : 0 }}
-                  transition={{ type: "spring", stiffness: 500, damping: 26 }}
-                  className="relative z-10 flex items-center justify-center"
+                  whileTap={{ scale: 0.9 }}
+                  animate={{ scale: active ? 1.06 : 1 }}
+                  transition={{ type: "tween", ease: "easeOut", duration: 0.2 }}
+                  className="relative z-10 flex items-center justify-center will-change-transform"
                 >
                   <Icon className="h-5 w-5 shrink-0" strokeWidth={active ? 2.5 : 2} />
                 </motion.span>
-                <motion.span
-                  initial={false}
-                  animate={{ opacity: active ? 1 : 0.82, scale: active ? 1 : 0.96 }}
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  className="relative z-10 w-full truncate text-center text-[11px] font-semibold leading-none sm:text-xs"
+                <span
+                  className={cn(
+                    "relative z-10 w-full truncate text-center text-[11px] font-semibold leading-none transition-opacity duration-200 sm:text-xs",
+                    active ? "opacity-100" : "opacity-80",
+                  )}
                 >
                   {item.label}
-                </motion.span>
+                </span>
                 {showBadge && (
                   <span className="absolute -top-0.5 right-0.5 z-20 grid min-w-4 place-items-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-none text-destructive-foreground shadow-sm">
                     {unread > 9 ? "9+" : unread}
                   </span>
                 )}
-              </motion.span>
+              </span>
             </Link>
+
           );
         })}
       </div>
