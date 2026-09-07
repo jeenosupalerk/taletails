@@ -108,7 +108,16 @@ function MarketPage() {
                 </div>
               ))}
             </div>
+          ) : marketCards.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 px-6 py-16 text-center">
+              <LineChart className="min-h-10 w-10 text-muted-foreground/50" />
+              <p className="font-semibold">ยังไม่มีรายการซื้อขายสำเร็จบนตลาดกลาง</p>
+              <p className="text-sm text-muted-foreground">
+                เมื่อมีการชำระเงินเรียบร้อย ระบบจะสรุปราคาและสถิติที่นี่ทันที
+              </p>
+            </div>
           ) : (
+
             <div className="overflow-x-auto">
               <table className="w-full min-w-[560px] text-sm">
                 <thead>
