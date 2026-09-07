@@ -18,11 +18,11 @@ export function ProductGridCard({ product }: { product: Product }) {
   const isPending = product.status === "locked";
 
   return (
-    <article className="group surface-panel relative flex flex-col overflow-hidden transition-shadow duration-300 hover:shadow-card">
+    <article className="group surface-panel relative flex flex-col overflow-hidden border-2 border-transparent transition-[box-shadow,border-color,transform] duration-200 hover:shadow-card active:border-primary active:shadow-glow">
       <Link
         to="/product/$id"
         params={{ id: product.id }}
-        className="flex flex-1 flex-col"
+        className="flex flex-1 flex-col transition-transform duration-200 active:scale-[0.98]"
         aria-label={product.cardName}
       >
 
@@ -81,7 +81,7 @@ export function ProductGridCard({ product }: { product: Product }) {
             { description: product.cardName },
           );
         }}
-        className="absolute right-3 bottom-3 flex min-h-10 w-10 items-center justify-center rounded-full border border-border bg-white shadow-sm transition-colors hover:bg-secondary"
+        className="absolute right-3 bottom-3 flex min-h-10 w-10 items-center justify-center rounded-full border border-border bg-white shadow-sm transition-[colors,transform,box-shadow] duration-150 hover:bg-secondary active:scale-90 active:border-primary active:bg-secondary"
       >
         <Heart className={`h-4 w-4 ${wished ? "fill-primary text-primary" : "text-muted-foreground"}`} />
       </button>
@@ -137,10 +137,10 @@ export function FeaturedMarketplace({
                 type="button"
                 onClick={() => setFilter(f.value)}
                 aria-pressed={filter === f.value}
-                className={`min-h-10 rounded-full border px-4 text-xs font-semibold transition-colors ${
+                className={`min-h-10 rounded-full border px-4 text-xs font-semibold transition-[colors,transform,box-shadow] duration-150 active:scale-95 ${
                   filter === f.value
                     ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border bg-card text-muted-foreground hover:text-foreground"
+                    : "border-border bg-card text-muted-foreground hover:text-foreground active:border-primary active:text-primary"
                 }`}
               >
                 {f.label}

@@ -31,7 +31,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 border-b border-border/80 bg-header shadow-header md:top-4 md:mx-auto md:mt-4 md:w-[calc(100%-2rem)] md:max-w-7xl md:rounded-full md:border md:border-border/60 md:bg-card/85 md:shadow-[0_18px_50px_-24px_rgba(0,0,0,0.45)] md:backdrop-blur-xl dark:backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-4 sm:gap-4 sm:px-6 md:h-[68px] md:gap-3 md:px-3 lg:px-4">
 
-        <Link to="/" className="flex min-w-0 items-center gap-2.5 md:shrink-0 md:pl-2">
+        <Link to="/" className="flex min-w-0 items-center gap-2.5 transition-transform duration-150 active:scale-95 md:shrink-0 md:pl-2">
           <img src={taletailsLogo} alt="โลโก้ Taletails Collectibles — ตลาดและประมูลการ์ดสะสม" width={36} height={36} className="min-h-9 w-9 shrink-0 rounded-lg object-cover" />
           <span className="truncate font-display text-lg font-bold tracking-tight">
             Tale<span className="text-gradient-ember">tails</span>
@@ -44,7 +44,7 @@ export function SiteHeader() {
               key={item.to}
               to={item.to}
               activeProps={{ className: "bg-secondary text-foreground shadow-sm" }}
-              className="rounded-full px-3.5 py-2 text-sm font-medium text-muted-foreground transition-[colors,transform,box-shadow] duration-150 ease-out hover:-translate-y-0.5 hover:bg-secondary hover:text-foreground hover:shadow-sm"
+              className="rounded-full px-3.5 py-2 text-sm font-medium text-muted-foreground transition-[colors,transform,box-shadow] duration-150 ease-out hover:-translate-y-0.5 hover:bg-secondary hover:text-foreground hover:shadow-sm active:translate-y-0 active:scale-95 active:bg-secondary active:text-foreground"
             >
               {item.label}
             </Link>
