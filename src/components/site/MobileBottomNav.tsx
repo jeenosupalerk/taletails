@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { ChartLine, Flame, Home, Store, User } from "lucide-react";
 
 import { useAuth } from "@/lib/auth";
@@ -28,7 +28,7 @@ export function MobileBottomNav() {
       aria-label="เมนูหลักบนมือถือ"
       className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] lg:hidden"
     >
-      <div className="pointer-events-auto flex w-full max-w-md min-h-13 flex-nowrap items-center justify-between gap-0.5 overflow-hidden rounded-full border border-border/60 bg-card/70 p-1.5 shadow-glow backdrop-blur-xl backdrop-saturate-150">
+      <div className="pointer-events-auto flex min-h-[4.5rem] w-full max-w-md flex-nowrap items-stretch justify-between gap-0.5 overflow-hidden rounded-[2rem] border border-border/60 bg-card/70 p-1.5 shadow-glow backdrop-blur-xl backdrop-saturate-150">
         {items.map((item) => {
           const active =
             item.to === "/"
@@ -42,13 +42,13 @@ export function MobileBottomNav() {
               to={item.to}
               aria-label={item.label}
               aria-current={active ? "page" : undefined}
-              className="relative block min-w-0 shrink"
+              className="relative block min-w-0 flex-1"
             >
               <motion.span
                 whileTap={{ scale: 0.92 }}
                 transition={{ type: "spring", stiffness: 600, damping: 28, mass: 0.6 }}
                 className={cn(
-                  "relative flex min-h-11 items-center justify-center gap-1.5 rounded-full px-2.5 sm:px-3",
+                  "relative flex min-h-[3.75rem] w-full flex-col items-center justify-center gap-1 rounded-[1.6rem] px-1 py-1.5",
                   active ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
                 )}
               >
@@ -62,26 +62,20 @@ export function MobileBottomNav() {
                 )}
                 <motion.span
                   initial={false}
-                  animate={{ scale: active ? 1.08 : 1 }}
+                  animate={{ scale: active ? 1.08 : 1, y: active ? -1 : 0 }}
                   transition={{ type: "spring", stiffness: 500, damping: 26 }}
-                  className="relative z-10 flex items-center gap-1.5"
+                  className="relative z-10 flex items-center justify-center"
                 >
                   <Icon className="h-5 w-5 shrink-0" strokeWidth={active ? 2.5 : 2} />
                 </motion.span>
-                <AnimatePresence initial={false} mode="popLayout">
-                  {active && (
-                    <motion.span
-                      key="label"
-                      initial={{ opacity: 0, width: 0, scale: 0.6 }}
-                      animate={{ opacity: 1, width: "auto", scale: 1 }}
-                      exit={{ opacity: 0, width: 0, scale: 0.6 }}
-                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                      className="relative z-10 max-w-[4.5rem] truncate overflow-hidden text-sm font-semibold"
-                    >
-                      {item.label}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
+                <motion.span
+                  initial={false}
+                  animate={{ opacity: active ? 1 : 0.82, scale: active ? 1 : 0.96 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  className="relative z-10 w-full truncate text-center text-[11px] font-semibold leading-none sm:text-xs"
+                >
+                  {item.label}
+                </motion.span>
                 {showBadge && (
                   <span className="absolute -top-0.5 right-0.5 z-20 grid min-w-4 place-items-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-none text-destructive-foreground shadow-sm">
                     {unread > 9 ? "9+" : unread}
