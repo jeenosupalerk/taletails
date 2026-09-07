@@ -12,6 +12,7 @@ import { getLiveAuctions, type Auction } from "@/data/auctions";
 import { useLiveAuctions, type LiveAuction } from "@/hooks/useLiveAuctions";
 import { thb } from "@/lib/cart";
 import {
+  AUCTION_OUTCOME_DOT_CLASS,
   AUCTION_OUTCOME_TONE_CLASS,
   getAuctionOutcome,
   type AuctionOutcomeInfo,
@@ -208,9 +209,12 @@ function AuctionsPage() {
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   <span
-                    className={`absolute top-3 left-3 max-w-[70%] truncate rounded-full border px-2.5 py-1 text-[11px] font-bold backdrop-blur ${AUCTION_OUTCOME_TONE_CLASS[auction.outcome.tone]}`}
+                    className={`absolute top-3 left-3 inline-flex max-w-[70%] items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold shadow-[0_6px_18px_-8px_rgba(0,0,0,0.6)] ${AUCTION_OUTCOME_TONE_CLASS[auction.outcome.tone]}`}
                   >
-                    {auction.outcome.label}
+                    <span
+                      className={`h-1.5 w-1.5 shrink-0 rounded-full ${AUCTION_OUTCOME_DOT_CLASS[auction.outcome.tone]}`}
+                    />
+                    <span className="truncate">{auction.outcome.label}</span>
                   </span>
                   <span className="absolute top-3 right-3 rounded-full border border-accent/40 bg-background/85 px-2.5 py-1 font-display text-[11px] font-bold text-accent">
                     {auction.grade}
