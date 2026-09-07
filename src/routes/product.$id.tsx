@@ -220,8 +220,9 @@ function ProductPage() {
           )}
         </div>
 
+        <div className="min-w-0">
         {/* ชื่อ + ราคา */}
-        <div className="mt-6">
+        <div className="mt-6 lg:mt-0">
           <h2 className="font-display text-xl font-bold break-words sm:text-2xl">
             {product.cardName}
           </h2>
