@@ -3,8 +3,6 @@ import {
   BadgeCheck,
   CheckCircle2,
   ChevronLeft,
-  Copy,
-  Landmark,
   Loader2,
   Lock,
   QrCode,
@@ -24,7 +22,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuthUserId, useOrder, useSubmitPayment } from "@/hooks/useCardDetail";
 import { pad, useCountdown } from "@/hooks/useCountdown";
-import { bankAccount } from "@/lib/bank";
 import { thb } from "@/lib/cart";
 import { cn } from "@/lib/utils";
 import { StatusDialog } from "@/components/ui/status-dialog";
@@ -106,7 +103,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
   const [preview, setPreview] = useState<string | null>(null);
   const [ship, setShip] = useState<Shipping>(emptyShipping);
   const [remember, setRemember] = useState(true);
-  const [method, setMethod] = useState<"qr_promptpay" | "slip">("qr_promptpay");
+  const method = "qr_promptpay" as const;
   const [stage, setStage] = useState<"details" | "pay">("details");
   const [done, setDone] = useState(false);
   const [paidOpen, setPaidOpen] = useState(false);
@@ -208,10 +205,6 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
     );
   };
 
-  const copyAccount = () => {
-    void navigator.clipboard.writeText(bankAccount.number.replace(/\D/g, ""));
-    toast.success("คัดลอกเลขที่บัญชีแล้ว");
-  };
 
   return (
     <div className="min-h-screen bg-background pb-16">
@@ -394,39 +387,20 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                   </label>
                 </section>
 
-                {/* เลือกวิธีชำระเงิน */}
-                <section className="space-y-4 rounded-3xl border border-border/70 bg-card p-4">
-                  <h2 className="font-display text-sm tracking-[0.16em] uppercase">
-                    เลือกวิธีชำระเงิน
-                  </h2>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setMethod("qr_promptpay")}
-                      className={cn(
-                        "flex min-h-[64px] flex-col items-center justify-center gap-1.5 rounded-2xl border px-3 py-2.5 text-sm font-medium transition-all",
-                        method === "qr_promptpay"
-                          ? "border-primary bg-primary/10 text-primary shadow-[0_14px_35px_-24px_hsl(var(--primary)/0.9)]"
-                          : "border-border/70 bg-secondary/25 text-muted-foreground hover:border-primary/40",
-                      )}
-                    >
+                {/* วิธีชำระเงิน: PromptPay เท่านั้น */}
+                <section className="rounded-3xl border border-primary/30 bg-primary/5 p-4">
+                  <div className="flex items-center gap-3">
+                    <span className="grid min-h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
                       <QrCode className="h-5 w-5" />
-                      QR PromptPay
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setMethod("slip")}
-                      className={cn(
-                        "flex min-h-[64px] flex-col items-center justify-center gap-1.5 rounded-2xl border px-3 py-2.5 text-sm font-medium transition-all",
-                        method === "slip"
-                          ? "border-primary bg-primary/10 text-primary shadow-[0_14px_35px_-24px_hsl(var(--primary)/0.9)]"
-                          : "border-border/70 bg-secondary/25 text-muted-foreground hover:border-primary/40",
-                      )}
-                    >
-                      <Landmark className="h-5 w-5" />
-                      โอนบัญชีธนาคาร
-                    </button>
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <h2 className="font-display text-sm font-semibold tracking-[0.16em] uppercase">
+                        ชำระด้วย QR PromptPay
+                      </h2>
+                      <p className="mt-0.5 text-xs break-words text-muted-foreground">
+                        สแกนด้วยแอปธนาคารใดก็ได้ ยอดถูกใส่มาให้อัตโนมัติ แล้วแนบสลิปยืนยันในขั้นตอนถัดไป
+                      </p>
+                    </div>
                   </div>
                 </section>
 
@@ -438,16 +412,16 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                   ยืนยันการชำระเงิน
                 </Button>
                 <p className="text-center text-[11px] text-muted-foreground">
-                  ขั้นต่อไปจะแสดง QR / เลขบัญชี สำหรับโอนเงินและแนบสลิป
+                  ขั้นต่อไปจะแสดง QR PromptPay พร้อมยอดเงินสำหรับสแกนและแนบสลิป
                 </p>
               </>
             ) : (
               <>
-                {/* ขั้นตอนชำระเงิน: QR / บัญชี + แนบสลิป */}
+                {/* ขั้นตอนชำระเงิน: QR PromptPay + แนบสลิป */}
                 <section className="space-y-4 rounded-3xl border border-border/70 bg-card p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <h2 className="font-display text-sm tracking-[0.16em] uppercase">
-                      {method === "qr_promptpay" ? "สแกน QR เพื่อชำระเงิน" : "โอนเข้าบัญชีธนาคาร"}
+                      สแกน QR PromptPay เพื่อชำระเงิน
                     </h2>
                     <button
                       type="button"
@@ -458,25 +432,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                     </button>
                   </div>
 
-                  {method === "qr_promptpay" && (
-                    <PromptPayQR amount={total} reference={order.id.slice(0, 8).toUpperCase()} />
-                  )}
-
-                  <div className="space-y-2 rounded-2xl border border-border/70 bg-secondary/25 p-4 text-sm">
-                    <Row label="ธนาคาร" value={bankAccount.bank} />
-                    <Row label="ชื่อบัญชี" value={bankAccount.name} />
-                    <Row label="เลขที่บัญชี" value={bankAccount.number} mono />
-                    <Row label="ยอดที่ต้องโอน" value={thb.format(total)} />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={copyAccount}
-                      className="mt-1 h-11 w-full rounded-xl"
-                    >
-                      <Copy className="h-4 w-4" />
-                      คัดลอกเลขบัญชี
-                    </Button>
-                  </div>
+                  <PromptPayQR amount={total} reference={order.id.slice(0, 8).toUpperCase()} />
 
                   {/* อัปโหลดสลิป */}
                   <div className="space-y-3">
@@ -596,13 +552,3 @@ function Field({
   );
 }
 
-function Row({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
-  return (
-    <div className="flex flex-wrap items-center justify-between gap-2">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span className={cn("text-sm font-medium break-all", mono && "font-mono tracking-wide")}>
-        {value}
-      </span>
-    </div>
-  );
-}
