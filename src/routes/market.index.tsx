@@ -1,10 +1,10 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Activity, ArrowDownRight, ArrowUpRight, LineChart, TrendingUp } from "lucide-react";
-import { useEffect, useState } from "react";
 
 import { PageShell } from "@/components/site/PageShell";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatThb, marketCards, marketSummary } from "@/data/market";
+import { formatThb } from "@/data/market";
+import { useMarketStats } from "@/hooks/useMarketStats";
 import { cn } from "@/lib/utils";
 import { SmartImage } from "@/components/ui/smart-image";
 
@@ -29,20 +29,18 @@ export const Route = createFileRoute("/market/")({
 });
 
 function MarketPage() {
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 700);
-    return () => clearTimeout(t);
-  }, []);
+  const { summary, cards: marketCards, isLoading: loading } = useMarketStats();
+  const marketSummary = summary;
+  const volumeUp = marketSummary.volumeChange24h >= 0;
 
   return (
     <PageShell
       eyebrow="Market Statistics"
       title="สถิติตลาดการ์ด"
-      description="ภาพรวมมูลค่าและเทรนด์ราคาการ์ดสะสมบนตลาดกลาง อัปเดตล่าสุดทุกวัน"
+      description="ภาพรวมมูลค่าและเทรนด์ราคาการ์ดสะสมบนตลาดกลาง คำนวณจากรายการที่ซื้อขายสำเร็จจริง"
     >
       <section className="mx-auto max-w-7xl space-y-6 px-4 py-6 pb-28 sm:px-6 lg:px-8">
+
         {/* Top metrics */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="surface-panel flex items-center gap-4 p-5">
