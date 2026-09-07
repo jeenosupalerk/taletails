@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuthUserId, useOrder, useSubmitPayment } from "@/hooks/useCardDetail";
+import { useAuthUserId, useCancelOrder, useOrder, useSubmitPayment } from "@/hooks/useCardDetail";
 import { pad, useCountdown } from "@/hooks/useCountdown";
 import { thb } from "@/lib/cart";
 import { startPromptPayPayment } from "@/lib/payments.functions";
@@ -101,6 +101,8 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
   const orderQuery = useOrder(orderId);
   const order = orderQuery.data ?? null;
   const submit = useSubmitPayment(orderId);
+  const cancel = useCancelOrder(orderId);
+  const [cancelOpen, setCancelOpen] = useState(false);
 
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -488,6 +490,16 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                     ? "ขั้นต่อไปจะแสดง QR PromptPay ที่ระบบตรวจเงินเข้าให้อัตโนมัติ"
                     : "ขั้นต่อไปจะแสดง QR PromptPay พร้อมยอดเงินสำหรับสแกนและแนบสลิป"}
                 </p>
+                {!order.auction_id && (
+                  <button
+                    type="button"
+                    onClick={() => setCancelOpen(true)}
+                    disabled={cancel.isPending}
+                    className="mx-auto block min-h-10 text-xs font-medium text-muted-foreground underline underline-offset-4 transition-colors hover:text-destructive"
+                  >
+                    {cancel.isPending ? "กำลังยกเลิก..." : "ยกเลิกคำสั่งซื้อนี้"}
+                  </button>
+                )}
               </>
             ) : (
               <>
@@ -569,12 +581,43 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                 <p className="text-center text-[11px] text-muted-foreground">
                   สลิปของคุณจะถูกส่งให้ทีมงานตรวจสอบในระบบหลังบ้าน
                 </p>
+                {!order.auction_id && (
+                  <button
+                    type="button"
+                    onClick={() => setCancelOpen(true)}
+                    disabled={cancel.isPending}
+                    className="mx-auto block min-h-10 text-xs font-medium text-muted-foreground underline underline-offset-4 transition-colors hover:text-destructive"
+                  >
+                    {cancel.isPending ? "กำลังยกเลิก..." : "ยกเลิกคำสั่งซื้อนี้"}
+                  </button>
+                )}
               </>
             )}
 
           </>
         )}
       </main>
+
+      <StatusDialog
+        open={cancelOpen}
+        onOpenChange={setCancelOpen}
+        tone="warning"
+        title="ยกเลิกคำสั่งซื้อนี้?"
+        description="สินค้าจะถูกปลดล็อกและกลับไปเปิดขายในตลาดทันที"
+        actionLabel="ยืนยันยกเลิก"
+        onAction={() =>
+          cancel.mutate(undefined, {
+            onSuccess: () => {
+              toast.success("ยกเลิกคำสั่งซื้อแล้ว สินค้ากลับไปเปิดขายแล้ว");
+              void navigate({ to: "/marketplace" });
+            },
+            onError: (e) => toast.error(e.message),
+          })
+        }
+        secondaryLabel="ชำระเงินต่อ"
+      >
+        {order ? <p>เลขคำสั่งซื้อ {order.id.slice(0, 8).toUpperCase()}</p> : null}
+      </StatusDialog>
 
       <StatusDialog
         open={paidOpen}

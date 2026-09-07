@@ -179,8 +179,9 @@ function ProductPage() {
       description={`${product.setName} • ${product.grade}`}
     >
       <div className="mx-auto max-w-5xl px-4 pt-8 pb-44 sm:px-6 lg:px-8 lg:pb-32">
+        <div className="lg:grid lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)] lg:items-start lg:gap-8 xl:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
         {/* แกลเลอรี */}
-        <div className="surface-panel overflow-hidden p-4">
+        <div className="surface-panel overflow-hidden p-4 lg:sticky lg:top-24">
           <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl border border-border bg-secondary/40">
             <SmartImage
               src={product.images[active] ?? product.imageUrl}
@@ -219,8 +220,9 @@ function ProductPage() {
           )}
         </div>
 
+        <div className="min-w-0">
         {/* ชื่อ + ราคา */}
-        <div className="mt-6">
+        <div className="mt-6 lg:mt-0">
           <h2 className="font-display text-xl font-bold break-words sm:text-2xl">
             {product.cardName}
           </h2>
@@ -337,6 +339,8 @@ function ProductPage() {
             </AccordionContent>
           </AccordionItem>
         </Accordion>
+        </div>
+        </div>
 
         {/* สินค้าที่คุณอาจจะชอบ */}
         {related.length > 0 && (
