@@ -11,6 +11,11 @@ import { Button } from "@/components/ui/button";
 import { getLiveAuctions, type Auction } from "@/data/auctions";
 import { useLiveAuctions, type LiveAuction } from "@/hooks/useLiveAuctions";
 import { thb } from "@/lib/cart";
+import {
+  AUCTION_OUTCOME_TONE_CLASS,
+  getAuctionOutcome,
+  type AuctionOutcomeInfo,
+} from "@/lib/auction-status";
 import { SmartImage } from "@/components/ui/smart-image";
 
 const SITE_URL = "https://taletails-test.lovable.app";
