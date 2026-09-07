@@ -77,7 +77,7 @@ function MarketplacePage() {
       title="ตลาดซื้อขาย"
       description="ซื้อได้ทันทีจากร้านค้าที่ยืนยันตัวตนแล้ว ทุกใบมีรหัสการ์ดที่ตรวจสอบย้อนหลังได้"
     >
-      <FeaturedMarketplace showHeading={false} />
+      <FeaturedMarketplace showHeading={false} showFilter />
     </PageShell>
   );
 }
