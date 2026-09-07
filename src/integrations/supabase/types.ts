@@ -426,6 +426,8 @@ export type Database = {
           shipping_phone: string | null
           slip_url: string | null
           status: Database["public"]["Enums"]["order_status"]
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
           total_amount: number
           tracking_number: string | null
           updated_at: string
@@ -447,6 +449,8 @@ export type Database = {
           shipping_phone?: string | null
           slip_url?: string | null
           status?: Database["public"]["Enums"]["order_status"]
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
           total_amount: number
           tracking_number?: string | null
           updated_at?: string
@@ -468,6 +472,8 @@ export type Database = {
           shipping_phone?: string | null
           slip_url?: string | null
           status?: Database["public"]["Enums"]["order_status"]
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
           total_amount?: number
           tracking_number?: string | null
           updated_at?: string
@@ -630,6 +636,8 @@ export type Database = {
           shipping_phone: string | null
           slip_url: string | null
           status: Database["public"]["Enums"]["order_status"]
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
           total_amount: number
           tracking_number: string | null
           updated_at: string
@@ -667,6 +675,8 @@ export type Database = {
           shipping_phone: string | null
           slip_url: string | null
           status: Database["public"]["Enums"]["order_status"]
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
           total_amount: number
           tracking_number: string | null
           updated_at: string
@@ -747,6 +757,8 @@ export type Database = {
           shipping_phone: string | null
           slip_url: string | null
           status: Database["public"]["Enums"]["order_status"]
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
           total_amount: number
           tracking_number: string | null
           updated_at: string
@@ -788,7 +800,7 @@ export type Database = {
       auction_status: "active" | "ended" | "waiting_payment" | "passed_to_next"
       card_status: "available" | "locked" | "sold"
       order_status: "pending" | "paid" | "shipped" | "cancelled" | "completed"
-      payment_method: "slip" | "qr_promptpay"
+      payment_method: "slip" | "qr_promptpay" | "stripe_promptpay"
       sale_type: "auction" | "fixed_price"
     }
     CompositeTypes: {
@@ -921,7 +933,7 @@ export const Constants = {
       auction_status: ["active", "ended", "waiting_payment", "passed_to_next"],
       card_status: ["available", "locked", "sold"],
       order_status: ["pending", "paid", "shipped", "cancelled", "completed"],
-      payment_method: ["slip", "qr_promptpay"],
+      payment_method: ["slip", "qr_promptpay", "stripe_promptpay"],
       sale_type: ["auction", "fixed_price"],
     },
   },
