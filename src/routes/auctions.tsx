@@ -23,6 +23,7 @@ const description =
 export const Route = createFileRoute("/auctions")({
   validateSearch: (search: Record<string, unknown>) => ({
     id: typeof search['id'] === "string" ? (search['id'] as string) : undefined,
+    status: typeof search['status'] === "string" ? (search['status'] as string) : "all",
   }),
   head: () => ({
     meta: [
