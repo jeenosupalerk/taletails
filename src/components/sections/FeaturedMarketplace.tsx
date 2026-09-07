@@ -88,10 +88,32 @@ export function ProductGridCard({ product }: { product: Product }) {
   );
 }
 
-export function FeaturedMarketplace({ showHeading = true }: { showHeading?: boolean }) {
+const STATUS_FILTERS: { value: string; label: string }[] = [
+  { value: "all", label: "ทั้งหมด" },
+  { value: "available", label: "พร้อมขาย" },
+  { value: "locked", label: "รอชำระเงิน" },
+  { value: "sold", label: "ขายแล้ว" },
+];
+
+const STATUS_RANK: Record<string, number> = { available: 0, locked: 1, sold: 2 };
+
+export function FeaturedMarketplace({
+  showHeading = true,
+  showFilter = false,
+}: {
+  showHeading?: boolean;
+  showFilter?: boolean;
+}) {
   const { data: liveCards } = useMarketplaceCards();
+  const [filter, setFilter] = useState("all");
   // Live Supabase rows when available, curated demo listings otherwise.
-  const featured = liveCards && liveCards.length > 0 ? liveCards : getFeaturedProducts();
+  const all = liveCards && liveCards.length > 0 ? liveCards : getFeaturedProducts();
+  const sorted = [...all].sort(
+    (a, b) => (STATUS_RANK[a.status ?? "available"] ?? 0) - (STATUS_RANK[b.status ?? "available"] ?? 0),
+  );
+  const featured = showFilter && filter !== "all"
+    ? sorted.filter((p) => (p.status ?? "available") === filter)
+    : sorted;
 
   return (
     <section id="marketplace" className="border-y border-border bg-card/30">
