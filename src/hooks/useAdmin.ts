@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthUserId } from "@/hooks/useCardDetail";
+import { compressImageFile } from "@/lib/image-compress";
 
 const TEN_YEARS = 60 * 60 * 24 * 365 * 10;
 
@@ -193,7 +194,8 @@ export function useCreateCard() {
       if (!userId) throw new Error("กรุณาเข้าสู่ระบบด้วยบัญชีผู้ดูแลระบบ");
 
       const images: string[] = [];
-      for (const file of input.files) {
+      for (const original of input.files) {
+        const file = await compressImageFile(original);
         const ext = file.name.split(".").pop() ?? "jpg";
         const path = `${userId}/${crypto.randomUUID()}.${ext}`;
         const { error: upErr } = await supabase.storage

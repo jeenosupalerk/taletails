@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ImgHTMLAttributes } from "react";
 
+import { getRescaledImage } from "@/lib/image-compress";
 import { optimizedImageUrl, type ImageTransformOptions } from "@/lib/images";
 import { cn } from "@/lib/utils";
 
@@ -75,7 +76,7 @@ export function SmartImage({
     const img = imgRef.current;
     if (!img || img.naturalWidth * img.naturalHeight <= 8_000_000) return;
     let cancelled = false;
-    void getRescaledImage(currentSrc).then((next) => {
+    void getRescaledImage(currentSrc).then((next: string | null) => {
       if (!cancelled && next) setCurrentSrc(next);
     });
     return () => {

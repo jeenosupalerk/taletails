@@ -73,3 +73,14 @@ export async function rescaleOversizedImage(url: string): Promise<string | null>
     return null;
   }
 }
+
+const rescaleCache = new Map<string, Promise<string | null>>();
+
+/** Cached variant of rescaleOversizedImage, shared across components. */
+export function getRescaledImage(url: string): Promise<string | null> {
+  const hit = rescaleCache.get(url);
+  if (hit) return hit;
+  const task = rescaleOversizedImage(url);
+  rescaleCache.set(url, task);
+  return task;
+}
