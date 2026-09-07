@@ -75,13 +75,37 @@ function MarketDetailPage() {
     () =>
       historyInRange(card?.priceHistory ?? [], range).map((p) => ({
         date: p.date.slice(5).split("-").reverse().join("/"),
-
         price: p.price,
       })),
-    [card.priceHistory, range],
+    [card?.priceHistory, range],
   );
 
+  if (isLoading) {
+    return (
+      <PageShell title="สถิติการ์ด" description="กำลังโหลดข้อมูลการซื้อขายจริง">
+        <div className="flex min-h-[50vh] items-center justify-center">
+          <LogoLoader />
+        </div>
+      </PageShell>
+    );
+  }
+
+  if (!card) {
+    return (
+      <PageShell title="ไม่พบข้อมูลการ์ด" description="การ์ดใบนี้ยังไม่มีรายการซื้อขายสำเร็จ">
+        <div className="mx-auto max-w-2xl px-4 py-16 text-center text-muted-foreground">
+          เมื่อการ์ดใบนี้ถูกซื้อขายสำเร็จ ระบบจะแสดงกราฟราคาและประวัติที่นี่
+        </div>
+      </PageShell>
+    );
+  }
+
+  const diffVsAvg = card.avg30d ? ((card.lastPrice - card.avg30d) / card.avg30d) * 100 : 0;
+  const up = diffVsAvg >= 0;
+  const hasData = card.transactions.length > 0;
+
   return (
+
     <PageShell
       eyebrow={card.setName}
       title={card.cardName}
