@@ -61,6 +61,8 @@ export function ZoomableImage({
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
+      if (e.key === "ArrowRight") go(1);
+      if (e.key === "ArrowLeft") go(-1);
     };
     window.addEventListener("keydown", onKey);
     const prev = document.body.style.overflow;
@@ -69,7 +71,8 @@ export function ZoomableImage({
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = prev;
     };
-  }, [open]);
+  });
+
 
   const point = (clientX: number, clientY: number) => {
     const el = ref.current;
