@@ -88,6 +88,7 @@ export function SmartImage({
       )}
       <img
         {...imgProps}
+        ref={imgRef}
         src={currentSrc}
         alt={alt}
         loading={priority ? "eager" : "lazy"}
