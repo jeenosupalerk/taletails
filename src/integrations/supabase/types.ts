@@ -536,6 +536,62 @@ export type Database = {
         }
         Relationships: []
       }
+      user_addresses: {
+        Row: {
+          address: string
+          created_at: string
+          district: string
+          id: string
+          is_default: boolean
+          label: string
+          name: string
+          phone: string
+          postcode: string
+          province: string
+          subdistrict: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          district?: string
+          id?: string
+          is_default?: boolean
+          label?: string
+          name: string
+          phone: string
+          postcode?: string
+          province?: string
+          subdistrict?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          district?: string
+          id?: string
+          is_default?: boolean
+          label?: string
+          name?: string
+          phone?: string
+          postcode?: string
+          province?: string
+          subdistrict?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_addresses_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
