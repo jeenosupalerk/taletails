@@ -37,9 +37,15 @@ export function SmartImage({
   placeholderClassName,
   ...imgProps
 }: SmartImageProps) {
+  // Request a source that matches the device pixel density, otherwise the
+  // downscaled file looks soft/blurry on 2x–3x phone screens.
+  const dpr =
+    typeof window !== "undefined" ? Math.min(Math.max(window.devicePixelRatio || 1, 1), 3) : 2;
+  const scale = (v: number) => Math.min(Math.round(v * dpr), 2400);
+
   const optimized = optimizedImageUrl(src, {
-    ...(transformWidth ? { width: transformWidth } : {}),
-    ...(transformHeight ? { height: transformHeight } : {}),
+    ...(transformWidth ? { width: scale(transformWidth) } : {}),
+    ...(transformHeight ? { height: scale(transformHeight) } : {}),
     ...(transformQuality ? { quality: transformQuality } : {}),
     ...(transformResize ? { resize: transformResize } : {}),
   });

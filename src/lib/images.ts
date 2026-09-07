@@ -25,7 +25,7 @@ export function isSupabaseStorageUrl(url: string): boolean {
 
 export function optimizedImageUrl(
   url: string | undefined | null,
-  { width, height, quality = 70, resize = "cover" }: ImageTransformOptions = {},
+  { width, height, quality = 82, resize = "cover" }: ImageTransformOptions = {},
 ): string {
   if (!url) return "";
   if (!isSupabaseStorageUrl(url)) return url;
