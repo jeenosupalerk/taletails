@@ -660,6 +660,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_delete_card: { Args: { _card_id: string }; Returns: undefined }
       apply_auction_strike: {
         Args: { _auction_id: string; _order_id: string; _user_id: string }
         Returns: undefined
