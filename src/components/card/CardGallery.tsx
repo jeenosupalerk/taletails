@@ -60,11 +60,11 @@ export function CardGallery({
                 galleryIndex={i}
                 onGalleryIndexChange={setActive}
 
+                // Opacity-only crossfade: animating scale/filter here makes iOS
+                // Safari keep a low-res rasterization (stuck-blurry main image).
                 wrapperClassName={cn(
-                  "absolute inset-0 transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]",
-                  i === active
-                    ? "opacity-100 scale-100"
-                    : "opacity-0 scale-[1.03] pointer-events-none",
+                  "absolute inset-0 transition-opacity duration-500 ease-out",
+                  i === active ? "opacity-100" : "opacity-0 pointer-events-none",
                 )}
                 className="object-contain p-8"
               />
