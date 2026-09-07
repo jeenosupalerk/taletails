@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AddressesRouteImport } from './routes/addresses'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuctionsRouteImport } from './routes/auctions'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -45,6 +46,11 @@ import { Route as ApiPublicPushDispatchRouteImport } from './routes/api/public/p
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AddressesRoute = AddressesRouteImport.update({
+  id: '/addresses',
+  path: '/addresses',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -206,6 +212,7 @@ const ApiPublicPushDispatchRoute = ApiPublicPushDispatchRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/addresses': typeof AddressesRoute
   '/admin': typeof AdminRouteWithChildren
   '/auctions': typeof AuctionsRoute
   '/auth': typeof AuthRoute
@@ -240,6 +247,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/addresses': typeof AddressesRoute
   '/auctions': typeof AuctionsRoute
   '/auth': typeof AuthRoute
   '/marketplace': typeof MarketplaceRoute
@@ -273,6 +281,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/addresses': typeof AddressesRoute
   '/admin': typeof AdminRouteWithChildren
   '/auctions': typeof AuctionsRoute
   '/auth': typeof AuthRoute
@@ -309,6 +318,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/addresses'
     | '/admin'
     | '/auctions'
     | '/auth'
@@ -343,6 +353,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/addresses'
     | '/auctions'
     | '/auth'
     | '/marketplace'
@@ -375,6 +386,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/addresses'
     | '/admin'
     | '/auctions'
     | '/auth'
@@ -410,6 +422,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AddressesRoute: typeof AddressesRoute
   AdminRoute: typeof AdminRouteWithChildren
   AuctionsRoute: typeof AuctionsRoute
   AuthRoute: typeof AuthRoute
@@ -443,6 +456,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/addresses': {
+      id: '/addresses'
+      path: '/addresses'
+      fullPath: '/addresses'
+      preLoaderRoute: typeof AddressesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -706,6 +726,7 @@ const NewsRouteWithChildren = NewsRoute._addFileChildren(NewsRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AddressesRoute: AddressesRoute,
   AdminRoute: AdminRouteWithChildren,
   AuctionsRoute: AuctionsRoute,
   AuthRoute: AuthRoute,

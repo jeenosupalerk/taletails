@@ -85,9 +85,8 @@ function AddressesPage() {
 
   if (!userId) {
     return (
-      <PageShell>
+      <PageShell title="ที่อยู่สำหรับจัดส่ง" description="จัดการสมุดที่อยู่จัดส่งของคุณ">
         <div className="mx-auto max-w-md space-y-4 px-4 py-16 text-center">
-          <h1 className="font-display text-xl">ที่อยู่สำหรับจัดส่ง</h1>
           <p className="text-sm text-muted-foreground">
             กรุณาเข้าสู่ระบบเพื่อจัดการสมุดที่อยู่ของคุณ
           </p>
@@ -100,14 +99,11 @@ function AddressesPage() {
   }
 
   return (
-    <PageShell>
+    <PageShell
+      title="ที่อยู่สำหรับจัดส่ง"
+      description="ที่อยู่ที่บันทึกไว้จะถูกนำไปใช้เลือกในหน้าชำระเงินโดยอัตโนมัติ"
+    >
       <div className="mx-auto w-full max-w-2xl space-y-4 px-4 py-6 pb-28">
-        <header className="space-y-1">
-          <h1 className="font-display text-xl tracking-tight">ที่อยู่สำหรับจัดส่ง</h1>
-          <p className="text-sm text-muted-foreground">
-            ที่อยู่ที่บันทึกไว้จะถูกนำไปใช้เลือกในหน้าชำระเงินโดยอัตโนมัติ
-          </p>
-        </header>
 
         {isLoading ? (
           <div className="space-y-3">
