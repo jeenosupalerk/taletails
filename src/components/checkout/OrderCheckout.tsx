@@ -22,6 +22,13 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  useAddAddress,
+  useAddresses,
+  useDeleteAddress,
+  useSetDefaultAddress,
+  type SavedAddress,
+} from "@/hooks/useAddresses";
 import { useAuthUserId, useCancelOrder, useOrder, useSubmitPayment } from "@/hooks/useCardDetail";
 import { pad, useCountdown } from "@/hooks/useCountdown";
 import { thb } from "@/lib/cart";
@@ -115,6 +122,16 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
   const [done, setDone] = useState(false);
   const [paidOpen, setPaidOpen] = useState(false);
 
+  // สมุดที่อยู่จัดส่ง
+  const addressBook = useAddresses(userId ?? null);
+  const addAddress = useAddAddress(userId ?? null);
+  const setDefaultAddress = useSetDefaultAddress(userId ?? null);
+  const removeAddress = useDeleteAddress(userId ?? null);
+  const savedAddresses = addressBook.data ?? [];
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [addressLabel, setAddressLabel] = useState("บ้าน");
+  const [makeDefault, setMakeDefault] = useState(false);
+  const [editingNew, setEditingNew] = useState(false);
 
   useEffect(() => {
     try {
@@ -124,6 +141,38 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
       /* ignore */
     }
   }, []);
+
+  const applyAddress = (a: SavedAddress) => {
+    setSelectedAddressId(a.id);
+    setEditingNew(false);
+    setShip({
+      name: a.name,
+      phone: a.phone,
+      address: a.address,
+      subdistrict: a.subdistrict,
+      district: a.district,
+      province: a.province,
+      postcode: a.postcode,
+    });
+  };
+
+  // เลือกที่อยู่เริ่มต้นให้อัตโนมัติเมื่อโหลดสมุดที่อยู่ครั้งแรก
+  useEffect(() => {
+    if (selectedAddressId || editingNew || savedAddresses.length === 0) return;
+    const preferred = savedAddresses.find((a) => a.is_default) ?? savedAddresses[0]!;
+    applyAddress(preferred);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [savedAddresses.length]);
+
+  /** บันทึกที่อยู่ใหม่เข้าสมุดที่อยู่ (เมื่อผู้ใช้เลือกให้จำ) */
+  const rememberAddress = () => {
+    if (!remember || !userId || selectedAddressId) return;
+    addAddress.mutate({
+      ...ship,
+      label: addressLabel.trim() || "ที่อยู่จัดส่ง",
+      is_default: makeDefault || savedAddresses.length === 0,
+    });
+  };
 
   useEffect(() => {
     if (!file) return setPreview(null);
@@ -166,6 +215,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
       } catch {
         /* ignore */
       }
+      rememberAddress();
     }
     if (method === "auto") {
       void startAuto();
@@ -220,6 +270,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
       } catch {
         /* ignore */
       }
+      rememberAddress();
     }
     const fullAddress = `${ship.address} ต.${ship.subdistrict} อ.${ship.district} จ.${ship.province} ${ship.postcode}`;
     submit.mutate(
@@ -356,6 +407,98 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                 {/* ที่อยู่จัดส่ง */}
                 <section className="space-y-3 rounded-3xl border border-border/70 bg-card p-4">
                   <h2 className="font-display text-sm tracking-[0.16em] uppercase">ที่อยู่จัดส่ง</h2>
+
+                  {savedAddresses.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-xs text-muted-foreground">เลือกที่อยู่ที่บันทึกไว้</p>
+                      {savedAddresses.map((a) => {
+                        const selected = a.id === selectedAddressId;
+                        return (
+                          <div
+                            key={a.id}
+                            className={cn(
+                              "rounded-2xl border p-3 transition-colors",
+                              selected
+                                ? "border-primary/60 bg-primary/5"
+                                : "border-border/70 hover:border-primary/40",
+                            )}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => applyAddress(a)}
+                              className="flex w-full items-start gap-3 text-left"
+                            >
+                              <span
+                                className={cn(
+                                  "mt-1 grid h-4 w-4 shrink-0 place-items-center rounded-full border",
+                                  selected ? "border-primary" : "border-muted-foreground/50",
+                                )}
+                              >
+                                {selected && (
+                                  <span className="h-2 w-2 rounded-full bg-primary" />
+                                )}
+                              </span>
+                              <span className="min-w-0 flex-1">
+                                <span className="flex flex-wrap items-center gap-2">
+                                  <span className="text-sm font-semibold">{a.label}</span>
+                                  {a.is_default && (
+                                    <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">
+                                      ค่าเริ่มต้น
+                                    </span>
+                                  )}
+                                </span>
+                                <span className="mt-0.5 block text-xs text-muted-foreground">
+                                  {a.name} • {a.phone}
+                                </span>
+                                <span className="mt-0.5 block text-xs break-words text-muted-foreground">
+                                  {a.address} ต.{a.subdistrict} อ.{a.district} จ.{a.province}{" "}
+                                  {a.postcode}
+                                </span>
+                              </span>
+                            </button>
+                            <div className="mt-2 flex flex-wrap gap-2 border-t border-border/60 pt-2">
+                              {!a.is_default && (
+                                <button
+                                  type="button"
+                                  onClick={() => setDefaultAddress.mutate(a.id)}
+                                  className="min-h-9 rounded-lg border border-border px-3 text-xs font-medium hover:border-primary/50"
+                                >
+                                  ตั้งเป็นค่าเริ่มต้น
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  removeAddress.mutate(a.id);
+                                  if (selectedAddressId === a.id) setSelectedAddressId(null);
+                                }}
+                                className="min-h-9 rounded-lg border border-border px-3 text-xs font-medium text-destructive hover:border-destructive/50"
+                              >
+                                ลบ
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedAddressId(null);
+                          setEditingNew(true);
+                          setShip(emptyShipping);
+                        }}
+                        className={cn(
+                          "min-h-10 w-full rounded-2xl border border-dashed px-3 text-xs font-semibold",
+                          selectedAddressId
+                            ? "border-border text-muted-foreground hover:border-primary/50"
+                            : "border-primary text-primary",
+                        )}
+                      >
+                        + เพิ่มที่อยู่ใหม่
+                      </button>
+                    </div>
+                  )}
+
                   <div className="grid gap-3 sm:grid-cols-2">
                     <Field
                       id="ship-name"
@@ -411,14 +554,37 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                       onChange={set("postcode")}
                     />
                   </div>
-                  <label className="flex items-start gap-2.5 pt-1 text-xs text-muted-foreground">
-                    <Checkbox
-                      checked={remember}
-                      onCheckedChange={(v) => setRemember(v === true)}
-                      className="mt-0.5"
-                    />
-                    บันทึกที่อยู่นี้ไว้สำหรับการสั่งซื้อครั้งต่อไป
-                  </label>
+                  {!selectedAddressId && (
+                    <div className="space-y-3 rounded-2xl bg-secondary/40 p-3">
+                      <label className="flex items-start gap-2.5 text-xs text-muted-foreground">
+                        <Checkbox
+                          checked={remember}
+                          onCheckedChange={(v) => setRemember(v === true)}
+                          className="mt-0.5"
+                        />
+                        บันทึกที่อยู่นี้เข้าสมุดที่อยู่
+                      </label>
+                      {remember && (
+                        <>
+                          <Field
+                            id="ship-label"
+                            label="ชื่อเรียกที่อยู่"
+                            placeholder="เช่น บ้าน / ที่ทำงาน"
+                            value={addressLabel}
+                            onChange={setAddressLabel}
+                          />
+                          <label className="flex items-start gap-2.5 text-xs text-muted-foreground">
+                            <Checkbox
+                              checked={makeDefault}
+                              onCheckedChange={(v) => setMakeDefault(v === true)}
+                              className="mt-0.5"
+                            />
+                            ตั้งเป็นที่อยู่เริ่มต้น
+                          </label>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </section>
 
                 {/* วิธีชำระเงิน */}

@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.unset_other_default_addresses() FROM anon, authenticated;
