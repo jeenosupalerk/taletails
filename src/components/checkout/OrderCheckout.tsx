@@ -552,13 +552,3 @@ function Field({
   );
 }
 
-function Row({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
-  return (
-    <div className="flex flex-wrap items-center justify-between gap-2">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span className={cn("text-sm font-medium break-all", mono && "font-mono tracking-wide")}>
-        {value}
-      </span>
-    </div>
-  );
-}

@@ -217,7 +217,7 @@ export function useBuyNow() {
 
       const { data, error } = await supabase.rpc("purchase_fixed_price_card", {
         _card_id: cardId,
-        _payment_method: "slip",
+        _payment_method: "qr_promptpay",
       });
       if (error) throw new Error(error.message);
       return data as unknown as OrderRow;
@@ -236,7 +236,7 @@ export function useClaimAuctionWin() {
     mutationFn: async (auctionId: string) => {
       const { data, error } = await supabase.rpc("create_auction_order", {
         _auction_id: auctionId,
-        _payment_method: "slip",
+        _payment_method: "qr_promptpay",
       });
       if (error) throw new Error(error.message);
       return data as unknown as OrderRow;
