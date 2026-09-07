@@ -166,7 +166,7 @@ function ProfilePage() {
             {/* Account Settings */}
             <MenuGroup title="ตั้งค่าบัญชี">
               <MenuItem
-                to="/checkout"
+                to="/addresses"
                 icon={<MapPin className="h-5 w-5" />}
                 label="ที่อยู่สำหรับจัดส่ง"
               />
