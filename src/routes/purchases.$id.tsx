@@ -1,4 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
+import { LogoLoader } from "@/components/ui/logo-loader";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, ChevronLeft, Copy, Loader2, Package, Truck } from "lucide-react";
 import { toast } from "sonner";
@@ -122,7 +123,7 @@ function PurchaseDetailPage() {
 
         {isLoading && (
           <div className="flex h-40 items-center justify-center text-muted-foreground">
-            <Loader2 className="h-5 w-5 animate-spin" />
+            <LogoLoader size={64} />
           </div>
         )}
 

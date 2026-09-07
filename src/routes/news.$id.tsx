@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { LogoLoader } from "@/components/ui/logo-loader";
 import { Loader2 } from "lucide-react";
 
 import { PageShell } from "@/components/site/PageShell";
@@ -54,7 +55,7 @@ function ArticlePage() {
       <PageShell eyebrow="ข่าวสาร" title="บทความ" description="">
         <div className="grid place-items-center py-24">
           {db.isLoading ? (
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <LogoLoader size={64} />
           ) : (
             <div className="text-center">
               <p className="text-sm text-muted-foreground">ไม่พบบทความนี้</p>

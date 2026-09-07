@@ -1,4 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
+import { LogoLoader } from "@/components/ui/logo-loader";
 import { Loader2, Store } from "lucide-react";
 
 import { PageShell } from "@/components/site/PageShell";
@@ -51,7 +52,7 @@ function ShopPage() {
           </div>
         ) : isLoading ? (
           <div className="grid place-items-center py-24">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <LogoLoader size={64} />
           </div>
         ) : !isSeller ? (
           <div className="surface-panel mx-auto max-w-md px-6 py-12 text-center">

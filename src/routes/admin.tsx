@@ -1,4 +1,5 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { LogoLoader } from "@/components/ui/logo-loader";
 import {
   LayoutGrid,
   Loader2,
@@ -73,7 +74,7 @@ function AdminLayout() {
       <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         {isLoading && userId ? (
           <div className="grid place-items-center py-24">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <LogoLoader size={64} />
           </div>
         ) : !isAdmin ? (
           <div className="mx-auto max-w-md rounded-3xl border border-border bg-card p-6 text-center shadow-[0_30px_70px_-60px_rgba(0,0,0,0.7)] sm:p-8">

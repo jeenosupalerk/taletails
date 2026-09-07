@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { LogoLoader } from "@/components/ui/logo-loader";
 import {
   ChevronLeft,
   Clock,
@@ -120,7 +121,7 @@ function OrdersPage() {
         <main className="mx-auto max-w-3xl space-y-4 px-4 py-4">
           {isLoading && (
             <div className="flex h-40 items-center justify-center text-muted-foreground">
-              <Loader2 className="h-5 w-5 animate-spin" />
+              <LogoLoader size={64} />
             </div>
           )}
 
