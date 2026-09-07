@@ -183,7 +183,7 @@ function ProductPage() {
         {/* แกลเลอรี */}
         <div className="surface-panel overflow-hidden p-4 lg:sticky lg:top-24">
           <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl border border-border bg-secondary/40">
-            <SmartImage
+            <ZoomableImage
               src={product.images[active] ?? product.imageUrl}
               alt={`${product.cardName} รูปที่ ${active + 1}`}
               transformWidth={900}
