@@ -49,10 +49,36 @@ function BigCountdown({ endTime }: { endTime: string }) {
 export function LiveAuctionSlider() {
   const [index, setIndex] = useState(0);
   const live = useLiveAuctions();
-  const liveOnly = (live.data ?? []).filter((a) => a.outcome.outcome === "live");
-  const items: Auction[] = liveOnly.length ? liveOnly : getLiveAuctions();
+  // เฉพาะรอบที่ "กำลังประมูล" เรียงตามเวลาปิดที่ใกล้ที่สุด → ใบแรกคือใบที่โชว์ก่อน
+  const items: Auction[] = (live.data ?? [])
+    .filter((a) => a.outcome.outcome === "live")
+    .sort((a, b) => new Date(a.endTime).getTime() - new Date(b.endTime).getTime());
+
+  // รายการเปลี่ยน (โหลดเสร็จ / ปิดประมูล) → กลับไปโชว์ใบแรกเสมอ
+  const firstId = items[0]?.id;
+  useEffect(() => {
+    setIndex(0);
+  }, [firstId, items.length]);
+
   const go = (d: number) => setIndex((i) => (i + d + items.length) % items.length);
-  const active = items[Math.min(index, items.length - 1)]!;
+  const active = items[Math.min(index, items.length - 1)];
+
+  if (!active) {
+    return (
+      <section id="auctions" className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+        <SectionHeading
+          eyebrow="กำลังประมูล"
+          title="ประมูลสด"
+          description="ยังไม่มีรอบประมูลที่เปิดอยู่ในขณะนี้"
+          actionLabel="ดูการประมูลทั้งหมด"
+          actionTo="/auctions"
+        />
+        <div className="rounded-3xl border border-border bg-card p-10 text-center text-sm text-muted-foreground shadow-card">
+          {live.isLoading ? "กำลังโหลดรอบประมูล..." : "รอเปิดรอบประมูลใหม่ เร็ว ๆ นี้"}
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="auctions" className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
