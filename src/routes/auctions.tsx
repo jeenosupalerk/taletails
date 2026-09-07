@@ -78,12 +78,42 @@ export const Route = createFileRoute("/auctions")({
   component: AuctionsPage,
 });
 
+type AuctionWithOutcome = Auction & { outcome: AuctionOutcomeInfo };
+
+const FILTERS: { value: string; label: string }[] = [
+  { value: "all", label: "ทั้งหมด" },
+  { value: "live", label: "กำลังเปิดประมูล" },
+  { value: "waiting_payment", label: "รอผู้ชนะชำระเงิน" },
+  { value: "failed", label: "ไม่เป็นผล / รอเปิดใหม่" },
+  { value: "completed", label: "เสร็จสมบูรณ์" },
+];
+
+function withOutcome(list: Auction[]): AuctionWithOutcome[] {
+  return list.map((a) =>
+    "outcome" in a
+      ? (a as AuctionWithOutcome)
+      : {
+          ...a,
+          outcome: getAuctionOutcome(
+            a.status === "ended" ? "ended" : "active",
+            "available",
+            a.endTime,
+          ),
+        },
+  );
+}
+
 function AuctionsPage() {
   const live = useLiveAuctions();
   // ใช้ข้อมูลจริงจาก Supabase เมื่ออ่านได้ (ต้องเข้าสู่ระบบ) ไม่งั้นแสดงตัวอย่าง
-  const liveAuctions: Auction[] = live.data?.length ? live.data : getLiveAuctions();
+  const allAuctions: AuctionWithOutcome[] = withOutcome(
+    live.data?.length ? live.data : getLiveAuctions(),
+  );
   const isRealData = Boolean(live.data?.length);
-  const { id } = Route.useSearch();
+  const { id, status } = Route.useSearch();
+  const filter = status && FILTERS.some((f) => f.value === status) ? status : "all";
+  const liveAuctions =
+    filter === "all" ? allAuctions : allAuctions.filter((a) => a.outcome.outcome === filter);
   const navigate = useNavigate();
   const [activeId, setActiveId] = useState<string | undefined>(undefined);
   const currentId = id ?? activeId;
@@ -98,8 +128,13 @@ function AuctionsPage() {
 
   const select = (nextId: string) => {
     setActiveId(nextId);
-    void navigate({ to: "/auctions", search: { id: nextId }, replace: true });
+    void navigate({ to: "/auctions", search: { id: nextId, status: filter }, replace: true });
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const setFilter = (next: string) => {
+    setActiveId(undefined);
+    void navigate({ to: "/auctions", search: { status: next }, replace: true });
   };
 
   return (
