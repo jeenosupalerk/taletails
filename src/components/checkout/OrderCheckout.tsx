@@ -270,6 +270,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
       } catch {
         /* ignore */
       }
+      rememberAddress();
     }
     const fullAddress = `${ship.address} ต.${ship.subdistrict} อ.${ship.district} จ.${ship.province} ${ship.postcode}`;
     submit.mutate(
