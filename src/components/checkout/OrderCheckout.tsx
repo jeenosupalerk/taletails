@@ -412,16 +412,16 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                   ยืนยันการชำระเงิน
                 </Button>
                 <p className="text-center text-[11px] text-muted-foreground">
-                  ขั้นต่อไปจะแสดง QR / เลขบัญชี สำหรับโอนเงินและแนบสลิป
+                  ขั้นต่อไปจะแสดง QR PromptPay พร้อมยอดเงินสำหรับสแกนและแนบสลิป
                 </p>
               </>
             ) : (
               <>
-                {/* ขั้นตอนชำระเงิน: QR / บัญชี + แนบสลิป */}
+                {/* ขั้นตอนชำระเงิน: QR PromptPay + แนบสลิป */}
                 <section className="space-y-4 rounded-3xl border border-border/70 bg-card p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <h2 className="font-display text-sm tracking-[0.16em] uppercase">
-                      {method === "qr_promptpay" ? "สแกน QR เพื่อชำระเงิน" : "โอนเข้าบัญชีธนาคาร"}
+                      สแกน QR PromptPay เพื่อชำระเงิน
                     </h2>
                     <button
                       type="button"
@@ -432,25 +432,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                     </button>
                   </div>
 
-                  {method === "qr_promptpay" && (
-                    <PromptPayQR amount={total} reference={order.id.slice(0, 8).toUpperCase()} />
-                  )}
-
-                  <div className="space-y-2 rounded-2xl border border-border/70 bg-secondary/25 p-4 text-sm">
-                    <Row label="ธนาคาร" value={bankAccount.bank} />
-                    <Row label="ชื่อบัญชี" value={bankAccount.name} />
-                    <Row label="เลขที่บัญชี" value={bankAccount.number} mono />
-                    <Row label="ยอดที่ต้องโอน" value={thb.format(total)} />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={copyAccount}
-                      className="mt-1 h-11 w-full rounded-xl"
-                    >
-                      <Copy className="h-4 w-4" />
-                      คัดลอกเลขบัญชี
-                    </Button>
-                  </div>
+                  <PromptPayQR amount={total} reference={order.id.slice(0, 8).toUpperCase()} />
 
                   {/* อัปโหลดสลิป */}
                   <div className="space-y-3">
