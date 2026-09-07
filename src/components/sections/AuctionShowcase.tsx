@@ -153,6 +153,10 @@ export function AuctionShowcase({
                     alt={i === shot ? `${auction.cardName} เกรด ${auction.grade} รูปที่ ${i + 1}` : ""}
                     transformWidth={800}
                     priority={i === 0}
+                    galleryImages={gallery}
+                    galleryIndex={i}
+                    onGalleryIndexChange={setShot}
+
                     wrapperClassName={`absolute inset-0 p-4 transition-opacity duration-500 lg:p-6 ${
                       i === shot ? "opacity-100" : "opacity-0 pointer-events-none"
                     }`}
