@@ -165,6 +165,30 @@ function AuctionsPage() {
             เลือกรายการเพื่อสลับขึ้นไปยังห้องประมูลด้านบนได้ทันที
           </p>
 
+          <div className="mt-4 flex flex-wrap gap-2">
+            {FILTERS.map((f) => (
+              <button
+                key={f.value}
+                type="button"
+                onClick={() => setFilter(f.value)}
+                aria-pressed={filter === f.value}
+                className={`min-h-10 rounded-full border px-4 text-xs font-semibold transition-colors ${
+                  filter === f.value
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-card text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+
+          {liveAuctions.length === 0 && (
+            <p className="mt-6 rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground">
+              ยังไม่มีรายการในสถานะนี้
+            </p>
+          )}
+
           <div className="no-scrollbar -mx-4 mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-4 pt-1 pb-6 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
             {liveAuctions.map((auction) => (
               <button
