@@ -11,6 +11,7 @@ import { useEffect, type ReactNode } from "react";
 
 import { AuctionWinWatcher } from "@/components/site/AuctionWinWatcher";
 import { MobileBottomNav } from "@/components/site/MobileBottomNav";
+import { SplashScreen } from "@/components/ui/SplashScreen";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/auth";
 import { CartProvider } from "@/lib/cart";
@@ -166,7 +167,7 @@ function RootComponent() {
             <MobileBottomNav />
             <AuctionWinWatcher />
 
-
+            <SplashScreen />
             <Toaster position="top-right" richColors closeButton />
           </WatchlistProvider>
         </CartProvider>
