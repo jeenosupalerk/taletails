@@ -39,6 +39,7 @@ import { Route as ProductIdRouteImport } from './routes/product.$id'
 import { Route as PurchasesIndexRouteImport } from './routes/purchases.index'
 import { Route as PurchasesIdRouteImport } from './routes/purchases.$id'
 import { Route as ApiPublicCronAuctionsRouteImport } from './routes/api/public/cron.auctions'
+import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicPushDispatchRouteImport } from './routes/api/public/push.dispatch'
 
 const IndexRoute = IndexRouteImport.update({
@@ -191,6 +192,12 @@ const ApiPublicCronAuctionsRoute = ApiPublicCronAuctionsRouteImport.update({
   path: '/api/public/cron/auctions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicPaymentsWebhookRoute =
+  ApiPublicPaymentsWebhookRouteImport.update({
+    id: '/api/public/payments/webhook',
+    path: '/api/public/payments/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicPushDispatchRoute = ApiPublicPushDispatchRouteImport.update({
   id: '/api/public/push/dispatch',
   path: '/api/public/push/dispatch',
@@ -228,6 +235,7 @@ export interface FileRoutesByFullPath {
   '/market/': typeof MarketIndexRoute
   '/purchases/': typeof PurchasesIndexRoute
   '/api/public/cron/auctions': typeof ApiPublicCronAuctionsRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/push/dispatch': typeof ApiPublicPushDispatchRoute
 }
 export interface FileRoutesByTo {
@@ -259,6 +267,7 @@ export interface FileRoutesByTo {
   '/market': typeof MarketIndexRoute
   '/purchases': typeof PurchasesIndexRoute
   '/api/public/cron/auctions': typeof ApiPublicCronAuctionsRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/push/dispatch': typeof ApiPublicPushDispatchRoute
 }
 export interface FileRoutesById {
@@ -293,6 +302,7 @@ export interface FileRoutesById {
   '/market/': typeof MarketIndexRoute
   '/purchases/': typeof PurchasesIndexRoute
   '/api/public/cron/auctions': typeof ApiPublicCronAuctionsRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/push/dispatch': typeof ApiPublicPushDispatchRoute
 }
 export interface FileRouteTypes {
@@ -328,6 +338,7 @@ export interface FileRouteTypes {
     | '/market/'
     | '/purchases/'
     | '/api/public/cron/auctions'
+    | '/api/public/payments/webhook'
     | '/api/public/push/dispatch'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -359,6 +370,7 @@ export interface FileRouteTypes {
     | '/market'
     | '/purchases'
     | '/api/public/cron/auctions'
+    | '/api/public/payments/webhook'
     | '/api/public/push/dispatch'
   id:
     | '__root__'
@@ -392,6 +404,7 @@ export interface FileRouteTypes {
     | '/market/'
     | '/purchases/'
     | '/api/public/cron/auctions'
+    | '/api/public/payments/webhook'
     | '/api/public/push/dispatch'
   fileRoutesById: FileRoutesById
 }
@@ -419,6 +432,7 @@ export interface RootRouteChildren {
   CheckoutIndexRoute: typeof CheckoutIndexRoute
   PurchasesIndexRoute: typeof PurchasesIndexRoute
   ApiPublicCronAuctionsRoute: typeof ApiPublicCronAuctionsRoute
+  ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiPublicPushDispatchRoute: typeof ApiPublicPushDispatchRoute
 }
 
@@ -634,6 +648,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronAuctionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/payments/webhook': {
+      id: '/api/public/payments/webhook'
+      path: '/api/public/payments/webhook'
+      fullPath: '/api/public/payments/webhook'
+      preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/push/dispatch': {
       id: '/api/public/push/dispatch'
       path: '/api/public/push/dispatch'
@@ -707,6 +728,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutIndexRoute: CheckoutIndexRoute,
   PurchasesIndexRoute: PurchasesIndexRoute,
   ApiPublicCronAuctionsRoute: ApiPublicCronAuctionsRoute,
+  ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiPublicPushDispatchRoute: ApiPublicPushDispatchRoute,
 }
 export const routeTree = rootRouteImport
