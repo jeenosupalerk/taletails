@@ -18,11 +18,11 @@ export function ProductGridCard({ product }: { product: Product }) {
   const isPending = product.status === "locked";
 
   return (
-    <article className="group surface-panel relative flex flex-col overflow-hidden transition-shadow duration-300 hover:shadow-card">
+    <article className="group surface-panel relative flex flex-col overflow-hidden border-2 border-transparent transition-[box-shadow,border-color,transform] duration-200 hover:shadow-card active:border-primary active:shadow-glow">
       <Link
         to="/product/$id"
         params={{ id: product.id }}
-        className="flex flex-1 flex-col"
+        className="flex flex-1 flex-col transition-transform duration-200 active:scale-[0.98]"
         aria-label={product.cardName}
       >
 
