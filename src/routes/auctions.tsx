@@ -21,9 +21,9 @@ const description =
   "ประมูลการ์ดสะสมที่ผ่านการตรวจสอบและเก็บในห้องนิรภัย พร้อมนับถอยหลังแบบเรียลไทม์ทุกคืน";
 
 export const Route = createFileRoute("/auctions")({
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>): { id?: string; status?: string } => ({
     id: typeof search['id'] === "string" ? (search['id'] as string) : undefined,
-    status: typeof search['status'] === "string" ? (search['status'] as string) : "all",
+    status: typeof search['status'] === "string" ? (search['status'] as string) : undefined,
   }),
   head: () => ({
     meta: [
