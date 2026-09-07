@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { BadgeCheck, Heart } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { SectionHeading } from "@/components/site/SectionHeading";
@@ -88,10 +89,32 @@ export function ProductGridCard({ product }: { product: Product }) {
   );
 }
 
-export function FeaturedMarketplace({ showHeading = true }: { showHeading?: boolean }) {
+const STATUS_FILTERS: { value: string; label: string }[] = [
+  { value: "all", label: "ทั้งหมด" },
+  { value: "available", label: "พร้อมขาย" },
+  { value: "locked", label: "รอชำระเงิน" },
+  { value: "sold", label: "ขายแล้ว" },
+];
+
+const STATUS_RANK: Record<string, number> = { available: 0, locked: 1, sold: 2 };
+
+export function FeaturedMarketplace({
+  showHeading = true,
+  showFilter = false,
+}: {
+  showHeading?: boolean;
+  showFilter?: boolean;
+}) {
   const { data: liveCards } = useMarketplaceCards();
+  const [filter, setFilter] = useState("all");
   // Live Supabase rows when available, curated demo listings otherwise.
-  const featured = liveCards && liveCards.length > 0 ? liveCards : getFeaturedProducts();
+  const all = liveCards && liveCards.length > 0 ? liveCards : getFeaturedProducts();
+  const sorted = [...all].sort(
+    (a, b) => (STATUS_RANK[a.status ?? "available"] ?? 0) - (STATUS_RANK[b.status ?? "available"] ?? 0),
+  );
+  const featured = showFilter && filter !== "all"
+    ? sorted.filter((p) => (p.status ?? "available") === filter)
+    : sorted;
 
   return (
     <section id="marketplace" className="border-y border-border bg-card/30">
@@ -106,6 +129,30 @@ export function FeaturedMarketplace({ showHeading = true }: { showHeading?: bool
           />
         )}
         {!showHeading && <h2 className="sr-only">การ์ดที่วางขายในตลาด</h2>}
+        {showFilter && (
+          <div className="mb-6 flex flex-wrap gap-2">
+            {STATUS_FILTERS.map((f) => (
+              <button
+                key={f.value}
+                type="button"
+                onClick={() => setFilter(f.value)}
+                aria-pressed={filter === f.value}
+                className={`min-h-10 rounded-full border px-4 text-xs font-semibold transition-colors ${
+                  filter === f.value
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-card text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        )}
+        {featured.length === 0 && (
+          <p className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground">
+            ยังไม่มีสินค้าในสถานะนี้
+          </p>
+        )}
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
           {featured.map((product) => (
             <ProductGridCard key={product.id} product={product} />
