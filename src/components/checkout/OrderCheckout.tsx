@@ -215,6 +215,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
       } catch {
         /* ignore */
       }
+      rememberAddress();
     }
     if (method === "auto") {
       void startAuto();
