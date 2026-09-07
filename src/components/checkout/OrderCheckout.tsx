@@ -599,6 +599,27 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
       </main>
 
       <StatusDialog
+        open={cancelOpen}
+        onOpenChange={setCancelOpen}
+        tone="warning"
+        title="ยกเลิกคำสั่งซื้อนี้?"
+        description="สินค้าจะถูกปลดล็อกและกลับไปเปิดขายในตลาดทันที"
+        actionLabel="ยืนยันยกเลิก"
+        onAction={() =>
+          cancel.mutate(undefined, {
+            onSuccess: () => {
+              toast.success("ยกเลิกคำสั่งซื้อแล้ว สินค้ากลับไปเปิดขายแล้ว");
+              void navigate({ to: "/marketplace" });
+            },
+            onError: (e) => toast.error(e.message),
+          })
+        }
+        secondaryLabel="ชำระเงินต่อ"
+      >
+        {order ? <p>เลขคำสั่งซื้อ {order.id.slice(0, 8).toUpperCase()}</p> : null}
+      </StatusDialog>
+
+      <StatusDialog
         open={paidOpen}
         onOpenChange={setPaidOpen}
         tone="success"
