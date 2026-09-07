@@ -1,6 +1,7 @@
 import { QueryClient } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
+import { LogoLoader } from "@/components/ui/logo-loader";
 
 /**
  * เมื่อมีเวอร์ชันใหม่ ไฟล์สคริปต์เดิมที่เบราว์เซอร์แคชไว้จะโหลดไม่ได้
@@ -48,6 +49,13 @@ export const getRouter = () => {
     routeTree,
     context: { queryClient },
     scrollRestoration: true,
+    defaultPendingMs: 150,
+    defaultPendingMinMs: 400,
+    defaultPendingComponent: () => (
+      <div className="grid min-h-[60vh] place-items-center px-4 py-20">
+        <LogoLoader size={72} label="กำลังโหลด..." />
+      </div>
+    ),
     defaultPreloadStaleTime: 0,
   });
 
