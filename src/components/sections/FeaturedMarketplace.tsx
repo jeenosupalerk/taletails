@@ -129,6 +129,30 @@ export function FeaturedMarketplace({
           />
         )}
         {!showHeading && <h2 className="sr-only">การ์ดที่วางขายในตลาด</h2>}
+        {showFilter && (
+          <div className="mb-6 flex flex-wrap gap-2">
+            {STATUS_FILTERS.map((f) => (
+              <button
+                key={f.value}
+                type="button"
+                onClick={() => setFilter(f.value)}
+                aria-pressed={filter === f.value}
+                className={`min-h-10 rounded-full border px-4 text-xs font-semibold transition-colors ${
+                  filter === f.value
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-card text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        )}
+        {featured.length === 0 && (
+          <p className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground">
+            ยังไม่มีสินค้าในสถานะนี้
+          </p>
+        )}
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
           {featured.map((product) => (
             <ProductGridCard key={product.id} product={product} />
