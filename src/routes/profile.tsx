@@ -201,7 +201,7 @@ function ProfilePage() {
               trigger={
                 <Button
                   variant="ghost"
-                  className="min-h-11 w-full justify-center gap-2 rounded-2xl text-sm font-semibold text-destructive hover:bg-destructive/10"
+                  className="min-h-11 w-full justify-center gap-2 rounded-2xl text-sm font-semibold text-destructive hover:bg-destructive/10 active:bg-destructive/15"
                 >
                   <LogOut className="h-5 w-5" />
                   ออกจากระบบ
