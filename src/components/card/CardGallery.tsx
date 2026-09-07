@@ -56,6 +56,10 @@ export function CardGallery({
                 alt={i === active ? `${alt}` : ""}
                 transformWidth={900}
                 priority={i === 0}
+                galleryImages={images}
+                galleryIndex={i}
+                onGalleryIndexChange={setActive}
+
                 wrapperClassName={cn(
                   "absolute inset-0 transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]",
                   i === active
