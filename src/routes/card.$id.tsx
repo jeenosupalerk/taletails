@@ -258,7 +258,18 @@ function CardDetailPage() {
                   {card.rarity}
                 </span>
               )}
+              {isAuction && outcome && (
+                <span
+                  className={cn(
+                    "rounded-full border px-3 py-1 font-semibold",
+                    AUCTION_OUTCOME_TONE_CLASS[outcome.tone],
+                  )}
+                >
+                  {outcome.label}
+                </span>
+              )}
             </div>
+
 
             {/* Price block */}
             <div className="mt-8 rounded-[24px] border border-border/70 bg-card p-6 shadow-[0_18px_50px_-38px_hsl(var(--foreground)/0.5)]">
