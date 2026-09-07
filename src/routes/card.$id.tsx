@@ -94,6 +94,12 @@ function CardDetailPage() {
   const closed =
     !!auction && (auction.status !== "active" || (!!countdown && countdown.isFinished));
 
+  const outcome =
+    auction && card
+      ? getAuctionOutcome(auction.status, card.status, auction.end_time)
+      : null;
+
+
   const minNext = auction
     ? auction.bid_count === 0
       ? Number(auction.starting_price)
