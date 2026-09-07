@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { LogoLoader } from "@/components/ui/logo-loader";
 import { BadgeCheck, ChevronRight, Heart, Loader2, ShoppingBag, Star } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -96,7 +97,7 @@ function ProductPage() {
     return (
       <PageShell eyebrow="ตลาดซื้อขาย" title="กำลังโหลดรายละเอียด" description="โปรดรอสักครู่">
         <div className="flex h-56 items-center justify-center text-muted-foreground">
-          <Loader2 className="h-5 w-5 animate-spin" />
+          <LogoLoader size={64} />
         </div>
       </PageShell>
     );

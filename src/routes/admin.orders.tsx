@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { LogoLoader } from "@/components/ui/logo-loader";
 import { CheckCircle2, ExternalLink, Loader2, Truck, XCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -79,7 +80,7 @@ function AdminOrdersPage() {
 
       {orders.isLoading ? (
         <div className="grid place-items-center py-16">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <LogoLoader size={64} />
         </div>
       ) : rows.length === 0 ? (
         <p className="rounded-3xl border border-dashed border-border py-16 text-center text-sm text-muted-foreground">

@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
+import { LogoLoader } from "@/components/ui/logo-loader";
 import {
   BadgeCheck,
   CheckCircle2,
@@ -310,7 +311,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
       <main className="mx-auto max-w-2xl space-y-4 px-4 py-5">
         {orderQuery.isLoading && (
           <div className="flex h-48 items-center justify-center text-muted-foreground">
-            <Loader2 className="h-5 w-5 animate-spin" />
+            <LogoLoader size={64} />
           </div>
         )}
 

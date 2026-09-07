@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { LogoLoader } from "@/components/ui/logo-loader";
 import {
   BadgeCheck,
   Gavel,
@@ -139,7 +140,7 @@ function CardDetailPage() {
     return (
       <Shell>
         <div className="flex h-64 items-center justify-center text-muted-foreground">
-          <Loader2 className="h-5 w-5 animate-spin" />
+          <LogoLoader size={64} />
         </div>
       </Shell>
     );
