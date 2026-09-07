@@ -20,13 +20,9 @@ import {
 
 import { PageShell } from "@/components/site/PageShell";
 import { Badge } from "@/components/ui/badge";
-import {
-  formatThb,
-  getMarketCardById,
-  rangeDays,
-  sliceHistory,
-  type MarketRange,
-} from "@/data/market";
+import { LogoLoader } from "@/components/ui/logo-loader";
+import { formatThb, rangeDays, type MarketRange } from "@/data/market";
+import { historyInRange, useMarketCard } from "@/hooks/useMarketStats";
 import { cn } from "@/lib/utils";
 import { SmartImage } from "@/components/ui/smart-image";
 
@@ -38,33 +34,22 @@ const rangeLabels: { key: MarketRange; label: string }[] = [
   { key: "1y", label: "1 ปี" },
 ];
 
+const pageTitle = "สถิติราคาการ์ด — Taletails";
+const pageDescription =
+  "เจาะลึกกราฟราคา สถิติสูงสุด-ต่ำสุด ค่าเฉลี่ย และประวัติการซื้อขายจริงของการ์ดใบนี้บนตลาดกลาง Taletails";
+
 export const Route = createFileRoute("/market/$id")({
-  loader: ({ params }) => {
-    const card = getMarketCardById(params.id);
-    if (!card) throw notFound();
-    return card;
-  },
-  head: ({ loaderData }) => {
-    const title = loaderData
-      ? `${loaderData.cardName} — สถิติตลาด | Taletails`
-      : "ไม่พบข้อมูลการ์ด | Taletails";
-    const description = loaderData
-      ? `เจาะลึกราคา ${loaderData.cardName} (${loaderData.grade}) กราฟราคา สถิติสูงสุด-ต่ำสุด และประวัติการซื้อขายบนตลาดกลาง`
-      : "ไม่พบข้อมูลสถิติตลาดสำหรับการ์ดใบนี้";
-    return {
-      meta: [
-        { title },
-        { name: "description", content: description },
-        { property: "og:title", content: title },
-        { property: "og:description", content: description },
-        { property: "og:type", content: "website" },
-        { name: "twitter:card", content: "summary_large_image" },
-      ],
-      links: loaderData
-        ? [{ rel: "canonical", href: `${SITE_URL}/market/${loaderData.id}` }]
-        : [],
-    };
-  },
+  head: ({ params }) => ({
+    meta: [
+      { title: pageTitle },
+      { name: "description", content: pageDescription },
+      { property: "og:title", content: pageTitle },
+      { property: "og:description", content: pageDescription },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+    links: [{ rel: "canonical", href: `${SITE_URL}/market/${params.id}` }],
+  }),
   errorComponent: ({ error }) => (
     <div role="alert" className="p-8 text-center text-sm text-destructive">
       {error.message}
@@ -81,18 +66,16 @@ export const Route = createFileRoute("/market/$id")({
 });
 
 function MarketDetailPage() {
-  const card = Route.useLoaderData();
+  const { id } = Route.useParams();
+  const { card, isLoading } = useMarketCard(id);
   const [tab, setTab] = useState<"chart" | "history">("chart");
   const [range, setRange] = useState<MarketRange>("1m");
 
-  const diffVsAvg = ((card.lastPrice - card.avg30d) / card.avg30d) * 100;
-  const up = diffVsAvg >= 0;
-  const hasData = card.priceHistory.length > 1 && card.transactions.length > 0;
-
   const chartData = useMemo(
     () =>
-      sliceHistory(card.priceHistory, range).map((p) => ({
+      historyInRange(card?.priceHistory ?? [], range).map((p) => ({
         date: p.date.slice(5).split("-").reverse().join("/"),
+
         price: p.price,
       })),
     [card.priceHistory, range],
