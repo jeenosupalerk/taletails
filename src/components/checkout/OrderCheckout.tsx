@@ -490,6 +490,16 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                     ? "ขั้นต่อไปจะแสดง QR PromptPay ที่ระบบตรวจเงินเข้าให้อัตโนมัติ"
                     : "ขั้นต่อไปจะแสดง QR PromptPay พร้อมยอดเงินสำหรับสแกนและแนบสลิป"}
                 </p>
+                {!order.auction_id && (
+                  <button
+                    type="button"
+                    onClick={() => setCancelOpen(true)}
+                    disabled={cancel.isPending}
+                    className="mx-auto block min-h-10 text-xs font-medium text-muted-foreground underline underline-offset-4 transition-colors hover:text-destructive"
+                  >
+                    {cancel.isPending ? "กำลังยกเลิก..." : "ยกเลิกคำสั่งซื้อนี้"}
+                  </button>
+                )}
               </>
             ) : (
               <>
@@ -571,6 +581,16 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                 <p className="text-center text-[11px] text-muted-foreground">
                   สลิปของคุณจะถูกส่งให้ทีมงานตรวจสอบในระบบหลังบ้าน
                 </p>
+                {!order.auction_id && (
+                  <button
+                    type="button"
+                    onClick={() => setCancelOpen(true)}
+                    disabled={cancel.isPending}
+                    className="mx-auto block min-h-10 text-xs font-medium text-muted-foreground underline underline-offset-4 transition-colors hover:text-destructive"
+                  >
+                    {cancel.isPending ? "กำลังยกเลิก..." : "ยกเลิกคำสั่งซื้อนี้"}
+                  </button>
+                )}
               </>
             )}
 
