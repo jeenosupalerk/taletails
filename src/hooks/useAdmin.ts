@@ -299,11 +299,15 @@ export function useDeleteCard() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (cardId: string) => {
-      const { error } = await supabase.from("cards").delete().eq("id", cardId);
+      const { error } = await supabase.rpc("admin_delete_card", { _card_id: cardId });
       if (error) throw new Error(error.message);
       return true;
     },
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["admin", "cards"] }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["admin", "cards"] });
+      void queryClient.invalidateQueries({ queryKey: ["auctions"] });
+      void queryClient.invalidateQueries({ queryKey: ["auction", "by-card"] });
+    },
   });
 }
 
