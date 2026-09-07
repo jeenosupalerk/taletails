@@ -205,10 +205,6 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
     );
   };
 
-  const copyAccount = () => {
-    void navigator.clipboard.writeText(bankAccount.number.replace(/\D/g, ""));
-    toast.success("คัดลอกเลขที่บัญชีแล้ว");
-  };
 
   return (
     <div className="min-h-screen bg-background pb-16">
