@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { SmartImage } from "@/components/ui/smart-image";
@@ -14,11 +14,17 @@ export interface ZoomableImageProps {
   zoom?: number;
   className?: string;
   wrapperClassName?: string;
+  /** All images of the product — enables next/prev navigation in the lightbox. */
+  galleryImages?: string[];
+  /** Index of this image inside galleryImages. */
+  galleryIndex?: number;
+  /** Notified when the lightbox moves to another image. */
+  onGalleryIndexChange?: (index: number) => void;
 }
 
 /**
  * Product image with a hover/touch-hold magnifier lens and a click-to-open
- * full-screen lightbox.
+ * full-screen lightbox (with next/prev when a gallery is provided).
  */
 export function ZoomableImage({
   src,
@@ -28,13 +34,28 @@ export function ZoomableImage({
   zoom = 2.5,
   className,
   wrapperClassName,
+  galleryImages,
+  galleryIndex = 0,
+  onGalleryIndexChange,
 }: ZoomableImageProps) {
   const ref = useRef<HTMLDivElement>(null);
   const holdTimer = useRef<number | null>(null);
   const [lens, setLens] = useState<{ x: number; y: number } | null>(null);
   const [open, setOpen] = useState(false);
+  const [current, setCurrent] = useState(galleryIndex);
 
-  const bigSrc = optimizedImageUrl(src, { width: Math.round(transformWidth * 2), resize: "contain" });
+  const gallery = galleryImages && galleryImages.length > 1 ? galleryImages : null;
+  const activeSrc = gallery ? (gallery[current] ?? src) : src;
+
+  const bigSrc = optimizedImageUrl(activeSrc, { width: Math.round(transformWidth * 2), resize: "contain" });
+
+  const go = (delta: number) => {
+    if (!gallery) return;
+    const next = (current + delta + gallery.length) % gallery.length;
+    setCurrent(next);
+    onGalleryIndexChange?.(next);
+  };
+
 
   useEffect(() => {
     if (!open) return;
