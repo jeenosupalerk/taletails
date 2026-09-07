@@ -201,7 +201,7 @@ function ProfilePage() {
               trigger={
                 <Button
                   variant="ghost"
-                  className="min-h-11 w-full justify-center gap-2 rounded-2xl text-sm font-semibold text-destructive hover:bg-destructive/10"
+                  className="min-h-11 w-full justify-center gap-2 rounded-2xl text-sm font-semibold text-destructive hover:bg-destructive/10 active:bg-destructive/15"
                 >
                   <LogOut className="h-5 w-5" />
                   ออกจากระบบ
@@ -240,15 +240,15 @@ function MenuItem({
   return (
     <Link
       to={to}
-      className="group flex min-h-11 items-center justify-between gap-3 rounded-xl px-3 transition-[colors,transform,box-shadow] duration-150 ease-out hover:bg-primary/8 hover:shadow-sm hover:translate-x-0.5"
+      className="group flex min-h-11 items-center justify-between gap-3 rounded-xl px-3 transition-[colors,transform,box-shadow] duration-150 ease-out hover:bg-primary/8 hover:shadow-sm hover:translate-x-0.5 active:bg-primary/15 active:scale-[0.98] active:translate-x-0"
     >
       <div className="flex items-center gap-3">
-        <span className="text-muted-foreground transition-colors duration-150 group-hover:text-primary">{icon}</span>
-        <span className="text-sm font-medium transition-colors duration-150 group-hover:text-primary">{label}</span>
+        <span className="text-muted-foreground transition-colors duration-150 group-hover:text-primary group-active:text-primary">{icon}</span>
+        <span className="text-sm font-medium transition-colors duration-150 group-hover:text-primary group-active:text-primary">{label}</span>
       </div>
       <div className="flex items-center gap-2">
         {suffix}
-        <ChevronRight className="h-4 w-4 text-muted-foreground transition-[transform,color] duration-150 group-hover:translate-x-0.5 group-hover:text-primary" />
+        <ChevronRight className="h-4 w-4 text-muted-foreground transition-[transform,color] duration-150 group-hover:translate-x-0.5 group-hover:text-primary group-active:translate-x-0.5 group-active:text-primary" />
       </div>
     </Link>
   );
