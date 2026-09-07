@@ -167,7 +167,7 @@ function RootComponent() {
             <MobileBottomNav />
             <AuctionWinWatcher />
 
-
+            <SplashScreen />
             <Toaster position="top-right" richColors closeButton />
           </WatchlistProvider>
         </CartProvider>
