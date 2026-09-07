@@ -47,12 +47,20 @@ export function SmartImage({
   const [currentSrc, setCurrentSrc] = useState(optimized);
   const [loaded, setLoaded] = useState(false);
   const triedOriginal = useRef(false);
+  const imgRef = useRef<HTMLImageElement | null>(null);
 
   useEffect(() => {
     triedOriginal.current = false;
     setCurrentSrc(optimized);
     setLoaded(false);
   }, [optimized]);
+
+  // Cached images can finish loading before React attaches onLoad — check the
+  // element directly so the blur placeholder never gets stuck.
+  useEffect(() => {
+    const img = imgRef.current;
+    if (img?.complete && img.naturalWidth > 0) setLoaded(true);
+  }, [currentSrc]);
 
   if (!src) {
     return (
@@ -80,6 +88,7 @@ export function SmartImage({
       )}
       <img
         {...imgProps}
+        ref={imgRef}
         src={currentSrc}
         alt={alt}
         loading={priority ? "eager" : "lazy"}
