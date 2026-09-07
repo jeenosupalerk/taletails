@@ -554,14 +554,37 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                       onChange={set("postcode")}
                     />
                   </div>
-                  <label className="flex items-start gap-2.5 pt-1 text-xs text-muted-foreground">
-                    <Checkbox
-                      checked={remember}
-                      onCheckedChange={(v) => setRemember(v === true)}
-                      className="mt-0.5"
-                    />
-                    บันทึกที่อยู่นี้ไว้สำหรับการสั่งซื้อครั้งต่อไป
-                  </label>
+                  {!selectedAddressId && (
+                    <div className="space-y-3 rounded-2xl bg-secondary/40 p-3">
+                      <label className="flex items-start gap-2.5 text-xs text-muted-foreground">
+                        <Checkbox
+                          checked={remember}
+                          onCheckedChange={(v) => setRemember(v === true)}
+                          className="mt-0.5"
+                        />
+                        บันทึกที่อยู่นี้เข้าสมุดที่อยู่
+                      </label>
+                      {remember && (
+                        <>
+                          <Field
+                            id="ship-label"
+                            label="ชื่อเรียกที่อยู่"
+                            placeholder="เช่น บ้าน / ที่ทำงาน"
+                            value={addressLabel}
+                            onChange={setAddressLabel}
+                          />
+                          <label className="flex items-start gap-2.5 text-xs text-muted-foreground">
+                            <Checkbox
+                              checked={makeDefault}
+                              onCheckedChange={(v) => setMakeDefault(v === true)}
+                              className="mt-0.5"
+                            />
+                            ตั้งเป็นที่อยู่เริ่มต้น
+                          </label>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </section>
 
                 {/* วิธีชำระเงิน */}
