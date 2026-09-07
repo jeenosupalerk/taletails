@@ -387,39 +387,20 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                   </label>
                 </section>
 
-                {/* เลือกวิธีชำระเงิน */}
-                <section className="space-y-4 rounded-3xl border border-border/70 bg-card p-4">
-                  <h2 className="font-display text-sm tracking-[0.16em] uppercase">
-                    เลือกวิธีชำระเงิน
-                  </h2>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setMethod("qr_promptpay")}
-                      className={cn(
-                        "flex min-h-[64px] flex-col items-center justify-center gap-1.5 rounded-2xl border px-3 py-2.5 text-sm font-medium transition-all",
-                        method === "qr_promptpay"
-                          ? "border-primary bg-primary/10 text-primary shadow-[0_14px_35px_-24px_hsl(var(--primary)/0.9)]"
-                          : "border-border/70 bg-secondary/25 text-muted-foreground hover:border-primary/40",
-                      )}
-                    >
+                {/* วิธีชำระเงิน: PromptPay เท่านั้น */}
+                <section className="rounded-3xl border border-primary/30 bg-primary/5 p-4">
+                  <div className="flex items-center gap-3">
+                    <span className="grid min-h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
                       <QrCode className="h-5 w-5" />
-                      QR PromptPay
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setMethod("slip")}
-                      className={cn(
-                        "flex min-h-[64px] flex-col items-center justify-center gap-1.5 rounded-2xl border px-3 py-2.5 text-sm font-medium transition-all",
-                        method === "slip"
-                          ? "border-primary bg-primary/10 text-primary shadow-[0_14px_35px_-24px_hsl(var(--primary)/0.9)]"
-                          : "border-border/70 bg-secondary/25 text-muted-foreground hover:border-primary/40",
-                      )}
-                    >
-                      <Landmark className="h-5 w-5" />
-                      โอนบัญชีธนาคาร
-                    </button>
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <h2 className="font-display text-sm font-semibold tracking-[0.16em] uppercase">
+                        ชำระด้วย QR PromptPay
+                      </h2>
+                      <p className="mt-0.5 text-xs break-words text-muted-foreground">
+                        สแกนด้วยแอปธนาคารใดก็ได้ ยอดถูกใส่มาให้อัตโนมัติ แล้วแนบสลิปยืนยันในขั้นตอนถัดไป
+                      </p>
+                    </div>
                   </div>
                 </section>
 
