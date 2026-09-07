@@ -70,7 +70,7 @@ export function ZoomableImage({
     }
   };
 
-  if (!src) return <SmartImage src={src} alt={alt} className={className} wrapperClassName={wrapperClassName} />;
+  if (!src) return <SmartImage src={src} alt={alt} className={className ?? ""} wrapperClassName={wrapperClassName ?? ""} />;
 
   return (
     <>
