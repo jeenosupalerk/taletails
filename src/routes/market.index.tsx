@@ -1,10 +1,10 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Activity, ArrowDownRight, ArrowUpRight, LineChart, TrendingUp } from "lucide-react";
-import { useEffect, useState } from "react";
 
 import { PageShell } from "@/components/site/PageShell";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatThb, marketCards, marketSummary } from "@/data/market";
+import { formatThb } from "@/data/market";
+import { useMarketStats } from "@/hooks/useMarketStats";
 import { cn } from "@/lib/utils";
 import { SmartImage } from "@/components/ui/smart-image";
 
@@ -29,20 +29,18 @@ export const Route = createFileRoute("/market/")({
 });
 
 function MarketPage() {
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 700);
-    return () => clearTimeout(t);
-  }, []);
+  const { summary, cards: marketCards, isLoading: loading } = useMarketStats();
+  const marketSummary = summary;
+  const volumeUp = marketSummary.volumeChange24h >= 0;
 
   return (
     <PageShell
       eyebrow="Market Statistics"
       title="สถิติตลาดการ์ด"
-      description="ภาพรวมมูลค่าและเทรนด์ราคาการ์ดสะสมบนตลาดกลาง อัปเดตล่าสุดทุกวัน"
+      description="ภาพรวมมูลค่าและเทรนด์ราคาการ์ดสะสมบนตลาดกลาง คำนวณจากรายการที่ซื้อขายสำเร็จจริง"
     >
       <section className="mx-auto max-w-7xl space-y-6 px-4 py-6 pb-28 sm:px-6 lg:px-8">
+
         {/* Top metrics */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="surface-panel flex items-center gap-4 p-5">
@@ -54,9 +52,21 @@ function MarketPage() {
               <p className="text-2xl font-bold tracking-tight">
                 {formatThb(marketSummary.totalVolume)}
               </p>
-              <p className="mt-0.5 flex items-center gap-1 text-xs font-semibold text-success">
-                <ArrowUpRight className="h-3.5 w-3.5" />+{marketSummary.volumeChange24h}% จากเมื่อวาน
+              <p
+                className={cn(
+                  "mt-0.5 flex items-center gap-1 text-xs font-semibold",
+                  volumeUp ? "text-success" : "text-destructive",
+                )}
+              >
+                {volumeUp ? (
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                ) : (
+                  <ArrowDownRight className="h-3.5 w-3.5" />
+                )}
+                {volumeUp ? "+" : ""}
+                {marketSummary.volumeChange24h}% จากเมื่อวาน
               </p>
+
             </div>
           </div>
           <div className="surface-panel flex items-center gap-4 p-5">
@@ -98,7 +108,16 @@ function MarketPage() {
                 </div>
               ))}
             </div>
+          ) : marketCards.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 px-6 py-16 text-center">
+              <LineChart className="min-h-10 w-10 text-muted-foreground/50" />
+              <p className="font-semibold">ยังไม่มีรายการซื้อขายสำเร็จบนตลาดกลาง</p>
+              <p className="text-sm text-muted-foreground">
+                เมื่อมีการชำระเงินเรียบร้อย ระบบจะสรุปราคาและสถิติที่นี่ทันที
+              </p>
+            </div>
           ) : (
+
             <div className="overflow-x-auto">
               <table className="w-full min-w-[560px] text-sm">
                 <thead>
