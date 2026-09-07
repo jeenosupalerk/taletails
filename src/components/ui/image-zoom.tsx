@@ -179,8 +179,58 @@ export function ZoomableImage({
             onClick={(e) => e.stopPropagation()}
             className="max-h-[88vh] max-w-[92vw] rounded-xl object-contain drop-shadow-2xl"
           />
+
+          {gallery && (
+            <>
+              <button
+                type="button"
+                aria-label="รูปก่อนหน้า"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  go(-1);
+                }}
+                className="absolute top-1/2 left-3 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-background/90 text-foreground shadow-lg transition-opacity hover:opacity-80 sm:left-6"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                aria-label="รูปถัดไป"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  go(1);
+                }}
+                className="absolute top-1/2 right-3 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-background/90 text-foreground shadow-lg transition-opacity hover:opacity-80 sm:right-6"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+
+              <div
+                className="absolute inset-x-0 bottom-5 flex justify-center gap-2"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {gallery.map((g, i) => (
+                  <button
+                    key={`${g}-${i}`}
+                    type="button"
+                    aria-label={`ดูรูปที่ ${i + 1}`}
+                    aria-current={i === current ? "true" : undefined}
+                    onClick={() => {
+                      setCurrent(i);
+                      onGalleryIndexChange?.(i);
+                    }}
+                    className={cn(
+                      "h-2.5 rounded-full transition-all",
+                      i === current ? "w-6 bg-background" : "w-2.5 bg-background/50 hover:bg-background/80",
+                    )}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </div>
       )}
     </>
   );
+
 }
