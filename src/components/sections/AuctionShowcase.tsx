@@ -144,7 +144,7 @@ export function AuctionShowcase({
           >
             {/* Card viewer */}
             <div className="relative flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-card">
-              <div className="relative aspect-[3/4] w-full min-h-[320px] bg-gradient-vault lg:aspect-auto lg:min-h-0 lg:flex-1">
+              <div className="relative flex aspect-[3/4] w-full min-h-[320px] items-center justify-center bg-transparent p-4 lg:aspect-auto lg:min-h-0 lg:flex-1 lg:p-6">
                 {gallery.map((src, i) => (
                   <SmartImage
                     key={src + i}
@@ -152,10 +152,10 @@ export function AuctionShowcase({
                     alt={i === shot ? `${auction.cardName} เกรด ${auction.grade} รูปที่ ${i + 1}` : ""}
                     transformWidth={800}
                     priority={i === 0}
-                    wrapperClassName={`absolute inset-0 transition-opacity duration-500 ${
+                    wrapperClassName={`absolute inset-0 p-4 transition-opacity duration-500 lg:p-6 ${
                       i === shot ? "opacity-100" : "opacity-0"
                     }`}
-                    className="object-cover"
+                    className="object-contain drop-shadow-2xl rounded-xl"
                   />
                 ))}
 

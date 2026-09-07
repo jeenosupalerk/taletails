@@ -201,12 +201,13 @@ function AuctionsPage() {
                   auction.id === active?.id ? "border-primary shadow-glow" : "border-border"
                 }`}
               >
-                <div className="relative aspect-[4/3] overflow-hidden bg-gradient-vault">
+                <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-transparent p-3">
                   <SmartImage
                     src={auction.imageUrl}
                     alt={`${auction.cardName} — ${auction.grade}`}
                     transformWidth={600}
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    wrapperClassName="p-1"
+                    className="object-contain drop-shadow-xl rounded-lg transition-transform duration-500 group-hover:scale-[1.03]"
                   />
                   <span
                     className={`absolute top-3 left-3 inline-flex max-w-[70%] items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold shadow-[0_6px_18px_-8px_rgba(0,0,0,0.6)] ${AUCTION_OUTCOME_TONE_CLASS[auction.outcome.tone]}`}
