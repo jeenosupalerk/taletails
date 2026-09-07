@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuthUserId, useOrder, useSubmitPayment } from "@/hooks/useCardDetail";
+import { useAuthUserId, useCancelOrder, useOrder, useSubmitPayment } from "@/hooks/useCardDetail";
 import { pad, useCountdown } from "@/hooks/useCountdown";
 import { thb } from "@/lib/cart";
 import { startPromptPayPayment } from "@/lib/payments.functions";
@@ -101,6 +101,8 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
   const orderQuery = useOrder(orderId);
   const order = orderQuery.data ?? null;
   const submit = useSubmitPayment(orderId);
+  const cancel = useCancelOrder(orderId);
+  const [cancelOpen, setCancelOpen] = useState(false);
 
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
