@@ -103,7 +103,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
   const [preview, setPreview] = useState<string | null>(null);
   const [ship, setShip] = useState<Shipping>(emptyShipping);
   const [remember, setRemember] = useState(true);
-  const [method, setMethod] = useState<"qr_promptpay" | "slip">("qr_promptpay");
+  const method = "qr_promptpay" as const;
   const [stage, setStage] = useState<"details" | "pay">("details");
   const [done, setDone] = useState(false);
   const [paidOpen, setPaidOpen] = useState(false);
