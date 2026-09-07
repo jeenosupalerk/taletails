@@ -23,14 +23,14 @@ export function getAuctionOutcome(
   const timeUp = endTime ? new Date(endTime).getTime() <= Date.now() : false;
 
   if (auctionStatus === "active" && !timeUp) {
-    return { outcome: "live", label: "กำลังเปิดประมูล", tone: "live" };
+    return { outcome: "live", label: "กำลังประมูล", tone: "live" };
   }
 
   if (cardStatus === "sold") {
     return {
       outcome: "completed",
-      label: "การประมูลเสร็จสมบูรณ์",
-      hint: "ผู้ชนะชำระเงินเรียบร้อยแล้ว",
+      label: "ประมูลสำเร็จ",
+      hint: "ผู้ชนะชำระเงินแล้ว",
       tone: "success",
     };
   }
@@ -38,8 +38,8 @@ export function getAuctionOutcome(
   if (auctionStatus === "waiting_payment" || auctionStatus === "passed_to_next") {
     return {
       outcome: "waiting_payment",
-      label: "รอผู้ชนะชำระเงิน",
-      hint: "ระบบกำลังรอการชำระเงินจากผู้ชนะภายในเวลาที่กำหนด",
+      label: "รอชำระเงิน",
+      hint: "รอผู้ชนะชำระเงินตามเวลาที่กำหนด",
       tone: "warning",
     };
   }
@@ -47,23 +47,32 @@ export function getAuctionOutcome(
   if (auctionStatus === "active" && timeUp) {
     return {
       outcome: "waiting_payment",
-      label: "รอผู้ชนะชำระเงิน",
-      hint: "ปิดประมูลแล้ว ระบบกำลังสรุปผลผู้ชนะ",
+      label: "รอชำระเงิน",
+      hint: "ปิดประมูลแล้ว กำลังสรุปผลผู้ชนะ",
       tone: "warning",
     };
   }
 
   return {
     outcome: "failed",
-    label: "การประมูลไม่เป็นผล กำลังจะเริ่มประมูลใหม่",
-    hint: "รอผู้ดูแลระบบกดเปิดประมูลใหม่ การ์ดใบนี้จะกลับมาประมูลอีกครั้ง",
+    label: "รอเปิดประมูลใหม่",
+    hint: "ประมูลไม่สำเร็จ แอดมินจะเปิดประมูลการ์ดใบนี้อีกครั้ง",
     tone: "muted",
   };
 }
 
+/** ชิปสถานะแบบทึบ อ่านง่ายบนรูปภาพ */
 export const AUCTION_OUTCOME_TONE_CLASS: Record<AuctionOutcomeInfo["tone"], string> = {
-  live: "border-primary/40 bg-primary/10 text-primary",
-  warning: "border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400",
-  success: "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-  muted: "border-border bg-muted text-muted-foreground",
+  live: "border-transparent bg-primary text-primary-foreground",
+  warning: "border-transparent bg-amber-500 text-white",
+  success: "border-transparent bg-emerald-600 text-white",
+  muted: "border-transparent bg-foreground/80 text-background",
+};
+
+/** จุดนำหน้าในชิปสถานะ */
+export const AUCTION_OUTCOME_DOT_CLASS: Record<AuctionOutcomeInfo["tone"], string> = {
+  live: "bg-primary-foreground animate-pulse",
+  warning: "bg-white",
+  success: "bg-white",
+  muted: "bg-background",
 };
