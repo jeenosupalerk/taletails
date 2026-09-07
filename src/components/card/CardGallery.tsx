@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 
 import { cn } from "@/lib/utils";
 import { SmartImage } from "@/components/ui/smart-image";
+import { ZoomableImage } from "@/components/ui/image-zoom";
 
 export interface CardGalleryProps {
   images: string[];
@@ -49,13 +50,11 @@ export function CardGallery({
           <div className="relative aspect-[4/5]">
             {/* Main image */}
             {images.map((src, i) => (
-              <SmartImage
+              <ZoomableImage
                 key={`${src}-${i}`}
                 src={src}
                 alt={i === active ? `${alt}` : ""}
-                aria-hidden={i !== active}
                 transformWidth={900}
-                transformResize="contain"
                 priority={i === 0}
                 wrapperClassName={cn(
                   "absolute inset-0 transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]",

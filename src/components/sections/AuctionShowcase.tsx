@@ -31,6 +31,7 @@ import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { thb } from "@/lib/cart";
 import { useWatchlist } from "@/lib/watchlist";
 import { SmartImage } from "@/components/ui/smart-image";
+import { ZoomableImage } from "@/components/ui/image-zoom";
 
 export function AuctionShowcase({
   auction,
@@ -146,14 +147,14 @@ export function AuctionShowcase({
             <div className="relative flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-card">
               <div className="relative flex aspect-[3/4] w-full min-h-[320px] items-center justify-center bg-transparent p-4 lg:aspect-auto lg:min-h-0 lg:flex-1 lg:p-6">
                 {gallery.map((src, i) => (
-                  <SmartImage
+                  <ZoomableImage
                     key={src + i}
                     src={src}
                     alt={i === shot ? `${auction.cardName} เกรด ${auction.grade} รูปที่ ${i + 1}` : ""}
                     transformWidth={800}
                     priority={i === 0}
                     wrapperClassName={`absolute inset-0 p-4 transition-opacity duration-500 lg:p-6 ${
-                      i === shot ? "opacity-100" : "opacity-0"
+                      i === shot ? "opacity-100" : "opacity-0 pointer-events-none"
                     }`}
                     className="object-contain drop-shadow-2xl rounded-xl"
                   />
