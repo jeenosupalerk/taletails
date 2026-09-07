@@ -30,8 +30,10 @@ import {
   usePlaceBid,
 } from "@/hooks/useCardDetail";
 import { pad, useCountdown } from "@/hooks/useCountdown";
+import { AUCTION_OUTCOME_TONE_CLASS, getAuctionOutcome } from "@/lib/auction-status";
 import { thb } from "@/lib/cart";
 import { cn } from "@/lib/utils";
+
 
 const SITE_URL = "https://taletails-test.lovable.app";
 /** Stable placeholder so the countdown hook is not re-armed on every render. */
