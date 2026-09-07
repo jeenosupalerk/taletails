@@ -12,6 +12,7 @@ import { getLiveAuctions, type Auction } from "@/data/auctions";
 import { useLiveAuctions, type LiveAuction } from "@/hooks/useLiveAuctions";
 import { thb } from "@/lib/cart";
 import {
+  AUCTION_OUTCOME_DOT_CLASS,
   AUCTION_OUTCOME_TONE_CLASS,
   getAuctionOutcome,
   type AuctionOutcomeInfo,
