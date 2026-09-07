@@ -275,6 +275,27 @@ export function useOrder(orderId: string) {
   });
 }
 
+/** Buyer cancels their own pending order — the DB trigger releases the card back to "available". */
+export function useCancelOrder(orderId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("orders")
+        .update({ status: "cancelled" })
+        .eq("id", orderId)
+        .eq("status", "pending");
+      if (error) throw new Error(error.message);
+      return true;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["order", orderId] });
+      void queryClient.invalidateQueries({ queryKey: ["card"] });
+      void queryClient.invalidateQueries({ queryKey: ["cards", "marketplace"] });
+    },
+  });
+}
+
 /** Uploads a slip into the private bucket under the user's own folder. */
 export function useSubmitPayment(orderId: string) {
   const queryClient = useQueryClient();
