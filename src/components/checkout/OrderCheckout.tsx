@@ -3,8 +3,6 @@ import {
   BadgeCheck,
   CheckCircle2,
   ChevronLeft,
-  Copy,
-  Landmark,
   Loader2,
   Lock,
   QrCode,
@@ -24,7 +22,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuthUserId, useOrder, useSubmitPayment } from "@/hooks/useCardDetail";
 import { pad, useCountdown } from "@/hooks/useCountdown";
-import { bankAccount } from "@/lib/bank";
 import { thb } from "@/lib/cart";
 import { cn } from "@/lib/utils";
 import { StatusDialog } from "@/components/ui/status-dialog";
