@@ -44,7 +44,7 @@ export function SiteHeader() {
               key={item.to}
               to={item.to}
               activeProps={{ className: "bg-secondary text-foreground shadow-sm" }}
-              className="rounded-full px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              className="rounded-full px-3.5 py-2 text-sm font-medium text-muted-foreground transition-[colors,transform,box-shadow] duration-150 ease-out hover:-translate-y-0.5 hover:bg-secondary hover:text-foreground hover:shadow-sm"
             >
               {item.label}
             </Link>

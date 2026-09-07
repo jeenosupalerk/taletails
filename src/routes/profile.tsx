@@ -240,15 +240,15 @@ function MenuItem({
   return (
     <Link
       to={to}
-      className="flex min-h-11 items-center justify-between gap-3 rounded-xl px-3 transition-colors hover:bg-secondary/60"
+      className="group flex min-h-11 items-center justify-between gap-3 rounded-xl px-3 transition-[colors,transform,box-shadow] duration-150 ease-out hover:bg-primary/8 hover:shadow-sm hover:translate-x-0.5"
     >
       <div className="flex items-center gap-3">
-        <span className="text-muted-foreground">{icon}</span>
-        <span className="text-sm font-medium">{label}</span>
+        <span className="text-muted-foreground transition-colors duration-150 group-hover:text-primary">{icon}</span>
+        <span className="text-sm font-medium transition-colors duration-150 group-hover:text-primary">{label}</span>
       </div>
       <div className="flex items-center gap-2">
         {suffix}
-        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        <ChevronRight className="h-4 w-4 text-muted-foreground transition-[transform,color] duration-150 group-hover:translate-x-0.5 group-hover:text-primary" />
       </div>
     </Link>
   );
