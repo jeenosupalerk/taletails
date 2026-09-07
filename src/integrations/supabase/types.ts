@@ -756,6 +756,19 @@ export type Database = {
       }
       is_auction_banned: { Args: { _user_id: string }; Returns: boolean }
       is_banned: { Args: { _user_id: string }; Returns: boolean }
+      market_sales: {
+        Args: never
+        Returns: {
+          card_id: string
+          card_name: string
+          grade: string
+          image: string
+          is_auction: boolean
+          price: number
+          set_name: string
+          sold_at: string
+        }[]
+      }
       notify_user: {
         Args: {
           _body: string
