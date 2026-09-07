@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ImgHTMLAttributes } from "react";
 
+import { getRescaledImage } from "@/lib/image-compress";
 import { optimizedImageUrl, type ImageTransformOptions } from "@/lib/images";
 import { cn } from "@/lib/utils";
 
@@ -67,6 +68,21 @@ export function SmartImage({
     const img = imgRef.current;
     if (img?.complete && img.naturalWidth > 0) setLoaded(true);
   }, [currentSrc]);
+
+  // Very large camera photos (20+ megapixels) are subsampled by mobile Safari
+  // and look blurry. Re-render them at a sane resolution in the browser.
+  useEffect(() => {
+    if (!loaded) return;
+    const img = imgRef.current;
+    if (!img || img.naturalWidth * img.naturalHeight <= 8_000_000) return;
+    let cancelled = false;
+    void getRescaledImage(currentSrc).then((next: string | null) => {
+      if (!cancelled && next) setCurrentSrc(next);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [loaded, currentSrc]);
 
   if (!src) {
     return (
