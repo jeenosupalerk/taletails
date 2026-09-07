@@ -21,6 +21,7 @@ import { thb, useCart } from "@/lib/cart";
 import { useWatchlist } from "@/lib/watchlist";
 import { supabase } from "@/integrations/supabase/client";
 import { SmartImage } from "@/components/ui/smart-image";
+import { ZoomableImage } from "@/components/ui/image-zoom";
 
 const SITE_URL = "https://taletails-test.lovable.app";
 
