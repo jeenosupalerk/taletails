@@ -207,11 +207,22 @@ function AuctionsPage() {
                     transformWidth={600}
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
+                  <span
+                    className={`absolute top-3 left-3 max-w-[70%] truncate rounded-full border px-2.5 py-1 text-[11px] font-bold backdrop-blur ${AUCTION_OUTCOME_TONE_CLASS[auction.outcome.tone]}`}
+                  >
+                    {auction.outcome.label}
+                  </span>
                   <span className="absolute top-3 right-3 rounded-full border border-accent/40 bg-background/85 px-2.5 py-1 font-display text-[11px] font-bold text-accent">
                     {auction.grade}
                   </span>
                   <div className="absolute right-3 bottom-3 left-3">
-                    <CountdownBadge endTime={auction.endTime} className="w-full justify-center" />
+                    {auction.outcome.outcome === "live" ? (
+                      <CountdownBadge endTime={auction.endTime} className="w-full justify-center" />
+                    ) : (
+                      <span className="block w-full truncate rounded-full border border-border bg-background/85 px-3 py-1.5 text-center text-[11px] font-semibold text-muted-foreground">
+                        ปิดประมูลแล้ว
+                      </span>
+                    )}
                   </div>
                 </div>
 
