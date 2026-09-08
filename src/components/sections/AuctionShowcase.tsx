@@ -8,6 +8,7 @@ import {
   Heart,
   Gavel,
   History,
+  Lock,
   Radio,
   Timer,
 } from "lucide-react";
@@ -19,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import type { Auction } from "@/data/auctions";
+import type { AuctionOutcomeInfo } from "@/lib/auction-status";
 import { timeAgo, useBidHistory } from "@/hooks/useBidHistory";
 import {
   useAuctionRealtime,
@@ -37,12 +39,16 @@ export function AuctionShowcase({
   auction,
   auctionId,
   bidIncrement = 50,
+  outcome,
 }: {
   auction: Auction;
   /** รหัสรอบประมูลจริงใน Supabase — ถ้ามี จะเคาะราคาลงฐานข้อมูลจริง */
   auctionId?: string | undefined;
   bidIncrement?: number | undefined;
+  /** สถานะผลการประมูล — เมื่อไม่ใช่ "live" จะล็อกไม่ให้เสนอราคา */
+  outcome?: AuctionOutcomeInfo;
 }) {
+  const closed = outcome ? outcome.outcome !== "live" : false;
   const c = useCountdown(auction.endTime);
   const [shot, setShot] = useState(0);
   const [bid, setBid] = useState(auction.currentBid + bidIncrement);
