@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 /**
  * Auction maintenance endpoint (call every minute from pg_cron or any scheduler):
  *  - closes auctions whose end_time has passed and issues the winner's order
- *  - cancels unpaid orders past their 24h deadline and passes the card to the next bidder
+ *  - cancels unpaid orders past their 30-minute deadline and passes the card to the next bidder
  *  - delivers queued notification emails through Resend
  *
  * Requires the `x-cron-secret` header (or `?secret=`) to match LOVABLE_CRON_SECRET.
