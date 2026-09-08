@@ -157,6 +157,7 @@ function AuctionsPage() {
             auction={active}
             auctionId={activeAuctionId}
             bidIncrement={activeIncrement}
+            outcome={active.outcome}
           />
         )}
 
