@@ -5,6 +5,8 @@ import {
   Gavel,
   ImagePlus,
   Loader2,
+  Lock,
+
   PackageOpen,
   Plus,
   Tag,
