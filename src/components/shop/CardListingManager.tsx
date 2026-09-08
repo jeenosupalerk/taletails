@@ -355,6 +355,19 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
         <ul className="space-y-3">
           {pageItems.map((c) => {
             const auction = c.auctions?.[0];
+            const outcome = auction
+              ? getAuctionOutcome(auction.status, c.status, auction.end_time)
+              : null;
+            // ล็อกการจัดการเมื่อรอผู้ชนะชำระเงิน หรือประมูลสำเร็จแล้ว
+            const managementLocked =
+              c.status === "sold" ||
+              (outcome ? outcome.outcome === "waiting_payment" || outcome.outcome === "completed" : false) ||
+              (!!auction && c.status === "locked");
+            const lockedNote =
+              c.status === "sold" || outcome?.outcome === "completed"
+                ? "ประมูลสำเร็จแล้ว ไม่สามารถแก้ไข ลบ หรือเปิดประมูลใหม่ได้"
+                : "อยู่ระหว่างรอผู้ชนะชำระเงิน ไม่สามารถแก้ไข ลบ หรือเปิดประมูลใหม่ได้";
+
             return (
               <li
                 key={c.id}
