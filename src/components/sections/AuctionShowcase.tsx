@@ -8,6 +8,7 @@ import {
   Heart,
   Gavel,
   History,
+  Lock,
   Radio,
   Timer,
 } from "lucide-react";
@@ -19,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import type { Auction } from "@/data/auctions";
+import type { AuctionOutcomeInfo } from "@/lib/auction-status";
 import { timeAgo, useBidHistory } from "@/hooks/useBidHistory";
 import {
   useAuctionRealtime,
@@ -37,12 +39,16 @@ export function AuctionShowcase({
   auction,
   auctionId,
   bidIncrement = 50,
+  outcome,
 }: {
   auction: Auction;
   /** รหัสรอบประมูลจริงใน Supabase — ถ้ามี จะเคาะราคาลงฐานข้อมูลจริง */
   auctionId?: string | undefined;
   bidIncrement?: number | undefined;
+  /** สถานะผลการประมูล — เมื่อไม่ใช่ "live" จะล็อกไม่ให้เสนอราคา */
+  outcome?: AuctionOutcomeInfo;
 }) {
+  const closed = outcome ? outcome.outcome !== "live" : false;
   const c = useCountdown(auction.endTime);
   const [shot, setShot] = useState(0);
   const [bid, setBid] = useState(auction.currentBid + bidIncrement);
@@ -396,48 +402,61 @@ export function AuctionShowcase({
                 value={bid}
                 min={minNext}
                 step={50}
+                disabled={closed}
                 onChange={(e) => setBid(Number(e.target.value))}
-                className="min-h-11 min-w-0 flex-1 rounded-xl border-2 border-border bg-white text-base font-semibold text-neutral-900 shadow-sm placeholder:text-neutral-400 focus-visible:border-primary"
+                className="min-h-11 min-w-0 flex-1 rounded-xl border-2 border-border bg-white text-base font-semibold text-neutral-900 shadow-sm placeholder:text-neutral-400 focus-visible:border-primary disabled:opacity-50"
               />
               <Button
                 variant="secondary"
-                className="min-h-11 shrink-0 rounded-xl px-3 text-xs font-semibold transition-colors"
+                className="min-h-11 shrink-0 rounded-xl px-3 text-xs font-semibold transition-colors disabled:pointer-events-none disabled:opacity-40"
+                disabled={closed}
                 onClick={() => setBid((b: number) => b + 1000)}
               >
                 +฿1,000
               </Button>
               <Button
                 variant="secondary"
-                className="min-h-11 shrink-0 rounded-xl px-3 text-xs font-semibold transition-colors"
+                className="min-h-11 shrink-0 rounded-xl px-3 text-xs font-semibold transition-colors disabled:pointer-events-none disabled:opacity-40"
+                disabled={closed}
                 onClick={() => setBid((b: number) => b + 5000)}
               >
                 +฿5,000
               </Button>
             </div>
-            <ConfirmDialog
-              title="ยืนยันการเสนอราคา"
-              description={
-                <>
-                  คุณกำลังเสนอราคา{" "}
-                  <span className="font-display font-bold text-primary">{thb.format(bid)}</span> สำหรับ{" "}
-                  {auction.cardName}
-                  <br />
-                  เมื่อยืนยันแล้วจะยกเลิกการเสนอราคาไม่ได้
-                </>
-              }
-              confirmLabel="ยืนยันเสนอราคา"
-              disabled={placeBid.isPending}
-              onConfirm={submit}
-              trigger={
-                <Button
-                  className="min-h-11 w-full rounded-xl bg-gradient-ember px-6 font-semibold text-primary-foreground shadow-glow transition-opacity hover:opacity-90 sm:w-auto"
-                  disabled={placeBid.isPending}
-                >
-                  <Gavel className="h-4 w-4" />
-                  {placeBid.isPending ? "กำลังส่งราคา..." : "ยืนยันเสนอราคา"}
-                </Button>
-              }
-            />
+            {closed ? (
+              <Button
+                disabled
+                className="min-h-11 w-full rounded-xl px-6 font-semibold sm:w-auto"
+              >
+                <Lock className="h-4 w-4" />
+                {outcome?.label ?? "ปิดประมูลแล้ว"}
+              </Button>
+            ) : (
+              <ConfirmDialog
+                title="ยืนยันการเสนอราคา"
+                description={
+                  <>
+                    คุณกำลังเสนอราคา{" "}
+                    <span className="font-display font-bold text-primary">{thb.format(bid)}</span> สำหรับ{" "}
+                    {auction.cardName}
+                    <br />
+                    เมื่อยืนยันแล้วจะยกเลิกการเสนอราคาไม่ได้
+                  </>
+                }
+                confirmLabel="ยืนยันเสนอราคา"
+                disabled={placeBid.isPending}
+                onConfirm={submit}
+                trigger={
+                  <Button
+                    className="min-h-11 w-full rounded-xl bg-gradient-ember px-6 font-semibold text-primary-foreground shadow-glow transition-opacity hover:opacity-90 sm:w-auto"
+                    disabled={placeBid.isPending}
+                  >
+                    <Gavel className="h-4 w-4" />
+                    {placeBid.isPending ? "กำลังส่งราคา..." : "ยืนยันเสนอราคา"}
+                  </Button>
+                }
+              />
+            )}
           </div>
 
           {/* Realtime bid history */}
