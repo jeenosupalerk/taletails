@@ -449,9 +449,9 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                   </Button>
                   {scope === "admin" &&
                     auction &&
-                    auction.status !== "active" &&
-                    c.status !== "sold" && <RelistAuctionControl auctionId={auction.id} />}
-                  {c.status === "available" && (
+                    !managementLocked &&
+                    auction.status !== "active" && <RelistAuctionControl auctionId={auction.id} />}
+                  {c.status === "available" && !managementLocked && (
                     <ConfirmDialog
                       title="ยืนยันการลบการ์ด"
                       description={`ต้องการลบ "${c.name}" ออกจากร้านหรือไม่? การลบไม่สามารถย้อนกลับได้`}
@@ -478,6 +478,13 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                       }
                     />
                   )}
+                  {managementLocked && (
+                    <span className="inline-flex min-h-10 items-center gap-1.5 rounded-xl bg-secondary px-3 text-xs text-muted-foreground">
+                      <Lock className="h-3.5 w-3.5" />
+                      {lockedNote}
+                    </span>
+                  )}
+
                 </div>
               </li>
             );
