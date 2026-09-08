@@ -358,8 +358,13 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
           {pageItems.map((c) => {
             const auction = c.auctions?.[0];
             const outcome = auction
-              ? getAuctionOutcome(auction.status, c.status, auction.end_time)
+              ? getAuctionOutcome(
+                  auction.status as AuctionDbStatus,
+                  c.status as CardDbStatus,
+                  auction.end_time,
+                )
               : null;
+
             // ล็อกการจัดการเมื่อรอผู้ชนะชำระเงิน หรือประมูลสำเร็จแล้ว
             const managementLocked =
               c.status === "sold" ||
