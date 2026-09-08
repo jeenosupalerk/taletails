@@ -35,7 +35,9 @@ import {
   useUpdateAuctionEndTime,
   type NewCardInput,
 } from "@/hooks/useAdmin";
+import { getAuctionOutcome } from "@/lib/auction-status";
 import { thb } from "@/lib/cart";
+
 import { SmartImage } from "@/components/ui/smart-image";
 
 const EMPTY: NewCardInput = {
