@@ -5,6 +5,8 @@ import {
   Gavel,
   ImagePlus,
   Loader2,
+  Lock,
+
   PackageOpen,
   Plus,
   Tag,
@@ -35,7 +37,14 @@ import {
   useUpdateAuctionEndTime,
   type NewCardInput,
 } from "@/hooks/useAdmin";
+import {
+  getAuctionOutcome,
+  type AuctionDbStatus,
+  type CardDbStatus,
+} from "@/lib/auction-status";
+
 import { thb } from "@/lib/cart";
+
 import { SmartImage } from "@/components/ui/smart-image";
 
 const EMPTY: NewCardInput = {
@@ -355,6 +364,24 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
         <ul className="space-y-3">
           {pageItems.map((c) => {
             const auction = c.auctions?.[0];
+            const outcome = auction
+              ? getAuctionOutcome(
+                  auction.status as AuctionDbStatus,
+                  c.status as CardDbStatus,
+                  auction.end_time,
+                )
+              : null;
+
+            // ล็อกการจัดการเมื่อรอผู้ชนะชำระเงิน หรือประมูลสำเร็จแล้ว
+            const managementLocked =
+              c.status === "sold" ||
+              (outcome ? outcome.outcome === "waiting_payment" || outcome.outcome === "completed" : false) ||
+              (!!auction && c.status === "locked");
+            const lockedNote =
+              c.status === "sold" || outcome?.outcome === "completed"
+                ? "ประมูลสำเร็จแล้ว ไม่สามารถแก้ไข ลบ หรือเปิดประมูลใหม่ได้"
+                : "อยู่ระหว่างรอผู้ชนะชำระเงิน ไม่สามารถแก้ไข ลบ หรือเปิดประมูลใหม่ได้";
+
             return (
               <li
                 key={c.id}
@@ -393,7 +420,7 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                 </div>
 
                 <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-dashed border-border pt-3">
-                  {auction && (
+                  {auction && !managementLocked && (
                     <Input
                       type="datetime-local"
                       aria-label="แก้เวลาปิดประมูล"
@@ -412,6 +439,7 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                       className="min-h-10 w-full rounded-xl text-xs sm:w-auto sm:flex-1"
                     />
                   )}
+
                   <Button
                     asChild
                     variant="secondary"
@@ -423,9 +451,9 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                   </Button>
                   {scope === "admin" &&
                     auction &&
-                    auction.status !== "active" &&
-                    c.status !== "sold" && <RelistAuctionControl auctionId={auction.id} />}
-                  {c.status === "available" && (
+                    !managementLocked &&
+                    auction.status !== "active" && <RelistAuctionControl auctionId={auction.id} />}
+                  {c.status === "available" && !managementLocked && (
                     <ConfirmDialog
                       title="ยืนยันการลบการ์ด"
                       description={`ต้องการลบ "${c.name}" ออกจากร้านหรือไม่? การลบไม่สามารถย้อนกลับได้`}
@@ -452,6 +480,13 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                       }
                     />
                   )}
+                  {managementLocked && (
+                    <span className="inline-flex min-h-10 items-center gap-1.5 rounded-xl bg-secondary px-3 text-xs text-muted-foreground">
+                      <Lock className="h-3.5 w-3.5" />
+                      {lockedNote}
+                    </span>
+                  )}
+
                 </div>
               </li>
             );
