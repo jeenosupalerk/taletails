@@ -130,7 +130,7 @@ function WinsPage() {
     <PageShell
       eyebrow="คลังของฉัน"
       title="ของที่ประมูลชนะ"
-      description="การ์ดที่คุณชนะการประมูลจะมาอยู่ที่นี่ ต้องชำระเงินภายใน 15 นาที นับจากเวลาที่ปิดประมูล"
+      description="การ์ดที่คุณชนะการประมูลจะมาอยู่ที่นี่ ต้องชำระเงินภายใน 30 นาที นับจากเวลาที่ปิดประมูล"
     >
       <section className="mx-auto max-w-5xl space-y-5 px-4 py-10 sm:px-6 lg:px-8">
         {ban.data?.isBanned && (

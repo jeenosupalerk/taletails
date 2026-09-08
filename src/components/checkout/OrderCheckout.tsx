@@ -62,8 +62,8 @@ const emptyShipping: Shipping = {
 
 /** แถบนับถอยหลังเวลาที่สินค้าถูกล็อกไว้ */
 function ReservationBanner({ dueAt }: { dueAt: string | null }) {
-  const c = useCountdown(dueAt ?? new Date(Date.now() + 15 * 60_000).toISOString());
-  const minutes = c ? c.days * 1440 + c.hours * 60 + c.minutes : 15;
+  const c = useCountdown(dueAt ?? new Date(Date.now() + 30 * 60_000).toISOString());
+  const minutes = c ? c.days * 1440 + c.hours * 60 + c.minutes : 30;
   const expired = !!c?.isFinished;
 
   return (
