@@ -418,7 +418,7 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                 </div>
 
                 <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-dashed border-border pt-3">
-                  {auction && (
+                  {auction && !managementLocked && (
                     <Input
                       type="datetime-local"
                       aria-label="แก้เวลาปิดประมูล"
@@ -437,6 +437,7 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                       className="min-h-10 w-full rounded-xl text-xs sm:w-auto sm:flex-1"
                     />
                   )}
+
                   <Button
                     asChild
                     variant="secondary"
