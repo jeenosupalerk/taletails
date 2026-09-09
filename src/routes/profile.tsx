@@ -1,6 +1,7 @@
 import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
 import {
   ChevronRight,
+  Coins,
   CreditCard,
   Hammer,
   Headphones,
@@ -27,6 +28,9 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Switch } from "@/components/ui/switch";
 import { useIsAdmin, useIsSeller } from "@/hooks/useAdmin";
+import { useAuthUserId } from "@/hooks/useCardDetail";
+import { usePointsBalance } from "@/hooks/usePoints";
+import { PointsBalanceCard } from "@/routes/points";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/lib/auth";
 
@@ -96,18 +100,8 @@ function ProfilePage() {
                 </div>
               </div>
 
-              <div className="mt-5 flex items-center justify-between rounded-2xl bg-primary/10 p-4">
-                <div>
-                  <p className="text-xs font-medium text-primary/80">TaleTails Points</p>
-                  <p className="text-xl font-bold text-primary">1,250</p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="min-h-9 rounded-lg px-3 text-sm font-semibold text-primary hover:bg-primary/10"
-                >
-                  ดูประวัติแต้ม
-                </Button>
+              <div className="mt-5">
+                <PointsSummary />
               </div>
             </div>
 
@@ -135,6 +129,11 @@ function ProfilePage() {
 
             {/* My Activities */}
             <MenuGroup title="กิจกรรมของฉัน">
+              <MenuItem
+                to="/points"
+                icon={<Coins className="h-5 w-5" />}
+                label="ประวัติแต้ม TT Points"
+              />
               <MenuItem
                 to="/wins"
                 icon={<Trophy className="h-5 w-5" />}
@@ -282,4 +281,21 @@ function initials(name: string) {
   const first = parts[0]?.[0] ?? "";
   const last = parts[parts.length - 1]?.[0] ?? "";
   return `${first}${last}`.toUpperCase();
+}
+
+/** ยอด TT Points คงเหลือของผู้ใช้ที่ล็อกอินอยู่ */
+function PointsSummary() {
+  const userId = useAuthUserId();
+  const balance = usePointsBalance(userId ?? null);
+  return (
+    <div className="space-y-2">
+      <PointsBalanceCard points={balance.data ?? 0} compact />
+      <Link
+        to="/points"
+        className="block text-center text-xs font-semibold text-primary underline underline-offset-4"
+      >
+        ดูประวัติแต้ม
+      </Link>
+    </div>
+  );
 }

@@ -32,6 +32,7 @@ import {
 } from "@/hooks/useAddresses";
 import { useAuthUserId, useCancelOrder, useOrder, useSubmitPayment } from "@/hooks/useCardDetail";
 import { pad, useCountdown } from "@/hooks/useCountdown";
+import { TT_VALUE_THB, usePointsBalance, useRedeemPoints } from "@/hooks/usePoints";
 import { thb } from "@/lib/cart";
 import { startPromptPayPayment } from "@/lib/payments.functions";
 import { cn } from "@/lib/utils";
@@ -199,6 +200,9 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
   );
 
   const total = Number(order?.total_amount ?? 0);
+  const discount = Number(order?.points_discount ?? 0);
+  const pointsUsed = Number(order?.points_redeemed ?? 0);
+  const payable = Math.max(0, total - discount);
 
   const goToPayment = () => {
     if (!userId) {
@@ -369,10 +373,16 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                   <dt className="text-muted-foreground">ค่าจัดส่ง (ลงทะเบียน EMS)</dt>
                   <dd className="text-primary">ฟรี</dd>
                 </div>
+                {discount > 0 && (
+                  <div className="flex justify-between gap-3">
+                    <dt className="text-muted-foreground">ส่วนลดจากแต้ม ({pointsUsed} TT)</dt>
+                    <dd className="tabular-nums text-primary">-{thb.format(discount)}</dd>
+                  </div>
+                )}
                 <div className="flex flex-wrap items-end justify-between gap-2 border-t border-dashed border-border/70 pt-3">
                   <dt className="text-sm font-medium">ยอดรวมสุทธิที่ต้องชำระ</dt>
                   <dd className="font-display text-2xl leading-none font-semibold tabular-nums">
-                    {thb.format(total)}
+                    {thb.format(payable)}
                   </dd>
                 </div>
               </dl>
@@ -405,6 +415,13 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
               </section>
             ) : stage === "details" ? (
               <>
+                <PointsRedeemPanel
+                  orderId={orderId}
+                  userId={userId ?? null}
+                  total={total}
+                  pointsUsed={pointsUsed}
+                  discount={discount}
+                />
                 {/* ที่อยู่จัดส่ง */}
                 <section className="space-y-3 rounded-3xl border border-border/70 bg-card p-4">
                   <h2 className="font-display text-sm tracking-[0.16em] uppercase">ที่อยู่จัดส่ง</h2>
@@ -685,7 +702,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                     </button>
                   </div>
 
-                  <PromptPayQR amount={total} reference={order.id.slice(0, 8).toUpperCase()} />
+                  <PromptPayQR amount={payable} reference={order.id.slice(0, 8).toUpperCase()} />
 
                   {/* อัปโหลดสลิป */}
                   <div className="space-y-3">
@@ -798,7 +815,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
         onSecondary={() => void navigate({ to: "/marketplace" })}
       >
         <p>เลขคำสั่งซื้อ {orderId.slice(0, 8).toUpperCase()}</p>
-        {order ? <p>ยอดชำระ {thb.format(total)}</p> : null}
+        {order ? <p>ยอดชำระ {thb.format(payable)}</p> : null}
       </StatusDialog>
     </div>
   );
@@ -836,3 +853,99 @@ function Field({
   );
 }
 
+
+/** ใช้ TT Points เป็นส่วนลดกับคำสั่งซื้อนี้ */
+function PointsRedeemPanel({
+  orderId,
+  userId,
+  total,
+  pointsUsed,
+  discount,
+}: {
+  orderId: string;
+  userId: string | null;
+  total: number;
+  pointsUsed: number;
+  discount: number;
+}) {
+  const balanceQuery = usePointsBalance(userId);
+  const redeem = useRedeemPoints(orderId);
+  const balance = balanceQuery.data ?? 0;
+  const available = balance + pointsUsed;
+  const maxByPrice = Math.floor(total / TT_VALUE_THB);
+  const maxPoints = Math.max(0, Math.min(available, maxByPrice));
+  const [input, setInput] = useState("");
+
+  if (!userId || (available <= 0 && pointsUsed === 0)) return null;
+
+  const apply = (points: number) => {
+    redeem.mutate(points, {
+      onSuccess: () => {
+        setInput("");
+        toast.success(points > 0 ? "ใช้แต้มเป็นส่วนลดแล้ว" : "ยกเลิกการใช้แต้มแล้ว");
+      },
+      onError: (e) => toast.error(e.message),
+    });
+  };
+
+  return (
+    <section className="space-y-3 rounded-3xl border border-primary/30 bg-primary/5 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="font-display text-sm tracking-[0.16em] uppercase">ใช้ TT Points</h2>
+        <span className="text-xs text-muted-foreground">
+          คงเหลือ {balance.toLocaleString("th-TH")} TT
+        </span>
+      </div>
+
+      {pointsUsed > 0 ? (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-primary/40 bg-card px-3 py-2.5">
+          <p className="text-sm">
+            ใช้ {pointsUsed} TT — ส่วนลด{" "}
+            <span className="font-semibold text-primary">{thb.format(discount)}</span>
+          </p>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => apply(0)}
+            disabled={redeem.isPending}
+            className="min-h-10 rounded-xl text-xs font-semibold text-destructive"
+          >
+            ยกเลิกการใช้แต้ม
+          </Button>
+        </div>
+      ) : (
+        <>
+          <div className="flex gap-2">
+            <Input
+              value={input}
+              inputMode="numeric"
+              placeholder={`ใส่จำนวนแต้ม (ใช้ได้สูงสุด ${maxPoints})`}
+              onChange={(e) => setInput(e.target.value.replace(/\D/g, ""))}
+              className={cn(FIELD, "flex-1 bg-card")}
+            />
+            <Button
+              type="button"
+              onClick={() => apply(Math.min(Number(input || 0), maxPoints))}
+              disabled={redeem.isPending || maxPoints <= 0 || Number(input || 0) <= 0}
+              className="h-[42px] min-h-[42px] rounded-xl bg-gradient-ember px-4 text-sm font-semibold"
+            >
+              {redeem.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              ใช้แต้ม
+            </Button>
+          </div>
+          <button
+            type="button"
+            onClick={() => apply(maxPoints)}
+            disabled={redeem.isPending || maxPoints <= 0}
+            className="min-h-10 text-xs font-semibold text-primary underline underline-offset-4 disabled:opacity-50"
+          >
+            ใช้แต้มสูงสุด {maxPoints} TT (ส่วนลด {thb.format(maxPoints * TT_VALUE_THB)})
+          </button>
+        </>
+      )}
+      <p className="text-[11px] text-muted-foreground">
+        1 TT = {thb.format(TT_VALUE_THB)} • ส่วนลดไม่เกินราคาสินค้า
+      </p>
+    </section>
+  );
+}
