@@ -2,14 +2,19 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { createStripeClient, getStripeErrorMessage, type StripeEnv } from "@/lib/stripe.server";
+import {
+  createStripeClient,
+  getStripeErrorMessage,
+  isStripeEnabled,
+  type StripeEnv,
+} from "@/lib/stripe.server";
 
 interface StartInput {
   orderId: string;
   shipping: { name: string; phone: string; address: string; note?: string };
 }
 
-const STRIPE_ENV: StripeEnv = "sandbox";
+const STRIPE_ENV: StripeEnv = "live";
 
 /**
  * Creates a Stripe Checkout session that pays a TalTails order with PromptPay.
@@ -24,6 +29,13 @@ export const startPromptPayPayment = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+
+    if (!isStripeEnabled()) {
+      return {
+        error:
+          "ระบบชำระเงินอัตโนมัติยังไม่เปิดใช้งาน กรุณาโอนตามคิวอาร์โค้ดแล้วแนบสลิปเพื่อยืนยัน",
+      };
+    }
 
     const { data: order, error } = await supabase
       .from("orders")
