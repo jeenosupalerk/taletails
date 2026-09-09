@@ -199,6 +199,9 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
   );
 
   const total = Number(order?.total_amount ?? 0);
+  const discount = Number(order?.points_discount ?? 0);
+  const pointsUsed = Number(order?.points_redeemed ?? 0);
+  const payable = Math.max(0, total - discount);
 
   const goToPayment = () => {
     if (!userId) {
