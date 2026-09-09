@@ -419,6 +419,8 @@ export type Database = {
           paid_at: string | null
           payment_due_at: string
           payment_method: Database["public"]["Enums"]["payment_method"]
+          points_discount: number
+          points_redeemed: number
           received_at: string | null
           shipped_at: string | null
           shipping_address: string | null
@@ -442,6 +444,8 @@ export type Database = {
           paid_at?: string | null
           payment_due_at?: string
           payment_method?: Database["public"]["Enums"]["payment_method"]
+          points_discount?: number
+          points_redeemed?: number
           received_at?: string | null
           shipped_at?: string | null
           shipping_address?: string | null
@@ -465,6 +469,8 @@ export type Database = {
           paid_at?: string | null
           payment_due_at?: string
           payment_method?: Database["public"]["Enums"]["payment_method"]
+          points_discount?: number
+          points_redeemed?: number
           received_at?: string | null
           shipped_at?: string | null
           shipping_address?: string | null
@@ -496,6 +502,57 @@ export type Database = {
           },
           {
             foreignKeyName: "orders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      point_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          kind: string
+          order_id: string | null
+          points: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          kind: string
+          order_id?: string | null
+          points: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          kind?: string
+          order_id?: string | null
+          points?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "point_transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "point_transactions_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
@@ -624,6 +681,7 @@ export type Database = {
           id: string
           is_banned: boolean
           phone: string | null
+          tt_points: number
           updated_at: string
           username: string | null
         }
@@ -637,6 +695,7 @@ export type Database = {
           id: string
           is_banned?: boolean
           phone?: string | null
+          tt_points?: number
           updated_at?: string
           username?: string | null
         }
@@ -650,6 +709,7 @@ export type Database = {
           id?: string
           is_banned?: boolean
           phone?: string | null
+          tt_points?: number
           updated_at?: string
           username?: string | null
         }
@@ -686,6 +746,8 @@ export type Database = {
           paid_at: string | null
           payment_due_at: string
           payment_method: Database["public"]["Enums"]["payment_method"]
+          points_discount: number
+          points_redeemed: number
           received_at: string | null
           shipped_at: string | null
           shipping_address: string | null
@@ -725,6 +787,8 @@ export type Database = {
           paid_at: string | null
           payment_due_at: string
           payment_method: Database["public"]["Enums"]["payment_method"]
+          points_discount: number
+          points_redeemed: number
           received_at: string | null
           shipped_at: string | null
           shipping_address: string | null
@@ -820,6 +884,42 @@ export type Database = {
           paid_at: string | null
           payment_due_at: string
           payment_method: Database["public"]["Enums"]["payment_method"]
+          points_discount: number
+          points_redeemed: number
+          received_at: string | null
+          shipped_at: string | null
+          shipping_address: string | null
+          shipping_name: string | null
+          shipping_phone: string | null
+          slip_url: string | null
+          status: Database["public"]["Enums"]["order_status"]
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          total_amount: number
+          tracking_number: string | null
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "orders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      redeem_order_points: {
+        Args: { _order_id: string; _points: number }
+        Returns: {
+          auction_id: string | null
+          card_id: string
+          created_at: string
+          id: string
+          note: string | null
+          paid_at: string | null
+          payment_due_at: string
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          points_discount: number
+          points_redeemed: number
           received_at: string | null
           shipped_at: string | null
           shipping_address: string | null
