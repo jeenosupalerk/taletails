@@ -32,6 +32,7 @@ import {
 } from "@/hooks/useAddresses";
 import { useAuthUserId, useCancelOrder, useOrder, useSubmitPayment } from "@/hooks/useCardDetail";
 import { pad, useCountdown } from "@/hooks/useCountdown";
+import { TT_VALUE_THB, usePointsBalance, useRedeemPoints } from "@/hooks/usePoints";
 import { thb } from "@/lib/cart";
 import { startPromptPayPayment } from "@/lib/payments.functions";
 import { cn } from "@/lib/utils";
