@@ -414,6 +414,13 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
               </section>
             ) : stage === "details" ? (
               <>
+                <PointsRedeemPanel
+                  orderId={orderId}
+                  userId={userId ?? null}
+                  total={total}
+                  pointsUsed={pointsUsed}
+                  discount={discount}
+                />
                 {/* ที่อยู่จัดส่ง */}
                 <section className="space-y-3 rounded-3xl border border-border/70 bg-card p-4">
                   <h2 className="font-display text-sm tracking-[0.16em] uppercase">ที่อยู่จัดส่ง</h2>
@@ -694,7 +701,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                     </button>
                   </div>
 
-                  <PromptPayQR amount={total} reference={order.id.slice(0, 8).toUpperCase()} />
+                  <PromptPayQR amount={payable} reference={order.id.slice(0, 8).toUpperCase()} />
 
                   {/* อัปโหลดสลิป */}
                   <div className="space-y-3">
@@ -807,7 +814,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
         onSecondary={() => void navigate({ to: "/marketplace" })}
       >
         <p>เลขคำสั่งซื้อ {orderId.slice(0, 8).toUpperCase()}</p>
-        {order ? <p>ยอดชำระ {thb.format(total)}</p> : null}
+        {order ? <p>ยอดชำระ {thb.format(payable)}</p> : null}
       </StatusDialog>
     </div>
   );
