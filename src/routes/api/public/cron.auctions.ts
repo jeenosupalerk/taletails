@@ -8,7 +8,7 @@ import { authenticateCronRequest } from "@/lib/cron-secret";
  *  - cancels unpaid orders past their 30-minute deadline and passes the card to the next bidder
  *  - delivers queued notification emails through Resend
  *
- * Requires the `x-cron-secret` header (or `?secret=`) to match LOVABLE_CRON_SECRET.
+ * Requires the `x-cron-secret` header (or `?secret=`) to match CRON_SECRET.
  */
 export const Route = createFileRoute("/api/public/cron/auctions")({
   server: {
@@ -20,12 +20,8 @@ export const Route = createFileRoute("/api/public/cron/auctions")({
 });
 
 async function run(request: Request) {
-  const secret = process.env["LOVABLE_CRON_SECRET"];
-  const provided =
-    request.headers.get("x-cron-secret") ?? new URL(request.url).searchParams.get("secret");
-  if (!secret || provided !== secret) {
-    return new Response("Unauthorized", { status: 401 });
-  }
+  const unauthorized = authenticateCronRequest(request);
+  if (unauthorized) return unauthorized;
 
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
