@@ -57,7 +57,7 @@ async function sendPendingEmails(client: AdminClient) {
     .limit(25);
   if (error || !data?.length) return 0;
 
-  const base = process.env["PUBLIC_SITE_URL"] ?? "https://prompt-kanin-palette.lovable.app";
+  const base = process.env["PUBLIC_SITE_URL"] ?? "https://taletails-trade.com";
   let sent = 0;
 
   for (const n of data) {
@@ -76,7 +76,7 @@ async function sendPendingEmails(client: AdminClient) {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        from: "Taletails <onboarding@resend.dev>",
+        from: process.env["RESEND_FROM"] ?? "Taletails <onboarding@resend.dev>",
         to: [n.email_to],
         subject: n.title,
         html,
