@@ -254,13 +254,15 @@ export function useOrder(orderId: string) {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id, user_id, card_id, auction_id, total_amount, payment_method, slip_url, status, shipping_name, shipping_phone, shipping_address, note, payment_due_at, tracking_number, created_at, cards:card_id (id, name, set_name, grade, images, price)",
+          "id, user_id, card_id, auction_id, total_amount, points_redeemed, points_discount, payment_method, slip_url, status, shipping_name, shipping_phone, shipping_address, note, payment_due_at, tracking_number, created_at, cards:card_id (id, name, set_name, grade, images, price)",
         )
         .eq("id", orderId)
         .maybeSingle();
       if (error) throw error;
       return data as unknown as
         | (OrderRow & {
+            points_redeemed?: number | null;
+            points_discount?: number | null;
             cards: {
               id: string;
               name: string;
