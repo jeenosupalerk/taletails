@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { authenticateCronRequest } from "@/lib/cron-secret";
+
 /**
  * Auction maintenance endpoint (call every minute from pg_cron or any scheduler):
  *  - closes auctions whose end_time has passed and issues the winner's order
