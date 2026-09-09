@@ -1,12 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { authenticateCronRequest } from "@/lib/cron-secret";
+
 /**
  * Auction maintenance endpoint (call every minute from pg_cron or any scheduler):
  *  - closes auctions whose end_time has passed and issues the winner's order
  *  - cancels unpaid orders past their 30-minute deadline and passes the card to the next bidder
  *  - delivers queued notification emails through Resend
  *
- * Requires the `x-cron-secret` header (or `?secret=`) to match LOVABLE_CRON_SECRET.
+ * Requires the `x-cron-secret` header (or `?secret=`) to match CRON_SECRET.
  */
 export const Route = createFileRoute("/api/public/cron/auctions")({
   server: {
@@ -18,12 +20,8 @@ export const Route = createFileRoute("/api/public/cron/auctions")({
 });
 
 async function run(request: Request) {
-  const secret = process.env["LOVABLE_CRON_SECRET"];
-  const provided =
-    request.headers.get("x-cron-secret") ?? new URL(request.url).searchParams.get("secret");
-  if (!secret || provided !== secret) {
-    return new Response("Unauthorized", { status: 401 });
-  }
+  const unauthorized = authenticateCronRequest(request);
+  if (unauthorized) return unauthorized;
 
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -59,7 +57,7 @@ async function sendPendingEmails(client: AdminClient) {
     .limit(25);
   if (error || !data?.length) return 0;
 
-  const base = process.env["PUBLIC_SITE_URL"] ?? "https://prompt-kanin-palette.lovable.app";
+  const base = process.env["PUBLIC_SITE_URL"] ?? "https://taletails-trade.com";
   let sent = 0;
 
   for (const n of data) {
@@ -78,7 +76,7 @@ async function sendPendingEmails(client: AdminClient) {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        from: "Taletails <onboarding@resend.dev>",
+        from: process.env["RESEND_FROM"] ?? "Taletails <onboarding@resend.dev>",
         to: [n.email_to],
         subject: n.title,
         html,

@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { authenticateCronRequest } from "@/integrations/supabase/cron-auth";
+import { authenticateCronRequest } from "@/lib/cron-secret";
 
 /**
  * ส่งการแจ้งเตือนที่ยังไม่ถูกส่งเป็น Push ไปยังอุปกรณ์ของผู้ใช้
- * เรียกจากตัวตั้งเวลา (cron) ด้วย Authorization: Bearer <LOVABLE_CRON_SECRET>
+ * เรียกจากตัวตั้งเวลา (cron) ด้วย Authorization: Bearer <CRON_SECRET>
  */
 export const Route = createFileRoute("/api/public/push/dispatch")({
   server: {

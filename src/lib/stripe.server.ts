@@ -1,42 +1,31 @@
 import Stripe from 'stripe';
 
+/**
+ * Stripe แบบมาตรฐาน (ต่อกับ api.stripe.com โดยตรง) — ไม่พึ่งพาตัวกลางของ Lovable
+ *
+ * เปิดใช้งานเมื่อกำหนด environment ทั้งสองค่านี้บนเซิร์ฟเวอร์:
+ *   STRIPE_SECRET_KEY        คีย์ลับจากแดชบอร์ด Stripe ของเจ้าของระบบ
+ *   STRIPE_WEBHOOK_SECRET    รหัสลับของ webhook endpoint
+ * หากไม่กำหนด ระบบชำระผ่าน Stripe จะปิดอยู่ (ยังโอน + แนบสลิปได้ตามปกติ)
+ */
+
 const getEnv = (key: string): string => {
   const value = process.env[key];
   if (!value) throw new Error(`${key} is not configured`);
   return value;
 };
 
+/** คงชนิดเดิมไว้เพื่อความเข้ากันได้ของโค้ดที่เรียกใช้ */
 export type StripeEnv = 'sandbox' | 'live';
 
-const GATEWAY_STRIPE_BASE = 'https://connector-gateway.lovable.dev/stripe';
-
-export function getConnectionApiKey(env: StripeEnv): string {
-  return env === 'sandbox'
-    ? getEnv('STRIPE_SANDBOX_API_KEY')
-    : getEnv('STRIPE_LIVE_API_KEY');
+export function isStripeEnabled(): boolean {
+  return Boolean(process.env['STRIPE_SECRET_KEY']);
 }
 
-/** Routes api.stripe.com requests through the connector gateway. */
-export function createStripeClient(env: StripeEnv): Stripe {
-  const connectionApiKey = getConnectionApiKey(env);
-  const lovableApiKey = getEnv('LOVABLE_API_KEY');
-
-  return new Stripe(connectionApiKey, {
+export function createStripeClient(_env: StripeEnv = 'live'): Stripe {
+  return new Stripe(getEnv('STRIPE_SECRET_KEY'), {
     apiVersion: '2026-03-25.dahlia',
-    httpClient: Stripe.createFetchHttpClient((input, init) => {
-      const stripeUrl = input instanceof Request ? input.url : input.toString();
-      const gatewayUrl = stripeUrl.replace('https://api.stripe.com', GATEWAY_STRIPE_BASE);
-      return fetch(gatewayUrl, {
-        ...init,
-        headers: {
-          ...Object.fromEntries(
-            new Headers(init?.headers ?? (input instanceof Request ? input.headers : undefined)).entries(),
-          ),
-          'X-Connection-Api-Key': connectionApiKey,
-          'Lovable-API-Key': lovableApiKey,
-        },
-      });
-    }),
+    httpClient: Stripe.createFetchHttpClient(),
   });
 }
 
@@ -75,17 +64,18 @@ export function getStripeErrorMessage(error: unknown): string {
   return 'Stripe request failed';
 }
 
-/** Verifies a Stripe webhook signature without depending on the SDK transport. */
+/** ตรวจลายเซ็น webhook ของ Stripe โดยไม่พึ่ง transport ของ SDK */
 export async function verifyWebhook(
   req: Request,
-  env: StripeEnv,
+  _env: StripeEnv = 'live',
 ): Promise<{ type: string; data: { object: any } }> {
   const signature = req.headers.get('stripe-signature');
   const body = await req.text();
   const secret =
-    env === 'sandbox'
-      ? getEnv('PAYMENTS_SANDBOX_WEBHOOK_SECRET')
-      : getEnv('PAYMENTS_LIVE_WEBHOOK_SECRET');
+    process.env['STRIPE_WEBHOOK_SECRET'] ??
+    process.env['PAYMENTS_SANDBOX_WEBHOOK_SECRET'] ??
+    '';
+  if (!secret) throw new Error('STRIPE_WEBHOOK_SECRET is not configured');
 
   if (!signature || !body) throw new Error('Missing signature or body');
 
