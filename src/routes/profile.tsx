@@ -282,3 +282,20 @@ function initials(name: string) {
   const last = parts[parts.length - 1]?.[0] ?? "";
   return `${first}${last}`.toUpperCase();
 }
+
+/** ยอด TT Points คงเหลือของผู้ใช้ที่ล็อกอินอยู่ */
+function PointsSummary() {
+  const userId = useAuthUserId();
+  const balance = usePointsBalance(userId ?? null);
+  return (
+    <div className="space-y-2">
+      <PointsBalanceCard points={balance.data ?? 0} compact />
+      <Link
+        to="/points"
+        className="block text-center text-xs font-semibold text-primary underline underline-offset-4"
+      >
+        ดูประวัติแต้ม
+      </Link>
+    </div>
+  );
+}
