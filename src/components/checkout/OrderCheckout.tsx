@@ -372,10 +372,16 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                   <dt className="text-muted-foreground">ค่าจัดส่ง (ลงทะเบียน EMS)</dt>
                   <dd className="text-primary">ฟรี</dd>
                 </div>
+                {discount > 0 && (
+                  <div className="flex justify-between gap-3">
+                    <dt className="text-muted-foreground">ส่วนลดจากแต้ม ({pointsUsed} TT)</dt>
+                    <dd className="tabular-nums text-primary">-{thb.format(discount)}</dd>
+                  </div>
+                )}
                 <div className="flex flex-wrap items-end justify-between gap-2 border-t border-dashed border-border/70 pt-3">
                   <dt className="text-sm font-medium">ยอดรวมสุทธิที่ต้องชำระ</dt>
                   <dd className="font-display text-2xl leading-none font-semibold tabular-nums">
-                    {thb.format(total)}
+                    {thb.format(payable)}
                   </dd>
                 </div>
               </dl>
