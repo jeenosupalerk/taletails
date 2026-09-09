@@ -1,6 +1,7 @@
 import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
 import {
   ChevronRight,
+  Coins,
   CreditCard,
   Hammer,
   Headphones,
@@ -128,6 +129,11 @@ function ProfilePage() {
 
             {/* My Activities */}
             <MenuGroup title="กิจกรรมของฉัน">
+              <MenuItem
+                to="/points"
+                icon={<Coins className="h-5 w-5" />}
+                label="ประวัติแต้ม TT Points"
+              />
               <MenuItem
                 to="/wins"
                 icon={<Trophy className="h-5 w-5" />}
