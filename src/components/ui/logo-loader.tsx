@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import loaderAsset from "@/assets/taletails-loader.jpg.asset.json";
+import loaderImage from "@/assets/taletails-loader.jpg";
 import { cn } from "@/lib/utils";
 
 type LogoLoaderProps = {
@@ -23,7 +23,7 @@ export function LogoLoader({ size = 72, label, className, fullscreen = false }: 
       aria-busy="true"
     >
       <motion.img
-        src={loaderAsset.url}
+        src={loaderImage}
         alt=""
         width={size}
         height={size}

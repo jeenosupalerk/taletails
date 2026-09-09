@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import loaderAsset from "@/assets/taletails-loader.jpg.asset.json";
+import loaderImage from "@/assets/taletails-loader.jpg";
 
 /**
  * Splash screen shown once per app session on the initial mount.
@@ -32,7 +32,7 @@ export function SplashScreen() {
       aria-hidden="true"
     >
       <motion.img
-        src={loaderAsset.url}
+        src={loaderImage}
         alt="Taletails"
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{
