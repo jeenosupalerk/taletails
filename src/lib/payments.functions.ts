@@ -39,7 +39,7 @@ export const startPromptPayPayment = createServerFn({ method: "POST" })
 
     const { data: order, error } = await supabase
       .from("orders")
-      .select("id, user_id, total_amount, status, cards:card_id (name)")
+      .select("id, user_id, total_amount, points_discount, status, cards:card_id (name)")
       .eq("id", data.orderId)
       .maybeSingle();
 
@@ -48,7 +48,11 @@ export const startPromptPayPayment = createServerFn({ method: "POST" })
     if (order.user_id !== userId) return { error: "คำสั่งซื้อนี้ไม่ใช่ของคุณ" };
     if (order.status !== "pending") return { error: "คำสั่งซื้อนี้ชำระเงินหรือปิดไปแล้ว" };
 
-    const amount = Math.round(Number(order.total_amount) * 100);
+    const payable = Math.max(
+      0,
+      Number(order.total_amount) - Number((order as { points_discount?: number }).points_discount ?? 0),
+    );
+    const amount = Math.round(payable * 100);
     if (!Number.isFinite(amount) || amount < 100) return { error: "ยอดชำระไม่ถูกต้อง" };
 
     await supabase
