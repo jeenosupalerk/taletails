@@ -114,8 +114,13 @@ export function usePushNotifications() {
       toast.success("เปิดรับการแจ้งเตือนแล้ว");
       return true;
     } catch (err) {
+      const raw = err instanceof Error ? err.message : "";
+      // เซิร์ฟเวอร์บางครั้งตอบกลับเป็นหน้า HTML ของ Apache (500) — อย่านำมาแสดงดิบ ๆ
+      const looksLikeHtml = /<html|<!DOCTYPE/i.test(raw);
       toast.error("เปิดรับการแจ้งเตือนไม่สำเร็จ", {
-        description: err instanceof Error ? err.message : undefined,
+        description: looksLikeHtml
+          ? "เซิร์ฟเวอร์ตอบกลับผิดพลาด (500) โปรดลองอีกครั้งภายหลัง"
+          : raw || undefined,
       });
       return false;
     } finally {
