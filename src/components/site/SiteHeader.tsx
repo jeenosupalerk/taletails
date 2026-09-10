@@ -115,7 +115,7 @@ export function SiteHeader() {
               className="hidden min-h-10 w-10 rounded-full md:inline-flex"
             >
               <Link to="/profile">
-                <Avatar className="min-h-9 w-9">
+                <Avatar className="h-9 w-9 rounded-full">
                   <AvatarFallback className="bg-gradient-ember text-xs font-bold text-primary-foreground">
                     {initials(user.name)}
                   </AvatarFallback>
