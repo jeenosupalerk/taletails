@@ -10,7 +10,7 @@ export interface PointTransaction {
   id: string;
   user_id: string;
   order_id: string | null;
-  kind: "earn" | "redeem" | "refund" | string;
+  kind: "earn" | "redeem" | "refund" | "release" | string;
   points: number;
   amount: number;
   description: string | null;

@@ -78,7 +78,7 @@ function PointsPage() {
                 <ul className="divide-y divide-border">
                   {rows.map((r) => {
                     const positive = r.points > 0;
-                    const isRefund = r.kind === "refund";
+                    const isRefund = r.kind === "refund" || r.kind === "release";
                     const Icon = isRefund ? RotateCcw : positive ? ArrowUpRight : ArrowDownRight;
                     return (
                       <li key={r.id} className="flex items-start gap-3 px-4 py-3">
