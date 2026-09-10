@@ -83,7 +83,9 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const rawEnv = new URL(request.url).searchParams.get("env");
+        // env query param is optional — defaults to "live".
+        // Stripe Dashboard webhook URL can be set with or without ?env=live
+        const rawEnv = new URL(request.url).searchParams.get("env") ?? "live";
         if (rawEnv !== "sandbox" && rawEnv !== "live") {
           console.error("payments webhook: invalid env parameter", rawEnv);
           return Response.json({ received: true, ignored: "invalid env" });
