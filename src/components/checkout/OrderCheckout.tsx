@@ -249,8 +249,15 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
       throw new Error("ไม่สามารถเริ่มการชำระเงินได้");
     } catch (e) {
       setRedirecting(false);
-      toast.error(e instanceof Error ? e.message : "เริ่มการชำระเงินไม่สำเร็จ");
+      const raw = e instanceof Error ? e.message : "";
+      const isServerHtml = /<!DOCTYPE|<html|Internal Server Error|500/i.test(raw);
+      toast.error(
+        isServerHtml
+          ? "เซิร์ฟเวอร์ชำระเงินไม่ตอบสนอง กรุณาลองใหม่ หรือเลือกโอนเอง + แนบสลิป"
+          : raw || "เริ่มการชำระเงินไม่สำเร็จ",
+      );
     }
+
   };
 
 
