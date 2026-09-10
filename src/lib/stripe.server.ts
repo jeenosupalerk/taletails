@@ -3,27 +3,33 @@ import Stripe from 'stripe';
 /**
  * Stripe แบบมาตรฐาน (ต่อกับ api.stripe.com โดยตรง) — ไม่พึ่งพาตัวกลางของ Lovable
  *
- * เปิดใช้งานเมื่อกำหนด environment ทั้งสองค่านี้บนเซิร์ฟเวอร์:
- *   STRIPE_SECRET_KEY        คีย์ลับจากแดชบอร์ด Stripe ของเจ้าของระบบ
- *   STRIPE_WEBHOOK_SECRET    รหัสลับของ webhook endpoint
- * หากไม่กำหนด ระบบชำระผ่าน Stripe จะปิดอยู่ (ยังโอน + แนบสลิปได้ตามปกติ)
+ * เปิดใช้งานเมื่อกำหนด environment ที่เซิร์ฟเวอร์:
+ *   STRIPE_SECRET_KEY        คีย์ลับจากแดชบอร์ด Stripe (sk_test_... หรือ sk_live_...)
+ *   STRIPE_WEBHOOK_SECRET    รหัสลับของ webhook endpoint (whsec_...)
+ *
+ * บน Lovable Preview จะใช้ค่าจาก Stripe connector โดยอัตโนมัติ:
+ *   STRIPE_SANDBOX_API_KEY           (แทน STRIPE_SECRET_KEY)
+ *   PAYMENTS_SANDBOX_WEBHOOK_SECRET  (แทน STRIPE_WEBHOOK_SECRET)
+ *
+ * หากไม่กำหนดค่าใด ระบบชำระผ่าน Stripe จะปิดอยู่ (ยังโอน + แนบสลิปได้ตามปกติ)
  */
-
-const getEnv = (key: string): string => {
-  const value = process.env[key];
-  if (!value) throw new Error(`${key} is not configured`);
-  return value;
-};
 
 /** คงชนิดเดิมไว้เพื่อความเข้ากันได้ของโค้ดที่เรียกใช้ */
 export type StripeEnv = 'sandbox' | 'live';
 
+/** คืนค่า Stripe secret key จากตัวแปรที่กำหนดไว้ (เซิร์ฟเวอร์หรือ connector) */
+function getStripeSecretKey(): string | undefined {
+  return process.env['STRIPE_SECRET_KEY'] ?? process.env['STRIPE_SANDBOX_API_KEY'];
+}
+
 export function isStripeEnabled(): boolean {
-  return Boolean(process.env['STRIPE_SECRET_KEY']);
+  return Boolean(getStripeSecretKey());
 }
 
 export function createStripeClient(_env: StripeEnv = 'live'): Stripe {
-  return new Stripe(getEnv('STRIPE_SECRET_KEY'), {
+  const key = getStripeSecretKey();
+  if (!key) throw new Error('STRIPE_SECRET_KEY is not configured');
+  return new Stripe(key, {
     apiVersion: '2026-03-25.dahlia',
     httpClient: Stripe.createFetchHttpClient(),
   });
