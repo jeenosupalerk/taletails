@@ -101,7 +101,6 @@ export const startPromptPayPayment = createServerFn({ method: "POST" })
       const stripe = createStripeClient(STRIPE_ENV);
       const session = await stripe.checkout.sessions.create({
         mode: "payment",
-        payment_method_types: ["promptpay"],
         line_items: [
           {
             quantity: 1,
