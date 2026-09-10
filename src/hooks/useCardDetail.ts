@@ -203,6 +203,7 @@ export interface OrderRow {
 /** Race-safe purchase: the database re-checks card status inside a locked row. */
 export function useBuyNow() {
   const queryClient = useQueryClient();
+  const flushPush = useServerFn(flushPendingPush);
   return useMutation({
     mutationFn: async (cardId: string) => {
       // ตรวจสถานะล่าสุดก่อนเสมอ กันการแย่งซื้อซ้ำ (race condition)
@@ -223,6 +224,7 @@ export function useBuyNow() {
       return data as unknown as OrderRow;
     },
     onSuccess: (_o, cardId) => {
+      void flushPush({}).catch(() => undefined);
       void queryClient.invalidateQueries({ queryKey: ["card", cardId] });
       void queryClient.invalidateQueries({ queryKey: ["cards", "marketplace"] });
     },
@@ -232,6 +234,7 @@ export function useBuyNow() {
 /** Winner-only order creation for a finished auction. */
 export function useClaimAuctionWin() {
   const queryClient = useQueryClient();
+  const flushPush = useServerFn(flushPendingPush);
   return useMutation({
     mutationFn: async (auctionId: string) => {
       const { data, error } = await supabase.rpc("create_auction_order", {
@@ -242,6 +245,7 @@ export function useClaimAuctionWin() {
       return data as unknown as OrderRow;
     },
     onSuccess: () => {
+      void flushPush({}).catch(() => undefined);
       void queryClient.invalidateQueries({ queryKey: ["auction", "by-card"] });
     },
   });
@@ -280,6 +284,7 @@ export function useOrder(orderId: string) {
 /** Buyer cancels their own pending order — the DB trigger releases the card back to "available". */
 export function useCancelOrder(orderId: string) {
   const queryClient = useQueryClient();
+  const flushPush = useServerFn(flushPendingPush);
   return useMutation({
     mutationFn: async () => {
       const { error } = await supabase
@@ -291,6 +296,7 @@ export function useCancelOrder(orderId: string) {
       return true;
     },
     onSuccess: () => {
+      void flushPush({}).catch(() => undefined);
       void queryClient.invalidateQueries({ queryKey: ["order", orderId] });
       void queryClient.invalidateQueries({ queryKey: ["card"] });
       void queryClient.invalidateQueries({ queryKey: ["cards", "marketplace"] });
@@ -301,6 +307,7 @@ export function useCancelOrder(orderId: string) {
 /** Uploads a slip into the private bucket under the user's own folder. */
 export function useSubmitPayment(orderId: string) {
   const queryClient = useQueryClient();
+  const flushPush = useServerFn(flushPendingPush);
   return useMutation({
     mutationFn: async (input: {
       userId: string;
@@ -338,6 +345,7 @@ export function useSubmitPayment(orderId: string) {
       return true;
     },
     onSuccess: () => {
+      void flushPush({}).catch(() => undefined);
       void queryClient.invalidateQueries({ queryKey: ["order", orderId] });
       void queryClient.invalidateQueries({ queryKey: ["card"] });
       void queryClient.invalidateQueries({ queryKey: ["cards", "marketplace"] });
