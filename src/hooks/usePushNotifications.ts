@@ -152,7 +152,7 @@ export function usePushNotifications() {
     } finally {
       setState((s) => ({ ...s, busy: false }));
     }
-  }, [loadVapidKey, save, state.supported, test]);
+  }, [state.supported, subscribeCore, test]);
 
   const disable = useCallback(async () => {
     setState((s) => ({ ...s, busy: true }));
