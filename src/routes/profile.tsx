@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 
+import { InstallAppCard } from "@/components/site/InstallAppCard";
 import { PushNotificationToggle } from "@/components/site/PushNotificationToggle";
 import { PageShell } from "@/components/site/PageShell";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -104,6 +105,8 @@ function ProfilePage() {
                 <PointsSummary />
               </div>
             </div>
+
+            <InstallAppCard />
 
             <PushNotificationToggle />
 
