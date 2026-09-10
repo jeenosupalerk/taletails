@@ -29,6 +29,15 @@ async function run(request: Request) {
   const expired = await supabaseAdmin.rpc("expire_unpaid_orders");
   const autoCompleted = await supabaseAdmin.rpc("auto_complete_shipped_orders");
 
+  let pushed = 0;
+  try {
+    const { dispatchPendingPush } = await import("@/lib/push.server");
+    const res = await dispatchPendingPush(50);
+    pushed = res.delivered;
+  } catch (err) {
+    console.error("cron auctions: push dispatch failed", err);
+  }
+
   const emails = await sendPendingEmails(supabaseAdmin);
 
   return Response.json({
@@ -36,6 +45,7 @@ async function run(request: Request) {
     auctionsClosed: closed.error ? closed.error.message : closed.data,
     ordersExpired: expired.error ? expired.error.message : expired.data,
     ordersAutoCompleted: autoCompleted.error ? autoCompleted.error.message : autoCompleted.data,
+    pushDelivered: pushed,
     emailsSent: emails,
   });
 }
