@@ -624,13 +624,13 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="flex flex-wrap items-center gap-2">
-                        <span className="text-sm font-semibold">PromptPay อัตโนมัติ</span>
+                        <span className="text-sm font-semibold">ชำระออนไลน์ (บัตร / PromptPay / Apple Pay)</span>
                         <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-medium text-primary">
                           แนะนำ
                         </span>
                       </span>
                       <span className="mt-0.5 block text-xs break-words text-muted-foreground">
-                        สแกน QR แล้วระบบตรวจเงินเข้าเอง ไม่ต้องแนบสลิป ไม่ต้องรอแอดมินยืนยัน
+                        เลือกวิธีจ่ายในหน้าถัดไป ระบบตรวจเงินเข้าเอง ไม่ต้องแนบสลิป
                       </span>
                     </span>
                   </button>
@@ -671,7 +671,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                 </Button>
                 <p className="text-center text-[11px] text-muted-foreground">
                   {method === "auto"
-                    ? "ขั้นต่อไปจะแสดง QR PromptPay ที่ระบบตรวจเงินเข้าให้อัตโนมัติ"
+                    ? "ขั้นต่อไปจะเปิดหน้าชำระเงินที่ปลอดภัย เลือกบัตร PromptPay หรือ Apple Pay ได้"
                     : "ขั้นต่อไปจะแสดง QR PromptPay พร้อมยอดเงินสำหรับสแกนและแนบสลิป"}
                 </p>
                 {!order.auction_id && (
