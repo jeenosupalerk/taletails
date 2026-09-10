@@ -27,6 +27,11 @@ function keyToBase64(key: ArrayBuffer | null) {
   return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
+function subscriptionUsesKey(subscription: PushSubscription, publicKey: string) {
+  const currentKey = subscription.options.applicationServerKey;
+  return currentKey ? keyToBase64(currentKey) === publicKey.replace(/=+$/, "") : false;
+}
+
 export interface PushState {
   supported: boolean;
   /** iOS ต้อง "เพิ่มลงหน้าจอโหลม" (Add to Home Screen) ก่อนจึงจะรับการแจ้งเตือนได้ */
@@ -95,6 +100,10 @@ export function usePushNotifications() {
       const reg = await navigator.serviceWorker.register("/sw.js");
       await navigator.serviceWorker.ready;
       const { publicKey } = await loadVapidKey();
+      const existing = await reg.pushManager.getSubscription();
+      if (existing && !subscriptionUsesKey(existing, publicKey)) {
+        await existing.unsubscribe();
+      }
       const sub =
         (await reg.pushManager.getSubscription()) ??
         (await reg.pushManager.subscribe({

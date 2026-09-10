@@ -1,4 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { LogoLoader } from "@/components/ui/logo-loader";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, ChevronLeft, Copy, Loader2, Package, Truck } from "lucide-react";
@@ -10,6 +11,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { SmartImage } from "@/components/ui/smart-image";
 import { supabase } from "@/integrations/supabase/client";
 import { thb } from "@/lib/cart";
+import { flushPendingPush } from "@/lib/push.functions";
 import { cn } from "@/lib/utils";
 import {
   PURCHASE_SELECT,
@@ -54,6 +56,7 @@ function PurchaseDetailPage() {
   const { id } = Route.useParams();
   const userId = useAuthUserId();
   const queryClient = useQueryClient();
+  const flushPush = useServerFn(flushPendingPush);
 
   const { data: order, isLoading } = useQuery({
     queryKey: ["purchase", id, userId],
@@ -76,6 +79,7 @@ function PurchaseDetailPage() {
       if (error) throw error;
     },
     onSuccess: () => {
+      void flushPush().catch(() => undefined);
       toast.success("ยืนยันรับสินค้าแล้ว ขอบคุณครับ");
       void queryClient.invalidateQueries({ queryKey: ["purchase", id] });
       void queryClient.invalidateQueries({ queryKey: ["purchases"] });
