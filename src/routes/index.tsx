@@ -4,6 +4,7 @@ import { ArticlesSection } from "@/components/sections/ArticlesSection";
 import { FeaturedMarketplace } from "@/components/sections/FeaturedMarketplace";
 import { HeroCarousel } from "@/components/sections/HeroCarousel";
 import { LiveAuctionSlider } from "@/components/sections/LiveAuctionSlider";
+import { InstallAppCard } from "@/components/site/InstallAppCard";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 
@@ -54,6 +55,9 @@ function Index() {
         <LiveAuctionSlider />
         <FeaturedMarketplace />
         <ArticlesSection />
+        <section className="mx-auto w-full max-w-2xl px-4 pb-6">
+          <InstallAppCard />
+        </section>
       </main>
       <SiteFooter />
     </div>
