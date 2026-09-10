@@ -10,6 +10,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import { AuctionWinWatcher } from "@/components/site/AuctionWinWatcher";
+import { PushPermissionPrompt } from "@/components/site/PushPermissionPrompt";
 import { MobileBottomNav } from "@/components/site/MobileBottomNav";
 import { SplashScreen } from "@/components/ui/SplashScreen";
 import { Toaster } from "@/components/ui/sonner";
