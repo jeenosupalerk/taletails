@@ -24,10 +24,11 @@ const STATUS: Record<AdminOrderRow["status"], { label: string; cls: string }> = 
   pending: { label: "รอชำระเงิน", cls: "bg-amber-500/15 text-amber-600 dark:text-amber-400" },
   paid: { label: "ชำระแล้ว", cls: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" },
   shipped: { label: "จัดส่งแล้ว", cls: "bg-sky-500/15 text-sky-600 dark:text-sky-400" },
+  completed: { label: "รับสินค้าแล้ว", cls: "bg-primary/15 text-primary" },
   cancelled: { label: "ยกเลิก", cls: "bg-destructive/15 text-destructive" },
 };
 
-const FILTERS = ["all", "pending", "paid", "shipped", "cancelled"] as const;
+const FILTERS = ["all", "pending", "paid", "shipped", "completed", "cancelled"] as const;
 
 function AdminOrdersPage() {
   const orders = useAdminOrders();
@@ -82,6 +83,18 @@ function AdminOrdersPage() {
         <div className="grid place-items-center py-16">
           <LogoLoader size={64} />
         </div>
+      ) : orders.isError ? (
+        <div className="rounded-2xl border border-destructive/30 bg-destructive/5 px-4 py-10 text-center">
+          <p className="text-sm font-semibold text-destructive">โหลดคำสั่งซื้อไม่สำเร็จ</p>
+          <p className="mt-1 text-xs text-muted-foreground">โปรดลองอีกครั้ง หรือตรวจสอบการเชื่อมต่อ</p>
+          <Button
+            variant="secondary"
+            className="mt-4 min-h-10 rounded-xl px-4 text-xs"
+            onClick={() => void orders.refetch()}
+          >
+            ลองอีกครั้ง
+          </Button>
+        </div>
       ) : rows.length === 0 ? (
         <p className="rounded-3xl border border-dashed border-border py-16 text-center text-sm text-muted-foreground">
           ไม่มีคำสั่งซื้อในหมวดนี้
@@ -133,6 +146,11 @@ function AdminOrdersPage() {
                       ต้องชำระภายใน {new Date(o.payment_due_at).toLocaleString("th-TH")}
                     </p>
                   )}
+                  {o.status === "completed" && o.received_at && (
+                    <p className="mt-1 text-[11px] text-primary">
+                      ลูกค้ายืนยันรับสินค้าเมื่อ {new Date(o.received_at).toLocaleString("th-TH")}
+                    </p>
+                  )}
                 </div>
 
                 <div className="w-full text-left sm:w-auto sm:text-right">
@@ -150,7 +168,7 @@ function AdminOrdersPage() {
                   <Button
                     variant="secondary"
                     className="min-h-10 w-full justify-center rounded-xl px-3 text-xs sm:w-auto"
-                    onClick={() => openSlip(o.slip_url!)}
+                    onClick={() => o.slip_url && openSlip(o.slip_url)}
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
                     ดูสลิป

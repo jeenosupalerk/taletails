@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { SmartImage } from "@/components/ui/smart-image";
 import { supabase } from "@/integrations/supabase/client";
 import { thb } from "@/lib/cart";
+import { flushPendingPush } from "@/lib/push.functions";
 import { cn } from "@/lib/utils";
 
 const SITE_URL = "https://taletails-test.lovable.app";
@@ -90,6 +91,7 @@ export function useAuthUserId() {
 
 function PurchasesPage() {
   const userId = useAuthUserId();
+  const flushPush = useServerFn(flushPendingPush);
 
   const { data: orders, isLoading, refetch } = useQuery({
     queryKey: ["purchases", userId],
@@ -119,10 +121,11 @@ function PurchasesPage() {
     void (async () => {
       for (const o of stale) {
         await supabase.rpc("confirm_order_received", { _order_id: o.id });
+        void flushPush().catch(() => undefined);
       }
       void refetch();
     })();
-  }, [orders, refetch]);
+  }, [flushPush, orders, refetch]);
 
   return (
     <PageShell title="สถานะการซื้อสินค้า" description="ติดตามสถานะคำสั่งซื้อของคุณ">

@@ -2,11 +2,12 @@ import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { removePushSubscription, savePushSubscription, sendTestPush } from "@/lib/push.functions";
-
-/** VAPID public key (เปิดเผยได้ — ใช้จับคู่กับ private key ที่เก็บเป็น secret ฝั่งเซิร์ฟเวอร์) */
-export const VAPID_PUBLIC_KEY =
-  "BKk34f_b4ezyzSRnfz_cqkWg_xvSOEbAU3iJgv8YlLNvhv5-tvjYJgU8WbUCq2MdFr-pOtxq6fmDbF36mXPhQKQ";
+import {
+  getVapidPublicKey,
+  removePushSubscription,
+  savePushSubscription,
+  sendTestPush,
+} from "@/lib/push.functions";
 
 function urlBase64ToUint8Array(base64: string) {
   const padding = "=".repeat((4 - (base64.length % 4)) % 4);
@@ -48,6 +49,7 @@ export function usePushNotifications() {
   const save = useServerFn(savePushSubscription);
   const remove = useServerFn(removePushSubscription);
   const test = useServerFn(sendTestPush);
+  const loadVapidKey = useServerFn(getVapidPublicKey);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -92,11 +94,12 @@ export function usePushNotifications() {
 
       const reg = await navigator.serviceWorker.register("/sw.js");
       await navigator.serviceWorker.ready;
+      const { publicKey } = await loadVapidKey();
       const sub =
         (await reg.pushManager.getSubscription()) ??
         (await reg.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+          applicationServerKey: urlBase64ToUint8Array(publicKey),
         }));
 
       const json = sub.toJSON();
@@ -126,7 +129,7 @@ export function usePushNotifications() {
     } finally {
       setState((s) => ({ ...s, busy: false }));
     }
-  }, [save, state.supported, test]);
+  }, [loadVapidKey, save, state.supported, test]);
 
   const disable = useCallback(async () => {
     setState((s) => ({ ...s, busy: true }));

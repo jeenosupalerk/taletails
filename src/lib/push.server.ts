@@ -59,6 +59,7 @@ export async function sendPushToUser(userId: string, payload: PushPayload) {
 
   const rows = (data ?? []) as SubscriptionRow[];
   let sent = 0;
+  let failed = 0;
   const stale: string[] = [];
 
   for (const row of rows) {
@@ -73,7 +74,9 @@ export async function sendPushToUser(userId: string, payload: PushPayload) {
       );
       if (status === 404 || status === 410) stale.push(row.id);
       else if (status >= 200 && status < 300) sent += 1;
+      else failed += 1;
     } catch (err) {
+      failed += 1;
       console.error("push send failed", err);
     }
   }
@@ -82,7 +85,7 @@ export async function sendPushToUser(userId: string, payload: PushPayload) {
     await supabaseAdmin.from("push_subscriptions").delete().in("id", stale);
   }
 
-  return { devices: rows.length, sent, removed: stale.length };
+  return { devices: rows.length, sent, removed: stale.length, failed };
 }
 
 /**
@@ -112,8 +115,10 @@ export async function dispatchPendingPush(limit = 50) {
       });
       delivered += result.sent;
       if (result.devices === 0) continue;
+      if (result.failed > 0) continue;
     } catch (err) {
       console.error("push dispatch failed", err);
+      continue;
     }
     await supabaseAdmin
       .from("notifications")
