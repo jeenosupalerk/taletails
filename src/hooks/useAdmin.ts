@@ -1,8 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthUserId } from "@/hooks/useCardDetail";
 import { compressImageFile } from "@/lib/image-compress";
+import { flushPendingPush } from "@/lib/push.functions";
 
 const TEN_YEARS = 60 * 60 * 24 * 365 * 10;
 
@@ -327,8 +329,9 @@ export interface AdminOrderRow {
   shipping_name: string | null;
   shipping_phone: string | null;
   shipping_address: string | null;
-  status: "pending" | "paid" | "shipped" | "cancelled";
+  status: "pending" | "paid" | "shipped" | "cancelled" | "completed";
   payment_due_at: string;
+  received_at: string | null;
   created_at: string;
   cards?: { name: string; set_name: string | null; images: string[] } | null;
   users?: { username: string | null; email: string } | null;
@@ -342,7 +345,7 @@ export function useAdminOrders() {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id, user_id, card_id, auction_id, total_amount, payment_method, slip_url, tracking_number, shipping_name, shipping_phone, shipping_address, status, payment_due_at, created_at, cards:card_id (name, set_name, images), users:user_id (username, email)",
+          "id, user_id, card_id, auction_id, total_amount, payment_method, slip_url, tracking_number, shipping_name, shipping_phone, shipping_address, status, payment_due_at, received_at, created_at, cards:card_id (name, set_name, images), users:user_id (username, email)",
         )
         .order("created_at", { ascending: false })
         .limit(100);
@@ -367,6 +370,7 @@ export function useSlipLink() {
 
 export function useAdminUpdateOrder() {
   const queryClient = useQueryClient();
+  const flushPush = useServerFn(flushPendingPush);
   return useMutation({
     mutationFn: async (input: {
       orderId: string;
@@ -388,6 +392,7 @@ export function useAdminUpdateOrder() {
 
       const { error } = await supabase.from("orders").update(patch).eq("id", input.orderId);
       if (error) throw new Error(error.message);
+      void flushPush().catch(() => undefined);
       return true;
     },
     onSuccess: () => {

@@ -9,6 +9,15 @@ interface SubscribeInput {
   userAgent?: string | undefined;
 }
 
+/** คืน Public Key จากชุด VAPID เดียวกับที่เซิร์ฟเวอร์ใช้ส่ง Push */
+export const getVapidPublicKey = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async () => {
+    const publicKey = process.env["VAPID_PUBLIC_KEY"];
+    if (!publicKey) throw new Error("ยังไม่ได้ตั้งค่า VAPID_PUBLIC_KEY บนเซิร์ฟเวอร์");
+    return { publicKey };
+  });
+
 /** บันทึกอุปกรณ์ของผู้ใช้เพื่อรับการแจ้งเตือนแบบ Push */
 export const savePushSubscription = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
