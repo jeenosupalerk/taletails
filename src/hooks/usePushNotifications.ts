@@ -56,6 +56,32 @@ export function usePushNotifications() {
   const test = useServerFn(sendTestPush);
   const loadVapidKey = useServerFn(getVapidPublicKey);
 
+  const subscribeCore = useCallback(async () => {
+    const reg = await navigator.serviceWorker.register("/sw.js");
+    await navigator.serviceWorker.ready;
+    const { publicKey } = await loadVapidKey();
+    const existing = await reg.pushManager.getSubscription();
+    if (existing && !subscriptionUsesKey(existing, publicKey)) {
+      await existing.unsubscribe();
+    }
+    const sub =
+      (await reg.pushManager.getSubscription()) ??
+      (await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(publicKey),
+      }));
+    const json = sub.toJSON();
+    await save({
+      data: {
+        endpoint: sub.endpoint,
+        p256dh: json.keys?.["p256dh"] ?? keyToBase64(sub.getKey("p256dh")),
+        auth: json.keys?.["auth"] ?? keyToBase64(sub.getKey("auth")),
+        userAgent: navigator.userAgent,
+      },
+    });
+    return sub;
+  }, [loadVapidKey, save]);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     const supported =
@@ -77,12 +103,22 @@ export function usePushNotifications() {
       try {
         const reg = await navigator.serviceWorker.register("/sw.js");
         const existing = await reg.pushManager.getSubscription();
-        setState((s) => ({ ...s, enabled: Boolean(existing) }));
+        if (existing) {
+          setState((s) => ({ ...s, enabled: true }));
+          // ลงทะเบียนอุปกรณ์นี้ซ้ำเงียบ ๆ เพื่อให้ฐานข้อมูลมีข้อมูลล่าสุดเสมอ
+          void subscribeCore().catch(() => undefined);
+          return;
+        }
+        // ถ้าผู้ใช้อนุญาตแจ้งเตือนไว้แล้ว ให้เปิดรับ Push ให้อัตโนมัติ
+        if (Notification.permission === "granted") {
+          await subscribeCore();
+          setState((s) => ({ ...s, enabled: true }));
+        }
       } catch {
         /* ไม่รองรับ — ปล่อยผ่าน */
       }
     })();
-  }, []);
+  }, [subscribeCore]);
 
   const enable = useCallback(async () => {
     if (!state.supported) return false;
@@ -97,7 +133,7 @@ export function usePushNotifications() {
         return false;
       }
 
-      const reg = await navigator.serviceWorker.register("/sw.js");
+      await subscribeCore();
       await navigator.serviceWorker.ready;
       const { publicKey } = await loadVapidKey();
       const existing = await reg.pushManager.getSubscription();
