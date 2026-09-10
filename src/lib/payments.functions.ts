@@ -53,7 +53,31 @@ export const startPromptPayPayment = createServerFn({ method: "POST" })
       Number(order.total_amount) - Number((order as { points_discount?: number }).points_discount ?? 0),
     );
     const amount = Math.round(payable * 100);
-    if (!Number.isFinite(amount) || amount < 100) return { error: "ยอดชำระไม่ถูกต้อง" };
+    if (!Number.isFinite(amount) || amount < 0) return { error: "ยอดชำระไม่ถูกต้อง" };
+
+    const fullShipping = {
+      shipping_name: data.shipping.name,
+      shipping_phone: data.shipping.phone,
+      shipping_address: data.shipping.address,
+      note: data.shipping.note ?? null,
+    };
+
+    // ส่วนลดแต้มครอบคลุมยอดทั้งหมด (หรือน้อยกว่าขั้นต่ำที่ Stripe รับได้)
+    // จึงบันทึกว่าชำระแล้วทันที ไม่ต้องส่งไป Stripe
+    if (amount < 100) {
+      const { error: paidError } = await supabase
+        .from("orders")
+        .update({
+          ...fullShipping,
+          payment_method: "tt_points",
+          status: "paid",
+          paid_at: new Date().toISOString(),
+        })
+        .eq("id", order.id)
+        .eq("status", "pending");
+      if (paidError) return { error: paidError.message };
+      return { url: `/purchases/${order.id}?paid=1` };
+    }
 
     await supabase
       .from("orders")
