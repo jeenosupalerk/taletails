@@ -166,6 +166,7 @@ function RootComponent() {
             </div>
             <MobileBottomNav />
             <AuctionWinWatcher />
+            <PushPermissionPrompt />
 
             <SplashScreen />
             <Toaster position="top-right" richColors closeButton />
