@@ -1,4 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+
+import { flushPendingPush } from "@/lib/push.functions";
 import { useEffect } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -177,6 +180,7 @@ export function useWinsRealtime(userId: string | null) {
 /** แอดมินยกเลิกการห้ามประมูลของสมาชิก */
 export function useClearAuctionBan() {
   const queryClient = useQueryClient();
+  const flushPush = useServerFn(flushPendingPush);
   return useMutation({
     mutationFn: async (userId: string) => {
       const { error } = await supabase.rpc("clear_auction_ban", {
@@ -187,6 +191,7 @@ export function useClearAuctionBan() {
       return true;
     },
     onSuccess: () => {
+      void flushPush({}).catch(() => undefined);
       void queryClient.invalidateQueries({ queryKey: ["admin", "members"] });
       void queryClient.invalidateQueries({ queryKey: ["auction-ban"] });
     },

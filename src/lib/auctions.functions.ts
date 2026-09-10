@@ -10,6 +10,14 @@ export const processAuctions = createServerFn({ method: "POST" }).handler(async 
   const closed = await supabaseAdmin.rpc("close_expired_auctions");
   const expired = await supabaseAdmin.rpc("expire_unpaid_orders");
 
+  // ส่ง Push ที่เพิ่งถูกสร้างจากการปิดประมูล/ยกเลิกคำสั่งซื้อทันที
+  try {
+    const { dispatchPendingPush } = await import("./push.server");
+    await dispatchPendingPush(30);
+  } catch (err) {
+    console.error("processAuctions: push dispatch failed", err);
+  }
+
   return {
     auctionsClosed: closed.error ? 0 : (closed.data ?? 0),
     ordersExpired: expired.error ? 0 : (expired.data ?? 0),

@@ -56,6 +56,12 @@ async function fulfillOrder(session: any) {
       _body: "ระบบตรวจพบเงินเข้าเรียบร้อย คำสั่งซื้อของคุณกำลังเตรียมจัดส่ง",
       _link: `/purchases/${orderId}`,
     });
+    try {
+      const { dispatchPendingPush } = await import("@/lib/push.server");
+      await dispatchPendingPush(20);
+    } catch (err) {
+      console.error("payments webhook: push dispatch failed", err);
+    }
   }
 }
 
