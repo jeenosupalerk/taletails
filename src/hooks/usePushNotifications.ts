@@ -134,28 +134,6 @@ export function usePushNotifications() {
       }
 
       await subscribeCore();
-      await navigator.serviceWorker.ready;
-      const { publicKey } = await loadVapidKey();
-      const existing = await reg.pushManager.getSubscription();
-      if (existing && !subscriptionUsesKey(existing, publicKey)) {
-        await existing.unsubscribe();
-      }
-      const sub =
-        (await reg.pushManager.getSubscription()) ??
-        (await reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(publicKey),
-        }));
-
-      const json = sub.toJSON();
-      await save({
-        data: {
-          endpoint: sub.endpoint,
-          p256dh: json.keys?.['p256dh'] ?? keyToBase64(sub.getKey("p256dh")),
-          auth: json.keys?.['auth'] ?? keyToBase64(sub.getKey("auth")),
-          userAgent: navigator.userAgent,
-        },
-      });
 
       setState((s) => ({ ...s, enabled: true }));
       void test({}).catch(() => undefined);
