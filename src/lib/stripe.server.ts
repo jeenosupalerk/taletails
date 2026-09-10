@@ -17,9 +17,14 @@ import Stripe from 'stripe';
 /** คงชนิดเดิมไว้เพื่อความเข้ากันได้ของโค้ดที่เรียกใช้ */
 export type StripeEnv = 'sandbox' | 'live';
 
-/** คืนค่า Stripe secret key จากตัวแปรที่กำหนดไว้ (เซิร์ฟเวอร์หรือ connector) */
+/**
+ * คืนค่า Stripe secret key ที่ใช้กับ api.stripe.com ได้จริง
+ * รับเฉพาะคีย์ที่ขึ้นต้นด้วย sk_ หรือ rk_ เท่านั้น
+ * (คีย์ของตัวกลางเช่น lovc_... ใช้กับ Stripe โดยตรงไม่ได้ จะถือว่าไม่ได้ตั้งค่า)
+ */
 function getStripeSecretKey(): string | undefined {
-  return process.env['STRIPE_SECRET_KEY'] ?? process.env['STRIPE_SANDBOX_API_KEY'];
+  const candidates = [process.env['STRIPE_SECRET_KEY'], process.env['STRIPE_SANDBOX_API_KEY']];
+  return candidates.find((k) => typeof k === 'string' && /^(sk|rk)_/.test(k));
 }
 
 export function isStripeEnabled(): boolean {
