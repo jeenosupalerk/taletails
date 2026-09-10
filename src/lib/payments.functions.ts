@@ -69,7 +69,7 @@ export const startPromptPayPayment = createServerFn({ method: "POST" })
         .from("orders")
         .update({
           ...fullShipping,
-          payment_method: "tt_points",
+          payment_method: "stripe_promptpay",
           status: "paid",
           paid_at: new Date().toISOString(),
         })
