@@ -55,6 +55,9 @@ function Index() {
         <LiveAuctionSlider />
         <FeaturedMarketplace />
         <ArticlesSection />
+        <section className="mx-auto w-full max-w-2xl px-4 pb-6">
+          <InstallAppCard />
+        </section>
       </main>
       <SiteFooter />
     </div>
