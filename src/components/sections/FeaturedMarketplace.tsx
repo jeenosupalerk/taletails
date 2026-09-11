@@ -17,11 +17,11 @@ export function ProductGridCard({ product }: { product: Product }) {
   const isPending = product.status === "locked";
 
   return (
-    <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-white border-2 border-transparent shadow-sm transition-[box-shadow,border-color] duration-200 hover:shadow-card active:border-primary active:shadow-glow dark:bg-card">
+    <article className="group relative flex flex-col overflow-hidden rounded-2xl bg-white border-2 border-transparent shadow-sm transition-[box-shadow,border-color] duration-200 hover:shadow-card active:border-primary active:shadow-glow dark:bg-card">
       <Link
         to="/product/$id"
         params={{ id: product.id }}
-        className="flex flex-1 flex-col transition-transform duration-200 active:scale-[0.98]"
+        className="flex flex-col transition-transform duration-200 active:scale-[0.98]"
         aria-label={product.cardName}
       >
         <div className="relative aspect-square border-b border-border bg-secondary/40 p-3 sm:p-4">
@@ -182,7 +182,7 @@ export function FeaturedMarketplace({
             ยังไม่มีสินค้าในสถานะนี้
           </p>
         )}
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 lg:gap-6">
+        <div className="grid grid-cols-2 items-start gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 lg:gap-6">
           {items.map((product) => (
             <ProductGridCard key={product.id} product={product} />
           ))}
