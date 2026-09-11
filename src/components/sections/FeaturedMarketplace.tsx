@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { BadgeCheck, Heart } from "lucide-react";
+import { ArrowDownWideNarrow, BadgeCheck, ChevronDown, Heart } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -10,7 +10,6 @@ import { thb } from "@/lib/cart";
 import { useWatchlist } from "@/lib/watchlist";
 import { SmartImage } from "@/components/ui/smart-image";
 
-
 export function ProductGridCard({ product }: { product: Product }) {
   const watchlist = useWatchlist();
   const wished = watchlist.has(product.id);
@@ -18,20 +17,19 @@ export function ProductGridCard({ product }: { product: Product }) {
   const isPending = product.status === "locked";
 
   return (
-    <article className="group surface-panel relative flex flex-col overflow-hidden border-2 border-transparent transition-[box-shadow,border-color,transform] duration-200 hover:shadow-card active:border-primary active:shadow-glow">
+    <article className="group surface-panel relative flex flex-col overflow-hidden border-2 border-transparent transition-[box-shadow,border-color] duration-200 hover:shadow-card active:border-primary active:shadow-glow">
       <Link
         to="/product/$id"
         params={{ id: product.id }}
         className="flex flex-1 flex-col transition-transform duration-200 active:scale-[0.98]"
         aria-label={product.cardName}
       >
-
-        <div className="relative aspect-[3/4] overflow-hidden rounded-t-2xl border-b border-border bg-secondary/40">
+        <div className="relative aspect-square border-b border-border bg-secondary/40 p-4">
           <SmartImage
             src={product.imageUrl}
             alt={`${product.cardName} — ${product.setName}`}
             transformWidth={600}
-            className={`object-cover object-center transition-transform duration-500 group-hover:scale-105 ${
+            className={`object-contain object-center transition-transform duration-500 group-hover:scale-105 ${
               isSold ? "opacity-50" : ""
             }`}
           />
@@ -45,46 +43,49 @@ export function ProductGridCard({ product }: { product: Product }) {
               กำลังรอการชำระเงิน
             </span>
           )}
-          {!isSold && product.soldCount > 0 && (
-            <span className="absolute top-2 right-3 rounded-full bg-white px-2 py-0.5 text-[11px] font-semibold text-primary shadow-sm backdrop-blur">
-              ขายแล้ว {product.soldCount}
-            </span>
-          )}
         </div>
 
-        <div className="flex flex-1 flex-col px-3 pt-1 pb-3">
-          <p className="flex items-start gap-1 text-sm font-semibold">
-            <span className="line-clamp-2 break-words">{product.cardName}</span>
-            {product.isVerified && <BadgeCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" />}
+        <div className="flex flex-1 flex-col gap-0.5 px-3.5 pt-3 pb-3.5">
+          <p className="flex items-center gap-1 text-sm font-bold">
+            <span className="truncate">{product.setName}</span>
+            {product.isVerified && <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-accent" />}
           </p>
-
-          <div className="mt-auto pt-4 pr-12">
-            <p className="font-display text-base font-bold">{thb.format(product.price)}</p>
-          </div>
+          <p className="line-clamp-2 min-h-10 text-[13px] leading-snug break-words text-muted-foreground">
+            {product.cardName}
+          </p>
+          {!isSold && product.soldCount > 0 && (
+            <p className="text-[11px] font-medium text-primary">ขายแล้ว {product.soldCount} ใบ</p>
+          )}
         </div>
       </Link>
 
-      <button
-        type="button"
-        aria-label="เพิ่มลงรายการที่อยากได้"
-        onClick={() => {
-          const added = watchlist.toggle({
-            id: product.id,
-            name: product.cardName,
-            subtitle: product.setName,
-            imageUrl: product.imageUrl,
-            price: product.price,
-            kind: "product",
-          });
-          toast[added ? "success" : "info"](
-            added ? "เพิ่มลงรายการที่อยากได้แล้ว" : "นำออกจากรายการที่อยากได้แล้ว",
-            { description: product.cardName },
-          );
-        }}
-        className="absolute right-3 bottom-3 flex min-h-10 w-10 items-center justify-center rounded-full border border-border bg-white shadow-sm transition-[colors,transform,box-shadow] duration-150 hover:bg-secondary active:scale-90 active:border-primary active:bg-secondary"
-      >
-        <Heart className={`h-4 w-4 ${wished ? "fill-primary text-primary" : "text-muted-foreground"}`} />
-      </button>
+      <div className="flex items-end justify-between gap-2 px-3.5 pb-3.5">
+        <div className="min-w-0">
+          <p className="text-[11px] text-muted-foreground">ราคาเริ่มต้น</p>
+          <p className="truncate font-display text-base font-bold">{thb.format(product.price)}</p>
+        </div>
+        <button
+          type="button"
+          aria-label="เพิ่มลงรายการที่อยากได้"
+          onClick={() => {
+            const added = watchlist.toggle({
+              id: product.id,
+              name: product.cardName,
+              subtitle: product.setName,
+              imageUrl: product.imageUrl,
+              price: product.price,
+              kind: "product",
+            });
+            toast[added ? "success" : "info"](
+              added ? "เพิ่มลงรายการที่อยากได้แล้ว" : "นำออกจากรายการที่อยากได้แล้ว",
+              { description: product.cardName },
+            );
+          }}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-card shadow-sm transition-[colors,transform,border-color] duration-150 hover:border-primary/40 hover:text-primary active:scale-90 active:border-primary"
+        >
+          <Heart className={`h-4 w-4 ${wished ? "fill-primary text-primary" : "text-muted-foreground"}`} />
+        </button>
+      </div>
     </article>
   );
 }
@@ -94,6 +95,13 @@ const STATUS_FILTERS: { value: string; label: string }[] = [
   { value: "available", label: "พร้อมขาย" },
   { value: "locked", label: "รอชำระเงิน" },
   { value: "sold", label: "ขายแล้ว" },
+];
+
+const SORT_OPTIONS: { value: string; label: string }[] = [
+  { value: "featured", label: "แนะนำ" },
+  { value: "price-asc", label: "ราคา: ต่ำ → สูง" },
+  { value: "price-desc", label: "ราคา: สูง → ต่ำ" },
+  { value: "best-selling", label: "ขายดีที่สุด" },
 ];
 
 const STATUS_RANK: Record<string, number> = { available: 0, locked: 1, sold: 2 };
@@ -107,14 +115,19 @@ export function FeaturedMarketplace({
 }) {
   const { data: liveCards } = useMarketplaceCards();
   const [filter, setFilter] = useState("all");
+  const [sort, setSort] = useState("featured");
   // Live Supabase rows when available, curated demo listings otherwise.
   const all = liveCards && liveCards.length > 0 ? liveCards : getFeaturedProducts();
-  const sorted = [...all].sort(
+
+  let items = [...all].sort(
     (a, b) => (STATUS_RANK[a.status ?? "available"] ?? 0) - (STATUS_RANK[b.status ?? "available"] ?? 0),
   );
-  const featured = showFilter && filter !== "all"
-    ? sorted.filter((p) => (p.status ?? "available") === filter)
-    : sorted;
+  if (showFilter && filter !== "all") {
+    items = items.filter((p) => (p.status ?? "available") === filter);
+  }
+  if (sort === "price-asc") items.sort((a, b) => a.price - b.price);
+  else if (sort === "price-desc") items.sort((a, b) => b.price - a.price);
+  else if (sort === "best-selling") items.sort((a, b) => b.soldCount - a.soldCount);
 
   return (
     <section id="marketplace" className="border-y border-border bg-card/30">
@@ -130,7 +143,7 @@ export function FeaturedMarketplace({
         )}
         {!showHeading && <h2 className="sr-only">การ์ดที่วางขายในตลาด</h2>}
         {showFilter && (
-          <div className="mb-6 flex flex-wrap gap-2">
+          <div className="mb-6 flex flex-wrap items-center gap-2">
             {STATUS_FILTERS.map((f) => (
               <button
                 key={f.value}
@@ -146,15 +159,31 @@ export function FeaturedMarketplace({
                 {f.label}
               </button>
             ))}
+            <div className="relative ml-auto">
+              <ArrowDownWideNarrow className="pointer-events-none absolute top-1/2 left-3.5 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value)}
+                aria-label="เรียงลำดับสินค้า"
+                className="h-10 cursor-pointer appearance-none rounded-full border border-border bg-card pr-9 pl-9 text-xs font-semibold text-foreground shadow-sm transition-colors hover:border-primary/40 focus:border-primary focus:outline-none"
+              >
+                {SORT_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute top-1/2 right-3.5 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            </div>
           </div>
         )}
-        {featured.length === 0 && (
+        {items.length === 0 && (
           <p className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground">
             ยังไม่มีสินค้าในสถานะนี้
           </p>
         )}
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
-          {featured.map((product) => (
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          {items.map((product) => (
             <ProductGridCard key={product.id} product={product} />
           ))}
         </div>
