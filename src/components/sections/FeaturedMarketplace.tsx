@@ -21,10 +21,10 @@ export function ProductGridCard({ product }: { product: Product }) {
       <Link
         to="/product/$id"
         params={{ id: product.id }}
-        className="flex flex-1 flex-col transition-transform duration-200 active:scale-[0.98]"
+        className="flex flex-col transition-transform duration-200 active:scale-[0.98]"
         aria-label={product.cardName}
       >
-        <div className="relative aspect-square border-b border-border bg-secondary/40 p-4">
+        <div className="relative aspect-[4/3] border-b border-border bg-secondary/40 p-3 sm:p-4">
           <SmartImage
             src={product.imageUrl}
             alt={`${product.cardName} — ${product.setName}`}
@@ -45,7 +45,7 @@ export function ProductGridCard({ product }: { product: Product }) {
           )}
         </div>
 
-        <div className="flex flex-1 flex-col gap-0.5 px-3.5 pt-3 pb-3.5">
+        <div className="flex min-h-24 flex-col gap-0.5 px-3.5 pt-3 pb-2">
           <p className="flex items-center gap-1 text-sm font-bold">
             <span className="truncate">{product.setName}</span>
             {product.isVerified && <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-accent" />}
@@ -59,7 +59,7 @@ export function ProductGridCard({ product }: { product: Product }) {
         </div>
       </Link>
 
-      <div className="flex items-end justify-between gap-2 px-3.5 pb-3.5">
+      <div className="flex min-h-14 items-end justify-between gap-2 px-3.5 pb-3.5">
         <div className="min-w-0">
           <p className="text-[11px] text-muted-foreground">ราคาเริ่มต้น</p>
           <p className="truncate font-display text-base font-bold">{thb.format(product.price)}</p>
@@ -182,7 +182,7 @@ export function FeaturedMarketplace({
             ยังไม่มีสินค้าในสถานะนี้
           </p>
         )}
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="grid grid-cols-2 items-start gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 lg:gap-6">
           {items.map((product) => (
             <ProductGridCard key={product.id} product={product} />
           ))}
