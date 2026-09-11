@@ -17,19 +17,19 @@ export function ProductGridCard({ product }: { product: Product }) {
   const isPending = product.status === "locked";
 
   return (
-    <article className="group surface-panel relative flex flex-col overflow-hidden border-2 border-transparent transition-[box-shadow,border-color] duration-200 hover:shadow-card active:border-primary active:shadow-glow">
+    <article className="group relative flex flex-col overflow-hidden rounded-2xl bg-white border-2 border-transparent shadow-sm transition-[box-shadow,border-color] duration-200 hover:shadow-card active:border-primary active:shadow-glow dark:bg-card">
       <Link
         to="/product/$id"
         params={{ id: product.id }}
         className="flex flex-col transition-transform duration-200 active:scale-[0.98]"
         aria-label={product.cardName}
       >
-        <div className="relative aspect-[4/3] border-b border-border bg-secondary/40 p-3 sm:p-4">
+        <div className="relative aspect-square border-b border-border bg-secondary/40 p-3 sm:p-4">
           <SmartImage
             src={product.imageUrl}
             alt={`${product.cardName} — ${product.setName}`}
             transformWidth={600}
-            className={`object-contain object-center transition-transform duration-500 group-hover:scale-105 ${
+            className={`h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105 ${
               isSold ? "opacity-50" : ""
             }`}
           />
