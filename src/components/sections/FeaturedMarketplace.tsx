@@ -45,7 +45,7 @@ export function ProductGridCard({ product }: { product: Product }) {
           )}
         </div>
 
-        <div className="flex min-h-24 flex-col gap-0.5 px-3.5 pt-3 pb-2">
+        <div className="flex h-28 flex-col gap-0.5 px-3.5 pt-3 pb-2">
           <p className="flex items-center gap-1 text-sm font-bold">
             <span className="truncate">{product.setName}</span>
             {product.isVerified && <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-accent" />}
@@ -53,9 +53,9 @@ export function ProductGridCard({ product }: { product: Product }) {
           <p className="line-clamp-2 min-h-10 text-[13px] leading-snug break-words text-muted-foreground">
             {product.cardName}
           </p>
-          {!isSold && product.soldCount > 0 && (
-            <p className="text-[11px] font-medium text-primary">ขายแล้ว {product.soldCount} ใบ</p>
-          )}
+          <p className="min-h-[16px] text-[11px] font-medium text-primary">
+            {!isSold && product.soldCount > 0 ? `ขายแล้ว ${product.soldCount} ใบ` : ""}
+          </p>
         </div>
       </Link>
 
