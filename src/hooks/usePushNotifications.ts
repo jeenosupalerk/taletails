@@ -71,6 +71,8 @@ export function usePushNotifications() {
     const reg = await navigator.serviceWorker.register("/sw.js");
     await navigator.serviceWorker.ready;
     const { publicKey } = await loadVapidKey();
+    // Safari/iOS ยอมรับเฉพาะ BufferSource ที่พอดี 65 ไบต์ จึงส่งเป็น ArrayBuffer ตรง ๆ
+    const appServerKey = urlBase64ToUint8Array(publicKey);
     const existing = await reg.pushManager.getSubscription();
     if (existing && !subscriptionUsesKey(existing, publicKey)) {
       await existing.unsubscribe();
