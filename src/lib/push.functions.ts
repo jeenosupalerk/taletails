@@ -13,8 +13,19 @@ interface SubscribeInput {
 export const getVapidPublicKey = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async () => {
-    const publicKey = process.env["VAPID_PUBLIC_KEY"];
+    // บาง .env จะเก็บค่ามาพร้อมเครื่องหมายคำพูด/ช่องว่าง ต้องล้างก่อนใช้
+    const publicKey = (process.env["VAPID_PUBLIC_KEY"] ?? "")
+      .trim()
+      .replace(/^["']|["']$/g, "")
+      .replace(/\s+/g, "");
     if (!publicKey) throw new Error("ยังไม่ได้ตั้งค่า VAPID_PUBLIC_KEY บนเซิร์ฟเวอร์");
+
+    const bytes = Buffer.from(publicKey.replace(/-/g, "+").replace(/_/g, "/"), "base64");
+    if (bytes.length !== 65 || bytes[0] !== 4) {
+      throw new Error(
+        "VAPID_PUBLIC_KEY บนเซิร์ฟเวอร์ไม่ถูกต้อง (ต้องเป็นคีย์สาธารณะ P-256 แบบ base64url ความยาว 87 ตัวอักษร)",
+      );
+    }
     return { publicKey };
   });
 

@@ -9,11 +9,22 @@ import {
   sendTestPush,
 } from "@/lib/push.functions";
 
+function cleanKey(key: string) {
+  return (key ?? "")
+    .trim()
+    .replace(/^["']|["']$/g, "")
+    .replace(/\s+/g, "");
+}
+
 function urlBase64ToUint8Array(base64: string) {
-  const padding = "=".repeat((4 - (base64.length % 4)) % 4);
-  const raw = atob((base64 + padding).replace(/-/g, "+").replace(/_/g, "/"));
+  const clean = cleanKey(base64);
+  const padding = "=".repeat((4 - (clean.length % 4)) % 4);
+  const raw = atob((clean + padding).replace(/-/g, "+").replace(/_/g, "/"));
   const output = new Uint8Array(raw.length);
   for (let i = 0; i < raw.length; i += 1) output[i] = raw.charCodeAt(i);
+  if (output.length !== 65 || output[0] !== 4) {
+    throw new Error("คีย์แจ้งเตือนของเซิร์ฟเวอร์ไม่ถูกต้อง (VAPID public key)");
+  }
   return output;
 }
 
@@ -29,7 +40,7 @@ function keyToBase64(key: ArrayBuffer | null) {
 
 function subscriptionUsesKey(subscription: PushSubscription, publicKey: string) {
   const currentKey = subscription.options.applicationServerKey;
-  return currentKey ? keyToBase64(currentKey) === publicKey.replace(/=+$/, "") : false;
+  return currentKey ? keyToBase64(currentKey) === cleanKey(publicKey).replace(/=+$/, "") : false;
 }
 
 export interface PushState {
@@ -60,6 +71,8 @@ export function usePushNotifications() {
     const reg = await navigator.serviceWorker.register("/sw.js");
     await navigator.serviceWorker.ready;
     const { publicKey } = await loadVapidKey();
+    // Safari/iOS ยอมรับเฉพาะ BufferSource ที่พอดี 65 ไบต์ จึงส่งเป็น ArrayBuffer ตรง ๆ
+    const appServerKey = urlBase64ToUint8Array(publicKey);
     const existing = await reg.pushManager.getSubscription();
     if (existing && !subscriptionUsesKey(existing, publicKey)) {
       await existing.unsubscribe();
@@ -68,7 +81,10 @@ export function usePushNotifications() {
       (await reg.pushManager.getSubscription()) ??
       (await reg.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(publicKey),
+        applicationServerKey: appServerKey.buffer.slice(
+          appServerKey.byteOffset,
+          appServerKey.byteOffset + appServerKey.byteLength,
+        ) as ArrayBuffer,
       }));
     const json = sub.toJSON();
     await save({
