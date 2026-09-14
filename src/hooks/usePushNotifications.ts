@@ -9,11 +9,22 @@ import {
   sendTestPush,
 } from "@/lib/push.functions";
 
+function cleanKey(key: string) {
+  return (key ?? "")
+    .trim()
+    .replace(/^["']|["']$/g, "")
+    .replace(/\s+/g, "");
+}
+
 function urlBase64ToUint8Array(base64: string) {
-  const padding = "=".repeat((4 - (base64.length % 4)) % 4);
-  const raw = atob((base64 + padding).replace(/-/g, "+").replace(/_/g, "/"));
+  const clean = cleanKey(base64);
+  const padding = "=".repeat((4 - (clean.length % 4)) % 4);
+  const raw = atob((clean + padding).replace(/-/g, "+").replace(/_/g, "/"));
   const output = new Uint8Array(raw.length);
   for (let i = 0; i < raw.length; i += 1) output[i] = raw.charCodeAt(i);
+  if (output.length !== 65 || output[0] !== 4) {
+    throw new Error("คีย์แจ้งเตือนของเซิร์ฟเวอร์ไม่ถูกต้อง (VAPID public key)");
+  }
   return output;
 }
 
