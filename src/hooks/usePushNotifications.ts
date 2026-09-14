@@ -40,7 +40,7 @@ function keyToBase64(key: ArrayBuffer | null) {
 
 function subscriptionUsesKey(subscription: PushSubscription, publicKey: string) {
   const currentKey = subscription.options.applicationServerKey;
-  return currentKey ? keyToBase64(currentKey) === publicKey.replace(/=+$/, "") : false;
+  return currentKey ? keyToBase64(currentKey) === cleanKey(publicKey).replace(/=+$/, "") : false;
 }
 
 export interface PushState {
