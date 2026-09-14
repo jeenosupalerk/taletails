@@ -11,6 +11,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "build:node": "vite build -c vite.config.node.ts",
+    "vapid:generate": "node scripts/generate-vapid-keys.mjs",
     "start": "node .output/server/index.mjs"
   },
   "overrides": {
