@@ -29,6 +29,16 @@ npm run build:node
 `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`, `RESEND_API_KEY`,
 `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`
 
+สร้าง VAPID key pair ที่ถูกต้องได้จากโฟลเดอร์โปรเจกต์ด้วยคำสั่งนี้:
+
+```bash
+npm run vapid:generate
+```
+
+นำทั้ง 3 บรรทัดที่ได้ไปแทนค่าเดิมใน **Plesk → Node.js → Custom environment variables**
+โดย `VAPID_PUBLIC_KEY` และ `VAPID_PRIVATE_KEY` ต้องมาจากการรันครั้งเดียวกัน ห้ามใส่เครื่องหมายคำพูด
+จากนั้นกดบันทึกและ **Restart App** การอัปโหลด `.output` อย่างเดียวจะไม่เปลี่ยนค่าเหล่านี้
+
 > ค่า `SUPABASE_SERVICE_ROLE_KEY` เป็นความลับ ห้ามเผยแพร่และห้าม commit ลง GitHub
 
 ## 4. เริ่มรัน

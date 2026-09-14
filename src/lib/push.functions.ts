@@ -20,13 +20,30 @@ export const getVapidPublicKey = createServerFn({ method: "GET" })
       .replace(/\s+/g, "");
     if (!publicKey) throw new Error("ยังไม่ได้ตั้งค่า VAPID_PUBLIC_KEY บนเซิร์ฟเวอร์");
 
-    const bytes = Buffer.from(publicKey.replace(/-/g, "+").replace(/_/g, "/"), "base64");
+    const normalizedPublicKey = publicKey.replace(/=+$/, "");
+    const bytes = Buffer.from(
+      normalizedPublicKey.replace(/-/g, "+").replace(/_/g, "/"),
+      "base64",
+    );
     if (bytes.length !== 65 || bytes[0] !== 4) {
       throw new Error(
         "VAPID_PUBLIC_KEY บนเซิร์ฟเวอร์ไม่ถูกต้อง (ต้องเป็นคีย์สาธารณะ P-256 แบบ base64url ความยาว 87 ตัวอักษร)",
       );
     }
-    return { publicKey };
+    try {
+      await crypto.subtle.importKey(
+        "raw",
+        bytes,
+        { name: "ECDSA", namedCurve: "P-256" },
+        false,
+        ["verify"],
+      );
+    } catch {
+      throw new Error(
+        "VAPID_PUBLIC_KEY ไม่ใช่กุญแจ P-256 ที่ถูกต้อง โปรดสร้าง VAPID key pair ใหม่แล้วตั้งค่าใน Plesk",
+      );
+    }
+    return { publicKey: normalizedPublicKey };
   });
 
 /** บันทึกอุปกรณ์ของผู้ใช้เพื่อรับการแจ้งเตือนแบบ Push */

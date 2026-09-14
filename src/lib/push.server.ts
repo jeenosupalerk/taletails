@@ -9,10 +9,15 @@ export interface PushPayload {
 }
 
 function vapid() {
+  const clean = (value: string | undefined) =>
+    value
+      ?.trim()
+      .replace(/^["']|["']$/g, "")
+      .replace(/\s+/g, "");
   return {
-    subject: process.env["VAPID_SUBJECT"] ?? "mailto:admin@taletails.app",
-    publicKey: process.env["VAPID_PUBLIC_KEY"],
-    privateKey: process.env["VAPID_PRIVATE_KEY"],
+    subject: clean(process.env["VAPID_SUBJECT"]) ?? "mailto:admin@taletails.app",
+    publicKey: clean(process.env["VAPID_PUBLIC_KEY"])?.replace(/=+$/, ""),
+    privateKey: clean(process.env["VAPID_PRIVATE_KEY"])?.replace(/=+$/, ""),
   };
 }
 
