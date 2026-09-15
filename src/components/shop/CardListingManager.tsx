@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import {
+  AlarmClock,
   ChevronLeft,
   ChevronRight,
   Gavel,
@@ -12,7 +13,7 @@ import {
   Tag,
   Trash2,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -85,6 +86,14 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
   const create = useCreateCard();
   const del = useDeleteCard();
   const setEnd = useUpdateAuctionEndTime();
+
+  // นับเวลาเพื่อให้ปุ่ม "เปิดประมูลใหม่" โผล่ทันทีเมื่อเลยกำหนดชำระเงิน
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 15_000);
+    return () => window.clearInterval(id);
+  }, []);
+
 
   const items = cards.data ?? [];
   const total = items.length;
@@ -372,11 +381,24 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                 )
               : null;
 
+            // ผู้ชนะไม่ชำระเงินภายในเวลาที่กำหนด -> เปิดให้แอดมินเปิดประมูลใหม่ได้
+            const overdueOrder = (c.orders ?? []).some(
+              (o) => o.status === "pending" && new Date(o.payment_due_at).getTime() <= now,
+            );
+            const paymentOverdue =
+              c.status !== "sold" &&
+              outcome?.outcome === "waiting_payment" &&
+              (overdueOrder ||
+                (c.orders ?? []).every((o) => o.status === "cancelled"));
+
             // ล็อกการจัดการเมื่อรอผู้ชนะชำระเงิน หรือประมูลสำเร็จแล้ว
             const managementLocked =
               c.status === "sold" ||
-              (outcome ? outcome.outcome === "waiting_payment" || outcome.outcome === "completed" : false) ||
-              (!!auction && c.status === "locked");
+              (!paymentOverdue &&
+                ((outcome
+                  ? outcome.outcome === "waiting_payment" || outcome.outcome === "completed"
+                  : false) ||
+                  (!!auction && c.status === "locked")));
             const lockedNote =
               c.status === "sold" || outcome?.outcome === "completed"
                 ? "ประมูลสำเร็จแล้ว ไม่สามารถแก้ไข ลบ หรือเปิดประมูลใหม่ได้"
@@ -449,6 +471,12 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                       ดูหน้าขาย
                     </Link>
                   </Button>
+                  {paymentOverdue && (
+                    <span className="inline-flex min-h-10 w-full items-center gap-1.5 rounded-xl bg-destructive/10 px-3 text-xs font-medium text-destructive sm:w-auto">
+                      <AlarmClock className="h-3.5 w-3.5" />
+                      ผู้ชนะไม่ชำระเงินตามเวลา • เปิดประมูลใหม่ได้
+                    </span>
+                  )}
                   {scope === "admin" &&
                     auction &&
                     !managementLocked &&

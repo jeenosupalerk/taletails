@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthUserId } from "@/hooks/useCardDetail";
+import { processAuctions } from "@/lib/auctions.functions";
 import { compressImageFile } from "@/lib/image-compress";
 import { flushPendingPush } from "@/lib/push.functions";
 
@@ -72,10 +73,11 @@ export interface AdminCardRow {
   status: "available" | "locked" | "sold";
   created_at: string;
   auctions?: { id: string; end_time: string; current_price: number; status: string }[];
+  orders?: { id: string; status: string; payment_due_at: string }[];
 }
 
 const CARD_SELECT =
-  "id, name, set_name, grade, condition, images, price, sale_type, status, created_at, auctions (id, end_time, current_price, status)";
+  "id, name, set_name, grade, condition, images, price, sale_type, status, created_at, auctions (id, end_time, current_price, status), orders (id, status, payment_due_at)";
 
 export function useAdminCards(enabled = true) {
   return useQuery({
@@ -282,8 +284,12 @@ export function useUpdateAuctionEndTime() {
 /** แอดมินเปิดประมูลการ์ดใบนั้นใหม่ (ล้างราคาและประวัติเสนอราคาของรอบเดิม) */
 export function useRelistAuction() {
   const queryClient = useQueryClient();
+  const sweep = useServerFn(processAuctions);
   return useMutation({
     mutationFn: async ({ auctionId, endTime }: { auctionId: string; endTime: string }) => {
+      // ยกเลิกรายการที่เลยกำหนดชำระก่อน เพื่อไม่ให้ระบบมาปิดรอบใหม่ที่เพิ่งเปิด
+      await sweep({}).catch(() => undefined);
+
       const { error } = await supabase.rpc("relist_auction", {
         _auction_id: auctionId,
         _end_time: new Date(endTime).toISOString(),
