@@ -72,10 +72,11 @@ export interface AdminCardRow {
   status: "available" | "locked" | "sold";
   created_at: string;
   auctions?: { id: string; end_time: string; current_price: number; status: string }[];
+  orders?: { id: string; status: string; payment_due_at: string }[];
 }
 
 const CARD_SELECT =
-  "id, name, set_name, grade, condition, images, price, sale_type, status, created_at, auctions (id, end_time, current_price, status)";
+  "id, name, set_name, grade, condition, images, price, sale_type, status, created_at, auctions (id, end_time, current_price, status), orders (id, status, payment_due_at)";
 
 export function useAdminCards(enabled = true) {
   return useQuery({
