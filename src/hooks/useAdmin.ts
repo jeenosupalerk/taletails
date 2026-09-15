@@ -283,8 +283,12 @@ export function useUpdateAuctionEndTime() {
 /** แอดมินเปิดประมูลการ์ดใบนั้นใหม่ (ล้างราคาและประวัติเสนอราคาของรอบเดิม) */
 export function useRelistAuction() {
   const queryClient = useQueryClient();
+  const sweep = useServerFn(processAuctions);
   return useMutation({
     mutationFn: async ({ auctionId, endTime }: { auctionId: string; endTime: string }) => {
+      // ยกเลิกรายการที่เลยกำหนดชำระก่อน เพื่อไม่ให้ระบบมาปิดรอบใหม่ที่เพิ่งเปิด
+      await sweep({}).catch(() => undefined);
+
       const { error } = await supabase.rpc("relist_auction", {
         _auction_id: auctionId,
         _end_time: new Date(endTime).toISOString(),
