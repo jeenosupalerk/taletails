@@ -481,7 +481,7 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                     auction &&
                     !managementLocked &&
                     auction.status !== "active" && <RelistAuctionControl auctionId={auction.id} />}
-                  {c.status === "available" && !managementLocked && (
+                  {(scope === "shop" || (c.status === "available" && !managementLocked)) && (
                     <ConfirmDialog
                       title="ยืนยันการลบการ์ด"
                       description={`ต้องการลบ "${c.name}" ออกจากร้านหรือไม่? การลบไม่สามารถย้อนกลับได้`}
