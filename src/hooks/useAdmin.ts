@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthUserId } from "@/hooks/useCardDetail";
+import { processAuctions } from "@/lib/auctions.functions";
 import { compressImageFile } from "@/lib/image-compress";
 import { flushPendingPush } from "@/lib/push.functions";
 
