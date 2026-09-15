@@ -372,11 +372,24 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                 )
               : null;
 
+            // ผู้ชนะไม่ชำระเงินภายในเวลาที่กำหนด -> เปิดให้แอดมินเปิดประมูลใหม่ได้
+            const overdueOrder = (c.orders ?? []).some(
+              (o) => o.status === "pending" && new Date(o.payment_due_at).getTime() <= now,
+            );
+            const paymentOverdue =
+              c.status !== "sold" &&
+              outcome?.outcome === "waiting_payment" &&
+              (overdueOrder ||
+                (c.orders ?? []).every((o) => o.status === "cancelled"));
+
             // ล็อกการจัดการเมื่อรอผู้ชนะชำระเงิน หรือประมูลสำเร็จแล้ว
             const managementLocked =
               c.status === "sold" ||
-              (outcome ? outcome.outcome === "waiting_payment" || outcome.outcome === "completed" : false) ||
-              (!!auction && c.status === "locked");
+              (!paymentOverdue &&
+                ((outcome
+                  ? outcome.outcome === "waiting_payment" || outcome.outcome === "completed"
+                  : false) ||
+                  (!!auction && c.status === "locked")));
             const lockedNote =
               c.status === "sold" || outcome?.outcome === "completed"
                 ? "ประมูลสำเร็จแล้ว ไม่สามารถแก้ไข ลบ หรือเปิดประมูลใหม่ได้"
