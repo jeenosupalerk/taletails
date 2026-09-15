@@ -86,6 +86,14 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
   const del = useDeleteCard();
   const setEnd = useUpdateAuctionEndTime();
 
+  // นับเวลาเพื่อให้ปุ่ม "เปิดประมูลใหม่" โผล่ทันทีเมื่อเลยกำหนดชำระเงิน
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 15_000);
+    return () => window.clearInterval(id);
+  }, []);
+
+
   const items = cards.data ?? [];
   const total = items.length;
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
