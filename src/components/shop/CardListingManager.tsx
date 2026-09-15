@@ -470,6 +470,12 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                       ดูหน้าขาย
                     </Link>
                   </Button>
+                  {paymentOverdue && (
+                    <span className="inline-flex min-h-10 w-full items-center gap-1.5 rounded-xl bg-destructive/10 px-3 text-xs font-medium text-destructive sm:w-auto">
+                      <AlarmClock className="h-3.5 w-3.5" />
+                      ผู้ชนะไม่ชำระเงินตามเวลา • เปิดประมูลใหม่ได้
+                    </span>
+                  )}
                   {scope === "admin" &&
                     auction &&
                     !managementLocked &&
