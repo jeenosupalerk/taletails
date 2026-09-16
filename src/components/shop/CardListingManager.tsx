@@ -405,8 +405,8 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                   (!!auction && c.status === "locked")));
             const lockedNote =
               c.status === "sold" || outcome?.outcome === "completed"
-                ? "ประมูลสำเร็จแล้ว ไม่สามารถแก้ไข ลบ หรือเปิดประมูลใหม่ได้"
-                : "อยู่ระหว่างรอผู้ชนะชำระเงิน ไม่สามารถแก้ไข ลบ หรือเปิดประมูลใหม่ได้";
+                ? "ประมูลสำเร็จแล้ว ไม่สามารถแก้ไขหรือเปิดประมูลใหม่ได้"
+                : "อยู่ระหว่างรอผู้ชนะชำระเงิน ไม่สามารถแก้ไขหรือเปิดประมูลใหม่ได้";
 
             return (
               <li
@@ -493,7 +493,7 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                   ) : (
                     <ConfirmDialog
                       title="ยืนยันการลบการ์ด"
-                      description={`ต้องการลบ "${c.name}" ออกจากร้านหรือไม่? การลบไม่สามารถย้อนกลับได้`}
+                      description={`ต้องการลบ "${c.name}" ออกจากร้านหรือไม่? รายการจะยังคงอยู่ในประวัติการลงขายพร้อมสถานะล่าสุด`}
                       confirmLabel="ลบการ์ด"
                       tone="destructive"
                       onConfirm={() =>
