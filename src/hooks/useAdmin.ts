@@ -353,6 +353,8 @@ export function useDeleteCard() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["admin", "cards"] });
+      void queryClient.invalidateQueries({ queryKey: ["shop", "cards"] });
+      void queryClient.invalidateQueries({ queryKey: ["shop", "listing-history"] });
       void queryClient.invalidateQueries({ queryKey: ["auctions"] });
       void queryClient.invalidateQueries({ queryKey: ["auction", "by-card"] });
     },

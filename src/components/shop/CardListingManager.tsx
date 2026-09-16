@@ -481,7 +481,12 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                     auction &&
                     !managementLocked &&
                     auction.status !== "active" && <RelistAuctionControl auctionId={auction.id} />}
-                  {(scope === "shop" || (c.status === "available" && !managementLocked)) && (
+                  {paymentInProgress ? (
+                    <span className="inline-flex min-h-10 w-full items-center gap-1.5 rounded-xl bg-secondary px-3 text-xs text-muted-foreground sm:w-auto">
+                      <Lock className="h-3.5 w-3.5" />
+                      ลูกค้ากำลังชำระเงิน • ยังลบไม่ได้
+                    </span>
+                  ) : (
                     <ConfirmDialog
                       title="ยืนยันการลบการ์ด"
                       description={`ต้องการลบ "${c.name}" ออกจากร้านหรือไม่? การลบไม่สามารถย้อนกลับได้`}
