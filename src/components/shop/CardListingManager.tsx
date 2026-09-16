@@ -385,6 +385,10 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
             const overdueOrder = (c.orders ?? []).some(
               (o) => o.status === "pending" && new Date(o.payment_due_at).getTime() <= now,
             );
+            // ลูกค้ากำลังดำเนินการชำระเงิน -> ห้ามลบในช่วงนี้
+            const paymentInProgress = (c.orders ?? []).some(
+              (o) => o.status === "pending" && new Date(o.payment_due_at).getTime() > now,
+            );
             const paymentOverdue =
               c.status !== "sold" &&
               outcome?.outcome === "waiting_payment" &&
