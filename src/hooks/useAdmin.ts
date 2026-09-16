@@ -114,6 +114,44 @@ export function useMyCards(enabled = true) {
   });
 }
 
+export interface ListingHistoryRow {
+  id: string;
+  card_id: string;
+  name: string;
+  set_name: string | null;
+  grade: string | null;
+  condition: string | null;
+  image_url: string | null;
+  sale_type: "auction" | "fixed_price";
+  price: number;
+  final_price: number | null;
+  card_status: "available" | "locked" | "sold";
+  order_status: "pending" | "paid" | "shipped" | "cancelled" | "completed" | null;
+  sold_at: string | null;
+  listed_at: string;
+  deleted_at: string | null;
+}
+
+/** ประวัติการลงขายของร้าน (คงอยู่แม้สินค้าถูกลบแล้ว) */
+export function useListingHistory(enabled = true) {
+  const userId = useAuthUserId();
+  return useQuery({
+    queryKey: ["shop", "listing-history", userId],
+    enabled: enabled && Boolean(userId),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("card_listing_history")
+        .select(
+          "id, card_id, name, set_name, grade, condition, image_url, sale_type, price, final_price, card_status, order_status, sold_at, listed_at, deleted_at",
+        )
+        .order("listed_at", { ascending: false })
+        .limit(200);
+      if (error) throw error;
+      return (data ?? []) as unknown as ListingHistoryRow[];
+    },
+  });
+}
+
 export type ManagedRole = "seller" | "admin" | "customer";
 
 /** Grants or revokes a role for a member (admin only). */
@@ -315,6 +353,8 @@ export function useDeleteCard() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["admin", "cards"] });
+      void queryClient.invalidateQueries({ queryKey: ["shop", "cards"] });
+      void queryClient.invalidateQueries({ queryKey: ["shop", "listing-history"] });
       void queryClient.invalidateQueries({ queryKey: ["auctions"] });
       void queryClient.invalidateQueries({ queryKey: ["auction", "by-card"] });
     },

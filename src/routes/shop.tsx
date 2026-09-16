@@ -4,6 +4,7 @@ import { Loader2, Store } from "lucide-react";
 
 import { PageShell } from "@/components/site/PageShell";
 import { CardListingManager } from "@/components/shop/CardListingManager";
+import { ListingHistory } from "@/components/shop/ListingHistory";
 import { Button } from "@/components/ui/button";
 import { useIsSeller } from "@/hooks/useAdmin";
 
@@ -67,7 +68,10 @@ function ShopPage() {
             </Button>
           </div>
         ) : (
-          <CardListingManager scope="shop" />
+          <div className="space-y-10">
+            <CardListingManager scope="shop" />
+            <ListingHistory />
+          </div>
         )}
       </section>
     </PageShell>

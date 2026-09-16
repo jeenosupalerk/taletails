@@ -385,6 +385,10 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
             const overdueOrder = (c.orders ?? []).some(
               (o) => o.status === "pending" && new Date(o.payment_due_at).getTime() <= now,
             );
+            // ลูกค้ากำลังดำเนินการชำระเงิน -> ห้ามลบในช่วงนี้
+            const paymentInProgress = (c.orders ?? []).some(
+              (o) => o.status === "pending" && new Date(o.payment_due_at).getTime() > now,
+            );
             const paymentOverdue =
               c.status !== "sold" &&
               outcome?.outcome === "waiting_payment" &&
@@ -401,8 +405,8 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                   (!!auction && c.status === "locked")));
             const lockedNote =
               c.status === "sold" || outcome?.outcome === "completed"
-                ? "ประมูลสำเร็จแล้ว ไม่สามารถแก้ไข ลบ หรือเปิดประมูลใหม่ได้"
-                : "อยู่ระหว่างรอผู้ชนะชำระเงิน ไม่สามารถแก้ไข ลบ หรือเปิดประมูลใหม่ได้";
+                ? "ประมูลสำเร็จแล้ว ไม่สามารถแก้ไขหรือเปิดประมูลใหม่ได้"
+                : "อยู่ระหว่างรอผู้ชนะชำระเงิน ไม่สามารถแก้ไขหรือเปิดประมูลใหม่ได้";
 
             return (
               <li
@@ -481,10 +485,15 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                     auction &&
                     !managementLocked &&
                     auction.status !== "active" && <RelistAuctionControl auctionId={auction.id} />}
-                  {(scope === "shop" || (c.status === "available" && !managementLocked)) && (
+                  {paymentInProgress ? (
+                    <span className="inline-flex min-h-10 w-full items-center gap-1.5 rounded-xl bg-secondary px-3 text-xs text-muted-foreground sm:w-auto">
+                      <Lock className="h-3.5 w-3.5" />
+                      ลูกค้ากำลังชำระเงิน • ยังลบไม่ได้
+                    </span>
+                  ) : (
                     <ConfirmDialog
                       title="ยืนยันการลบการ์ด"
-                      description={`ต้องการลบ "${c.name}" ออกจากร้านหรือไม่? การลบไม่สามารถย้อนกลับได้`}
+                      description={`ต้องการลบ "${c.name}" ออกจากร้านหรือไม่? รายการจะยังคงอยู่ในประวัติการลงขายพร้อมสถานะล่าสุด`}
                       confirmLabel="ลบการ์ด"
                       tone="destructive"
                       onConfirm={() =>
