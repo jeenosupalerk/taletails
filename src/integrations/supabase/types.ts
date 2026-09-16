@@ -230,6 +230,69 @@ export type Database = {
           },
         ]
       }
+      card_listing_history: {
+        Row: {
+          card_id: string
+          card_status: Database["public"]["Enums"]["card_status"]
+          condition: string | null
+          created_at: string
+          deleted_at: string | null
+          final_price: number | null
+          grade: string | null
+          id: string
+          image_url: string | null
+          listed_at: string
+          name: string
+          order_status: Database["public"]["Enums"]["order_status"] | null
+          price: number
+          sale_type: Database["public"]["Enums"]["sale_type"]
+          seller_id: string | null
+          set_name: string | null
+          sold_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          card_id: string
+          card_status?: Database["public"]["Enums"]["card_status"]
+          condition?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          final_price?: number | null
+          grade?: string | null
+          id?: string
+          image_url?: string | null
+          listed_at?: string
+          name: string
+          order_status?: Database["public"]["Enums"]["order_status"] | null
+          price?: number
+          sale_type: Database["public"]["Enums"]["sale_type"]
+          seller_id?: string | null
+          set_name?: string | null
+          sold_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          card_id?: string
+          card_status?: Database["public"]["Enums"]["card_status"]
+          condition?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          final_price?: number | null
+          grade?: string | null
+          id?: string
+          image_url?: string | null
+          listed_at?: string
+          name?: string
+          order_status?: Database["public"]["Enums"]["order_status"] | null
+          price?: number
+          sale_type?: Database["public"]["Enums"]["sale_type"]
+          seller_id?: string | null
+          set_name?: string | null
+          sold_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       cards: {
         Row: {
           card_no: string | null
