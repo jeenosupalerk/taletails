@@ -156,13 +156,11 @@ export function usePushNotifications() {
       toast.success("เปิดรับการแจ้งเตือนแล้ว");
       return true;
     } catch (err) {
-      const raw = err instanceof Error ? err.message : "";
-      // เซิร์ฟเวอร์บางครั้งตอบกลับเป็นหน้า HTML ของ Apache (500) — อย่านำมาแสดงดิบ ๆ
-      const looksLikeHtml = /<html|<!DOCTYPE/i.test(raw);
+      // ข้อความจากเซิร์ฟเวอร์เป็นศัพท์เทคนิค (เช่น VAPID_PUBLIC_KEY / หน้า HTML 500) — ลูกค้าไม่ควรเห็น
+      // เก็บรายละเอียดไว้ใน console ให้ผู้ดูแลตรวจ แล้วแสดงข้อความที่อ่านเข้าใจแทน
+      console.error("enable push failed", err);
       toast.error("เปิดรับการแจ้งเตือนไม่สำเร็จ", {
-        description: looksLikeHtml
-          ? "เซิร์ฟเวอร์ตอบกลับผิดพลาด (500) โปรดลองอีกครั้งภายหลัง"
-          : raw || undefined,
+        description: "ลองใหม่อีกครั้งภายหลัง",
       });
       return false;
     } finally {

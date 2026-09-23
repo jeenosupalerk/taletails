@@ -100,10 +100,23 @@ export async function sendPushToUser(userId: string, payload: PushPayload) {
  */
 export async function dispatchPendingPush(limit = 50) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+  // หยิบเฉพาะของผู้ที่มีอุปกรณ์รับ push และไม่เก่าเกิน 3 วัน
+  // เดิมหยิบ "เก่าสุด N รายการ" รวมของคนที่ไม่มีอุปกรณ์ (ซึ่งจะค้างตลอดไป) — พอค้างเกิน N
+  // รายการใหม่จะไม่ถูกหยิบมาส่งเลย (23 ก.ย. 2026: ค้าง 25 รายการ > flush ละ 20)
+  // รายการที่ข้ามไปยังอยู่ในกล่องแจ้งเตือนบนเว็บตามเดิม แค่ไม่ส่ง push ที่ช้าเกินใช้ประโยชน์
+  const { data: subs, error: subsError } = await supabaseAdmin.from("push_subscriptions").select("user_id");
+  if (subsError) throw new Error(subsError.message);
+  const userIds = [...new Set((subs ?? []).map((s) => s.user_id as string))];
+  if (userIds.length === 0) return { processed: 0, delivered: 0 };
+  const since = new Date(Date.now() - 3 * 86_400_000).toISOString();
+
   const { data, error } = await supabaseAdmin
     .from("notifications")
     .select("id, user_id, title, body, link")
     .is("push_sent_at", null)
+    .in("user_id", userIds)
+    .gte("created_at", since)
     .order("created_at", { ascending: true })
     .limit(limit);
   if (error) throw new Error(error.message);
