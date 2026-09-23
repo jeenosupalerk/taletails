@@ -15,7 +15,9 @@
 | Backend | Supabase project ref `biuyjlrovmcpyqczmaje` |
 | Hosting | Hostatom / Plesk |
 
-คำสั่งที่ใช้บ่อย: `npm install` · `npm run dev` · `npm run build` · `npm run lint`
+คำสั่งที่ใช้บ่อย: `bun install` (ใช้แทน npm install เพราะมี `bun.lock`) · `npm run dev` · `npm run build` · `npm run lint`
+
+ความรู้ที่ยืนยันแล้วอยู่ใน `docs/00-START-HERE.md` — อ่านก่อนเริ่มงาน
 
 ---
 
@@ -63,9 +65,22 @@
 - ตัวช่วยพิมพ์ชื่อการ์ด/ชุด กันสะกดไม่ตรงกัน  
 - ตารางเทียบราคาข้ามเกรดในหน้า `/market/$id` (ฐานเทียบ PSA 10\)  
 - รูปโปรไฟล์จาก Google/Facebook \+ อัปโหลดรูปเอง (bucket `avatars`)  
-- **SQL ที่ apply ไปแล้ว**: `market_sales` v2 (เพิ่มคอลัมน์ `grading_company`) · trigger `handle_new_user` v3 (เก็บ avatar \+ ชื่อจริง \+ กันชื่อผู้ใช้ชนกัน) · bucket `avatars` \+ policy 4 ข้อ ไฟล์ SQL และ ROLLBACK ทุกตัวอยู่ในโฟลเดอร์ `patches/` ที่เจ้าของเก็บไว้ (ไม่ได้อยู่ใน repo ยกเว้น `supabase/migrations/20260923000000_profile_avatars.sql`)
+- **SQL ที่ apply ไปแล้ว**: `market_sales` v2 (เพิ่มคอลัมน์ `grading_company`) · trigger `handle_new_user` v3 (เก็บ avatar \+ ชื่อจริง \+ กันชื่อผู้ใช้ชนกัน) · bucket `avatars` \+ policy 4 ข้อ ไฟล์ SQL และ ROLLBACK ทุกตัวอยู่ที่ `C:\Users\User\Projects\taletails-trade\patches\` (ไม่อยู่ใน repo)
+
+### รอบ 23 ก.ย. 2026 (Claude Code)
+
+- หน้า `/product` ตาม mockup: รูปเต็มกรอบไม่ครอป, ป้ายเกรดย้ายเป็นชิป, hover แว่นขยาย (ซูมยังต้องกดปุ่มก่อน), ปุ่มซื้อสีทึบ, จุดความมั่นใจ 3 ข้อ, แถบซื้อล่างจอบนมือถือ
+- ปุ่มทั้งเว็บเลิกลอยตอน hover · ปุ่มโปรไฟล์เป็นวงกลม 40×40
+- แยกหน้าชัดเจน `/product` = ขายตายตัว, `/card` = ประมูล (เปิดผิดเด้งเอง) · `/auction/$id` เดโม → `/auctions`
+- `/auctions` เลิกแสดงประมูลปลอม มีสถานะ "ยังไม่มีประมูลเปิด" แยกผู้เยี่ยมชม/สมาชิก
+- เลิกเติมปีปลอม · footer ลิงก์ไปหน้าจริงทุกข้อ ไม่อ้าง "ประมูลทุกคืน"
+- **SQL ที่ apply**: trigger `trg_auctions_notify_opened` (แจ้งเตือน push เมื่อเปิดรอบประมูล)
 
 ### ยังไม่ได้ทำ / คิวถัดไปที่เคยคุยกัน
+
+- หน้าแรก + บทความข่าวยังเขียน "ประมูลสดทุกคืน 20:00" ทั้งที่ร้านยังไม่มีตารางตายตัว
+- หน้านโยบาย (ความเป็นส่วนตัว / เงื่อนไข / การคุ้มครองผู้ซื้อ) ยังไม่มี
+- บังคับรูปด้านหลังการ์ดตอนลงสินค้า
 
 - สถิติเฟส 2: กราฟกระจายราคา, ตัวกรอง, แท็บจัดอันดับ  
 - ตั้ง cron บน Hostatom สำหรับอีเมล/push แจ้งเตือน  
