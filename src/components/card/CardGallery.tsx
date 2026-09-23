@@ -1,4 +1,4 @@
-import { Lock, Radio } from "lucide-react";
+import { Images, Lock, Radio } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { SmartImage } from "@/components/ui/smart-image";
@@ -125,24 +125,62 @@ export function CardGallery({
             </span>
           )}
 
-          {/* จุดบอกตำแหน่ง (มือถือ) */}
+          {/* ป้ายบอกจำนวนรูป — เห็นทันทีว่าการ์ดใบนี้มีหลายรูป */}
           {many && (
-            <div className="absolute inset-x-0 bottom-3 z-10 flex justify-center gap-1.5 lg:hidden">
-              {images.map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  aria-label={`ดูรูปที่ ${i + 1}`}
-                  onClick={() => setActive(i)}
-                  className={cn(
-                    "h-1.5 rounded-full transition-all",
-                    i === active ? "w-5 bg-primary" : "w-1.5 bg-foreground/25",
-                  )}
-                />
-              ))}
+            <span
+              className={cn(
+                "absolute left-3 z-20 inline-flex h-7 items-center gap-1.5 rounded-full bg-foreground/70 px-2.5 text-[11px] font-bold text-background backdrop-blur-sm",
+                liveAuction || locked ? "top-12" : "top-3",
+              )}
+            >
+              <Images className="h-3.5 w-3.5" />
+              {active + 1}/{images.length}
+            </span>
+          )}
+
+          {/* จุดบอกตำแหน่ง (มือถือ) — วางบนแถบเข้มให้เห็นชัดบนรูปพื้นสีอ่อน */}
+          {many && (
+            <div className="pointer-events-none absolute inset-x-0 bottom-3 z-10 flex justify-center lg:hidden">
+              <div className="pointer-events-auto flex items-center gap-1.5 rounded-full bg-foreground/55 px-2.5 py-1.5 backdrop-blur-sm">
+                {images.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    aria-label={`ดูรูปที่ ${i + 1}`}
+                    onClick={() => setActive(i)}
+                    className={cn(
+                      "h-1.5 rounded-full transition-all",
+                      i === active ? "w-[18px] bg-background" : "w-1.5 bg-background/55",
+                    )}
+                  />
+                ))}
+              </div>
             </div>
           )}
         </div>
+
+        {/* แถวรูปย่อใต้รูปหลัก (มือถือ) — เดสก์ท็อปใช้แถบรูปย่อด้านซ้ายแทน */}
+        {many && (
+          <div className="no-scrollbar mt-2.5 flex overflow-x-auto px-1 lg:hidden">
+            <div className="mx-auto flex w-max gap-2">
+              {images.map((src, i) => (
+                <button
+                  key={`thumb-${src}-${i}`}
+                  type="button"
+                  onClick={() => setActive(i)}
+                  aria-label={`ดูรูปที่ ${i + 1}`}
+                  aria-current={i === active ? "true" : undefined}
+                  className={cn(
+                    "relative aspect-[5/7] w-11 shrink-0 overflow-hidden rounded-lg bg-tile transition-all",
+                    i === active ? "ring-2 ring-primary" : "opacity-55 ring-1 ring-border",
+                  )}
+                >
+                  <SmartImage src={src} alt="" transformWidth={120} className="object-cover" />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

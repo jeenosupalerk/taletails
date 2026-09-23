@@ -11,7 +11,7 @@ import {
   Lock,
   Radio,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import taletailsLogo from "@/assets/taletails-logo.jpg";
@@ -59,6 +59,19 @@ export function AuctionShowcase({
   const placeBid = usePlaceBid(auctionId);
   const [, setTick] = useState(0);
   const [expanded, setExpanded] = useState(false);
+
+  // แถบเสนอราคาจะลอยขึ้นมาก็ต่อเมื่อแถบจริงเลื่อนพ้นจอแล้ว (เฉพาะมือถือ)
+  const bidBarRef = useRef<HTMLDivElement>(null);
+  const [bidBarVisible, setBidBarVisible] = useState(true);
+  useEffect(() => {
+    const el = bidBarRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(([entry]) => setBidBarVisible(!!entry?.isIntersecting), {
+      rootMargin: "-80px 0px -120px 0px",
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
   const watchlist = useWatchlist();
   const watched = watchlist.has(auction.id);
 
@@ -376,7 +389,7 @@ export function AuctionShowcase({
       {/* Bidding bar — follows the site theme (light/dark) */}
       <div className="border-y border-border bg-background text-foreground">
         <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap items-center gap-2">
+          <div ref={bidBarRef} className="flex flex-wrap items-center gap-2">
             <div className="flex min-w-0 flex-1 items-center gap-2">
               <Input
                 type="number"
@@ -474,6 +487,74 @@ export function AuctionShowcase({
           </div>
         </div>
       </div>
+
+      {/* แถบเสนอราคาลอย (มือถือ) — โผล่เมื่อแถบจริงเลื่อนพ้นจอ ลอยเหนือเมนูล่างของเว็บ */}
+      {!closed && !bidBarVisible && (
+        <div className="pointer-events-none fixed inset-x-0 bottom-[calc(6.25rem+env(safe-area-inset-bottom,0px))] z-40 px-3 lg:hidden">
+          <div className="pointer-events-auto mx-auto max-w-md rounded-3xl border border-border/60 bg-card/95 p-3 shadow-[0_14px_36px_-14px_rgba(60,40,20,0.5)] backdrop-blur-xl">
+            <div className="mb-2 flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
+              <span className="truncate">
+                ราคาปัจจุบัน <b className="font-display text-sm text-foreground">{thb.format(auction.currentBid)}</b>
+              </span>
+              <span className="shrink-0 truncate">
+                ขั้นต่ำ <b className="font-display text-sm text-foreground">{thb.format(minNext)}</b>
+                {c && !c.isFinished && (
+                  <>
+                    {" · เหลือ "}
+                    <b className="font-display text-sm text-foreground tabular-nums">
+                      {c.days > 0 ? `${c.days} วัน ` : ""}
+                      {String(c.hours).padStart(2, "0")}:{String(c.minutes).padStart(2, "0")}:
+                      {String(c.seconds).padStart(2, "0")}
+                    </b>
+                  </>
+                )}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Input
+                type="number"
+                aria-label="จำนวนเงินที่ต้องการเสนอ (แถบลอย)"
+                value={bid}
+                min={minNext}
+                step={50}
+                onChange={(e) => setBid(Number(e.target.value))}
+                className="min-h-11 min-w-0 flex-1 rounded-xl border-2 border-border bg-white text-base font-semibold text-neutral-900 shadow-sm focus-visible:border-primary"
+              />
+              <Button
+                variant="secondary"
+                className="min-h-11 shrink-0 rounded-xl px-3 text-xs font-semibold"
+                onClick={() => setBid((b: number) => b + 1000)}
+              >
+                +฿1,000
+              </Button>
+              <ConfirmDialog
+                title="ยืนยันการเสนอราคา"
+                description={
+                  <>
+                    คุณกำลังเสนอราคา{" "}
+                    <span className="font-display font-bold text-primary">{thb.format(bid)}</span> สำหรับ{" "}
+                    {auction.cardName}
+                    <br />
+                    เมื่อยืนยันแล้วจะยกเลิกการเสนอราคาไม่ได้
+                  </>
+                }
+                confirmLabel="ยืนยันเสนอราคา"
+                disabled={placeBid.isPending}
+                onConfirm={submit}
+                trigger={
+                  <Button
+                    className="min-h-11 shrink-0 rounded-xl bg-gradient-ember px-4 font-semibold text-primary-foreground shadow-glow hover:opacity-90"
+                    disabled={placeBid.isPending}
+                  >
+                    <Gavel className="h-4 w-4" />
+                    {placeBid.isPending ? "กำลังส่ง..." : "เสนอราคา"}
+                  </Button>
+                }
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

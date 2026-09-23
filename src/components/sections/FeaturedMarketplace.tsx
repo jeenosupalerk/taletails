@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowDownWideNarrow, BadgeCheck, ChevronDown, Heart } from "lucide-react";
+import { ArrowDownWideNarrow, BadgeCheck, ChevronDown, Heart, Images } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -21,6 +21,7 @@ export function ProductGridCard({ product }: { product: Product }) {
   const isPending = product.status === "locked";
   const stock = product.stockQuantity ?? null;
   const lowStock = !isSold && stock !== null && stock > 0 && stock <= 3;
+  const photoCount = product.images?.length ?? 0;
 
   // เทียบราคาที่ตั้งขายกับราคาตลาดของ "การ์ดรุ่นเดียวกัน" (ชื่อ + ชุด + เกรด)
   const market = lookup({
@@ -71,6 +72,14 @@ export function ProductGridCard({ product }: { product: Product }) {
               }`}
             >
               {isSold ? "ขายแล้ว" : "รอชำระเงิน"}
+            </span>
+          )}
+
+          {/* บอกว่ามีหลายรูปตั้งแต่หน้าตลาด ไม่ต้องกดเข้าไปถึงจะรู้ */}
+          {photoCount > 1 && (
+            <span className="absolute bottom-2 left-2 inline-flex h-[22px] items-center gap-1 rounded-full bg-foreground/70 px-2 text-[11px] font-semibold text-background backdrop-blur-sm">
+              <Images className="h-3 w-3" />
+              {photoCount} รูป
             </span>
           )}
 
