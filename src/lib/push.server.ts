@@ -133,7 +133,10 @@ export async function dispatchPendingPush(limit = 50) {
       });
       delivered += result.sent;
       if (result.devices === 0) continue;
-      if (result.failed > 0) continue;
+      // มีอย่างน้อย 1 เครื่องได้รับแล้ว = ส่งแล้ว ห้ามส่งซ้ำ
+      // เดิมถ้าเครื่องไหนล้มเหลว (เช่น iPhone ที่ลงทะเบียนไว้นานแล้วใช้ไม่ได้) จะไม่ทำเครื่องหมาย
+      // แล้วทุกครั้งที่มีคนเปิดเว็บ (AuctionWinWatcher สั่ง flush) เครื่องที่ใช้ได้จะได้รับซ้ำไม่หยุด (23 ก.ย. 2026)
+      if (result.sent === 0 && result.failed > 0) continue;
     } catch (err) {
       console.error("push dispatch failed", err);
       continue;
