@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 
 const ICONS: Record<string, typeof Bell> = {
   auction_won: Gavel,
+  auction_opened: Gavel,
   auction_outbid: TrendingUp,
   auction: Sparkles,
   order: Receipt,

@@ -88,7 +88,8 @@ function toLiveAuction(row: AuctionJoinRow): LiveAuction | null {
     cardNo: card.card_no ?? "-",
     language: card.language ?? "-",
     rarity: card.rarity ?? "-",
-    year: card.year ?? new Date().getFullYear(),
+    // ไม่เติมปีปัจจุบันแทนค่าว่าง (ข้อมูลปลอม) — ช่องที่ว่างให้ขึ้น "-" เหมือนช่องอื่น
+    year: card.year ?? null,
     gradingCompany: card.grading_company ?? "-",
     certificationNo: card.certification_no ?? "-",
     conditionNote: card.condition ?? "-",

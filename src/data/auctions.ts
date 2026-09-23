@@ -25,7 +25,7 @@ export interface Auction {
   cardNo: string;
   language: string;
   rarity: string;
-  year: number;
+  year: number | null;
   gradingCompany: string;
   certificationNo: string;
   conditionNote: string;

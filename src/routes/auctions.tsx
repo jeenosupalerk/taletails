@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
 import { AuctionShowcase } from "@/components/sections/AuctionShowcase";
@@ -6,7 +6,12 @@ import { GradeBadge, MiniFlipCountdown } from "@/components/card/CardBits";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { BackButton } from "@/components/site/BackButton";
 import { SiteHeader } from "@/components/site/SiteHeader";
-import { getLiveAuctions, type Auction } from "@/data/auctions";
+import { type Auction } from "@/data/auctions";
+import { NoLiveAuction } from "@/components/sections/NoLiveAuction";
+import { ProductGridCard } from "@/components/sections/FeaturedMarketplace";
+import { LogoLoader } from "@/components/ui/logo-loader";
+import { useMarketplaceCards } from "@/hooks/useSupabaseCatalog";
+import { useAuth } from "@/lib/auth";
 import { useLiveAuctions, type LiveAuction } from "@/hooks/useLiveAuctions";
 import { thb } from "@/lib/cart";
 import {
@@ -54,27 +59,8 @@ export const Route = createFileRoute("/auctions")({
               { "@type": "ListItem", position: 2, name: "ประมูล", item: `${SITE_URL}/auctions` },
             ],
           },
-          {
-            "@context": "https://schema.org",
-            "@type": "ItemList",
-            itemListElement: getLiveAuctions().map((auction, i) => ({
-              "@type": "ListItem",
-              position: i + 1,
-              item: {
-                "@type": "Product",
-                name: `${auction.cardName} (${auction.grade})`,
-                image: `${SITE_URL}${auction.imageUrl}`,
-                description: `${auction.setName} — เกรด ${auction.grade}`,
-                offers: {
-                  "@type": "Offer",
-                  price: auction.currentBid,
-                  priceCurrency: "THB",
-                  availability: "https://schema.org/InStock",
-                  url: `${SITE_URL}/auctions`,
-                },
-              },
-            })),
-          },
+          // เดิมมี ItemList ของการ์ดตัวอย่างจาก data/auctions (ไม่ใช่สินค้าจริง) ส่งให้ Google — ตัดออก
+          // ถ้าจะทำ ให้ดึงจากประมูลจริงฝั่ง server แทน
         ]),
       },
     ],
@@ -109,30 +95,38 @@ function withOutcome(list: Auction[]): AuctionWithOutcome[] {
 
 function AuctionsPage() {
   const live = useLiveAuctions();
-  // ใช้ข้อมูลจริงจาก Supabase เมื่ออ่านได้ (ต้องเข้าสู่ระบบ) ไม่งั้นแสดงตัวอย่าง
-  const allAuctions: AuctionWithOutcome[] = withOutcome(
-    live.data?.length ? live.data : getLiveAuctions(),
-  );
-  const isRealData = Boolean(live.data?.length);
+  const { isAuthenticated } = useAuth();
+  const { data: marketCards } = useMarketplaceCards();
+  // ข้อมูลจริงเท่านั้น — เดิมถ้าอ่านไม่ได้ (ยังไม่ล็อกอิน/ไม่มีรอบเปิด) จะเอาการ์ดตัวอย่างมาโชว์เป็นประมูลสด
+  const allAuctions: AuctionWithOutcome[] = withOutcome(live.data ?? []);
+  const hasLive = allAuctions.some((a) => a.outcome.outcome === "live");
   const { id, status } = Route.useSearch();
-  const filter = status && FILTERS.some((f) => f.value === status) ? status : "all";
+  // แสดงเฉพาะแท็บที่มีรายการจริง (ไม่มีรอบเปิด = ไม่มีแท็บ "กำลังเปิดประมูล")
+  const filters = FILTERS.filter(
+    (f) => f.value === "all" || allAuctions.some((a) => a.outcome.outcome === f.value),
+  );
+  const filter = status && filters.some((f) => f.value === status) ? status : "all";
   const liveAuctions =
     filter === "all" ? allAuctions : allAuctions.filter((a) => a.outcome.outcome === filter);
   const navigate = useNavigate();
   const [activeId, setActiveId] = useState<string | undefined>(undefined);
   const currentId = id ?? activeId;
-  const active = liveAuctions.find((a) => a.id === currentId) ?? liveAuctions[0];
-  const activeAuctionId = isRealData ? active?.id : undefined;
-  const activeIncrement =
-    isRealData && active && "bidIncrement" in active ? (active as LiveAuction).bidIncrement : 50;
+  // ห้องประมูลใหญ่ด้านบนมีเฉพาะตอนมีรอบเปิด — ไม่เอารอบที่ปิดแล้วขึ้นมาให้ดูเหมือนยังประมูลอยู่
+  const active = hasLive ? (liveAuctions.find((a) => a.id === currentId) ?? liveAuctions[0]) : undefined;
+  const activeIncrement = active && "bidIncrement" in active ? (active as LiveAuction).bidIncrement : 50;
 
   useEffect(() => {
     if (id && typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
   }, [id]);
 
-  const select = (nextId: string) => {
-    setActiveId(nextId);
-    void navigate({ to: "/auctions", search: { id: nextId, status: filter }, replace: true });
+  const select = (auction: AuctionWithOutcome) => {
+    // ไม่มีห้องประมูลด้านบนให้สลับ → เปิดหน้ารอบนั้นแทน
+    if (!hasLive) {
+      void navigate({ to: "/card/$id", params: { id: (auction as LiveAuction).cardId } });
+      return;
+    }
+    setActiveId(auction.id);
+    void navigate({ to: "/auctions", search: { id: auction.id, status: filter }, replace: true });
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -149,114 +143,167 @@ function AuctionsPage() {
         <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6 lg:px-8">
           <BackButton />
         </div>
-        {active && (
-          <AuctionShowcase
-            key={active.id}
-            auction={active}
-            auctionId={activeAuctionId}
-            bidIncrement={activeIncrement}
-            outcome={active.outcome}
-          />
+
+        {live.isLoading ? (
+          <div className="flex h-72 items-center justify-center text-muted-foreground">
+            <LogoLoader size={64} />
+          </div>
+        ) : hasLive ? (
+          active && (
+            <AuctionShowcase
+              key={active.id}
+              auction={active}
+              auctionId={active.id}
+              bidIncrement={activeIncrement}
+              outcome={active.outcome}
+            />
+          )
+        ) : (
+          <NoLiveAuction member={isAuthenticated} />
         )}
 
-        <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-          <h2 className="font-display text-2xl font-bold">รายการประมูลอื่นๆ</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            เลือกรายการเพื่อสลับขึ้นไปยังห้องประมูลด้านบนได้ทันที
-          </p>
+        {!live.isLoading && allAuctions.length > 0 && (
+          <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+            <h2 className="font-display text-2xl font-bold">
+              {hasLive ? "รายการประมูลอื่นๆ" : "ผลประมูลรอบที่ผ่านมา"}
+            </h2>
+            {hasLive && (
+              <p className="mt-1 text-sm text-muted-foreground">
+                เลือกรายการเพื่อสลับขึ้นไปยังห้องประมูลด้านบนได้ทันที
+              </p>
+            )}
 
-          <div className="mt-4 flex flex-wrap gap-2">
-            {FILTERS.map((f) => (
-              <button
-                key={f.value}
-                type="button"
-                onClick={() => setFilter(f.value)}
-                aria-pressed={filter === f.value}
-                className={`min-h-10 rounded-full border px-4 text-xs font-semibold transition-colors ${
-                  filter === f.value
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border bg-card text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
-
-          {liveAuctions.length === 0 && (
-            <p className="mt-6 rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground">
-              ยังไม่มีรายการในสถานะนี้
-            </p>
-          )}
-
-          <div className="no-scrollbar -mx-4 mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-4 pt-1 pb-6 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-            {liveAuctions.map((auction) => (
-              <button
-                key={auction.id}
-                type="button"
-                onClick={() => select(auction.id)}
-                aria-pressed={auction.id === active?.id}
-                className={`group flex w-[62%] shrink-0 snap-start flex-col rounded-[18px] bg-card p-2 text-left ring-1 transition-[box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:shadow-card sm:w-[230px] ${
-                  auction.id === active?.id ? "shadow-glow ring-2 ring-primary" : "ring-border/70"
-                }`}
-              >
-                {/* รูป 5:7 เท่าการ์ดจริง + ตัวนับเวลาแผ่นส้มมุมซ้ายบน + ป้ายเกรดมุมขวาล่าง */}
-                <div className="relative aspect-[5/7] overflow-hidden rounded-xl bg-tile">
-                  <SmartImage
-                    src={auction.imageUrl}
-                    alt={`${auction.cardName} — ${auction.grade}`}
-                    transformWidth={500}
-                    className={`object-cover transition-transform duration-500 group-hover:scale-[1.03] ${
-                      auction.outcome.outcome === "live" ? "" : "opacity-60 grayscale-[30%]"
+            <div className="mt-4 flex flex-wrap gap-2">
+              {filters.map((f) => {
+                const count =
+                  f.value === "all"
+                    ? allAuctions.length
+                    : allAuctions.filter((a) => a.outcome.outcome === f.value).length;
+                return (
+                  <button
+                    key={f.value}
+                    type="button"
+                    onClick={() => setFilter(f.value)}
+                    aria-pressed={filter === f.value}
+                    className={`min-h-10 rounded-full border px-4 text-xs font-semibold transition-colors ${
+                      filter === f.value
+                        ? "border-foreground bg-foreground text-background"
+                        : "border-border bg-card text-muted-foreground hover:text-foreground"
                     }`}
-                  />
-                  {auction.outcome.outcome === "live" ? (
-                    <MiniFlipCountdown endTime={auction.endTime} />
-                  ) : (
-                    <span
-                      className={`absolute top-2 left-2 inline-flex max-w-[80%] items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold shadow-[0_6px_18px_-8px_rgba(0,0,0,0.6)] ${AUCTION_OUTCOME_TONE_CLASS[auction.outcome.tone]}`}
-                    >
-                      <span
-                        className={`h-1.5 w-1.5 shrink-0 rounded-full ${AUCTION_OUTCOME_DOT_CLASS[auction.outcome.tone]}`}
-                      />
-                      <span className="truncate">{auction.outcome.label}</span>
-                    </span>
-                  )}
-                  <GradeBadge
-                    grade={auction.grade}
-                    company={auction.gradingCompany}
-                    condition={auction.conditionNote}
-                  />
-                </div>
+                  >
+                    {f.label} {count}
+                  </button>
+                );
+              })}
+            </div>
 
-                <div className="flex flex-col px-1.5 pt-2.5 pb-1">
-                  <p className="truncate text-xs text-muted-foreground">
-                    {auction.setName !== "-" ? auction.setName : "\u00a0"}
-                  </p>
-                  <h3 className="mt-0.5 truncate text-[15px] font-semibold group-hover:text-primary">
-                    {auction.cardName}
-                  </h3>
-                  <p className="mt-1.5 text-[11px] text-muted-foreground">ราคาปัจจุบัน</p>
-                  <p className="truncate font-display text-lg leading-tight font-bold">
-                    {thb.format(auction.currentBid)}
-                  </p>
-                  <p className="mt-0.5 flex h-4 items-center truncate text-[11px] text-muted-foreground">
-                    {auction.bidCount > 0 ? `${auction.bidCount} บิด` : "ยังไม่มีผู้เสนอราคา"}
-                    {auction.outcome.outcome === "live" &&
-                      "bidIncrement" in auction &&
-                      ` · ขั้นต่ำถัดไป ${thb.format(
-                        auction.bidCount === 0
-                          ? auction.currentBid
-                          : auction.currentBid + (auction as LiveAuction).bidIncrement,
-                      )}`}
-                  </p>
-                </div>
-              </button>
-            ))}
-          </div>
-        </section>
+            <div
+              className={
+                hasLive
+                  ? "no-scrollbar -mx-4 mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-4 pt-1 pb-6 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
+                  : "mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4"
+              }
+            >
+              {liveAuctions.map((auction) => (
+                <AuctionTile
+                  key={auction.id}
+                  auction={auction}
+                  selected={auction.id === active?.id}
+                  inRow={hasLive}
+                  onSelect={() => select(auction)}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ไม่มีรอบเปิดและไม่มีผลเก่าให้ดู (เช่น ยังไม่ล็อกอิน) → พาไปดูการ์ดที่ขายอยู่จริงแทนหน้าว่าง */}
+        {!live.isLoading && !hasLive && allAuctions.length === 0 && (marketCards?.length ?? 0) > 0 && (
+          <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+            <div className="mb-4 flex items-end justify-between gap-4">
+              <h2 className="font-display text-2xl font-bold">การ์ดที่ขายอยู่ในตลาดตอนนี้</h2>
+              <Link to="/marketplace" className="text-sm font-semibold text-primary hover:underline">
+                ดูทั้งหมด
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 lg:gap-5">
+              {(marketCards ?? [])
+                .filter((c) => c.status !== "sold")
+                .slice(0, 4)
+                .map((item) => (
+                  <ProductGridCard key={item.id} product={item} />
+                ))}
+            </div>
+          </section>
+        )}
       </main>
       <SiteFooter />
     </div>
+  );
+}
+
+function AuctionTile({
+  auction,
+  selected,
+  inRow,
+  onSelect,
+}: {
+  auction: AuctionWithOutcome;
+  selected: boolean;
+  inRow: boolean;
+  onSelect: () => void;
+}) {
+  const isLive = auction.outcome.outcome === "live";
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-pressed={inRow ? selected : undefined}
+      className={`group flex flex-col rounded-[18px] bg-card p-2 text-left ring-1 transition-shadow duration-200 hover:shadow-card ${
+        inRow ? "w-[62%] shrink-0 snap-start sm:w-[230px]" : "w-full"
+      } ${selected ? "ring-2 ring-primary" : "ring-border/70"}`}
+    >
+      {/* รูป 5:7 เท่าการ์ดจริง + ตัวนับเวลาแผ่นส้ม/ป้ายผลมุมซ้ายบน + ป้ายเกรดมุมขวาล่าง */}
+      <div className="relative aspect-[5/7] overflow-hidden rounded-xl bg-tile">
+        <SmartImage
+          src={auction.imageUrl}
+          alt={`${auction.cardName} ${auction.grade}`}
+          transformWidth={500}
+          className={`object-cover transition-transform duration-500 group-hover:scale-[1.03] ${
+            isLive ? "" : auction.outcome.tone === "muted" ? "opacity-60 grayscale-[40%]" : ""
+          }`}
+        />
+        {isLive ? (
+          <MiniFlipCountdown endTime={auction.endTime} />
+        ) : (
+          <span
+            className={`absolute top-2 left-2 inline-flex max-w-[80%] items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold shadow-[0_6px_18px_-8px_rgba(0,0,0,0.6)] ${AUCTION_OUTCOME_TONE_CLASS[auction.outcome.tone]}`}
+          >
+            <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${AUCTION_OUTCOME_DOT_CLASS[auction.outcome.tone]}`} />
+            <span className="truncate">{auction.outcome.label}</span>
+          </span>
+        )}
+        <GradeBadge grade={auction.grade} company={auction.gradingCompany} condition={auction.conditionNote} />
+      </div>
+
+      <div className="flex flex-col px-1.5 pt-2.5 pb-1">
+        <p className="truncate text-xs text-muted-foreground">
+          {auction.setName !== "-" ? auction.setName : "\u00a0"}
+        </p>
+        <h3 className="mt-0.5 truncate text-[15px] font-semibold group-hover:text-primary">{auction.cardName}</h3>
+        <p className="mt-1.5 text-[11px] text-muted-foreground">{isLive ? "ราคาปัจจุบัน" : "ราคาปิด"}</p>
+        <p className="truncate font-display text-lg leading-tight font-bold">{thb.format(auction.currentBid)}</p>
+        <p className="mt-0.5 flex h-4 items-center truncate text-[11px] text-muted-foreground">
+          {auction.bidCount > 0 ? `${auction.bidCount} บิด` : "ยังไม่มีผู้เสนอราคา"}
+          {isLive &&
+            "bidIncrement" in auction &&
+            ` · ขั้นต่ำถัดไป ${thb.format(
+              auction.bidCount === 0 ? auction.currentBid : auction.currentBid + (auction as LiveAuction).bidIncrement,
+            )}`}
+          {!isLive &&
+            ` · ปิด ${new Date(auction.endTime).toLocaleDateString("th-TH", { day: "numeric", month: "short" })}`}
+        </p>
+      </div>
+    </button>
   );
 }

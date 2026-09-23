@@ -300,6 +300,7 @@ export function useUpdateCardImages() {
 export function useCreateCard() {
   const queryClient = useQueryClient();
   const { userId } = useIsAdmin();
+  const flushPush = useServerFn(flushPendingPush);
 
   return useMutation({
     mutationFn: async (input: NewCardInput) => {
@@ -352,6 +353,8 @@ export function useCreateCard() {
           status: "active",
         });
         if (aErr) throw new Error(aErr.message);
+        // ส่ง push "เปิดประมูลใหม่แล้ว" ที่ trigger ในฐานข้อมูลเพิ่งสร้างไว้ ทันทีไม่ต้องรอตัวตั้งเวลา
+        void flushPush().catch(() => undefined);
       }
 
       return card.id as string;
@@ -372,6 +375,7 @@ export function useCreateCard() {
  */
 export function useUpdateCardListing() {
   const queryClient = useQueryClient();
+  const flushPush = useServerFn(flushPendingPush);
   return useMutation({
     mutationFn: async (input: {
       cardId: string;
@@ -395,6 +399,8 @@ export function useUpdateCardListing() {
 
       const { data, error } = await supabase.rpc("update_card_listing", args);
       if (error) throw new Error(error.message);
+      // เปิดประมูลจากฉบับร่าง → ส่ง push แจ้งสมาชิกทันที
+      if (args._auction_end_time) void flushPush().catch(() => undefined);
       return data;
     },
     onSuccess: (_d, input) => {
@@ -430,6 +436,7 @@ export function useUpdateAuctionEndTime() {
 export function useRelistAuction() {
   const queryClient = useQueryClient();
   const sweep = useServerFn(processAuctions);
+  const flushPush = useServerFn(flushPendingPush);
   return useMutation({
     mutationFn: async ({ auctionId, endTime }: { auctionId: string; endTime: string }) => {
       // ยกเลิกรายการที่เลยกำหนดชำระก่อน เพื่อไม่ให้ระบบมาปิดรอบใหม่ที่เพิ่งเปิด
@@ -440,6 +447,7 @@ export function useRelistAuction() {
         _end_time: new Date(endTime).toISOString(),
       });
       if (error) throw new Error(error.message);
+      void flushPush().catch(() => undefined);
       return true;
     },
     onSuccess: () => {

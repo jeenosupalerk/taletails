@@ -254,7 +254,7 @@ export function AuctionShowcase({
                       </div>
                       <div>
                         <dt className="text-muted-foreground">ปี</dt>
-                        <dd className="font-semibold tabular-nums">{auction.year}</dd>
+                        <dd className="font-semibold tabular-nums">{auction.year ?? "-"}</dd>
                       </div>
                       <div>
                         <dt className="text-muted-foreground">Grading Company</dt>
