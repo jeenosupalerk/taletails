@@ -603,7 +603,13 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                     variant="secondary"
                     className="min-h-10 flex-1 rounded-xl px-3 text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:flex-none"
                   >
-                    <Link to="/card/$id" params={{ id: c.id }} data-action="view" title="ดูหน้าขาย (V)">
+                    {/* เปิดหน้าเดียวกับที่ลูกค้าเห็น: ขายราคาตายตัว = /product, ประมูล = /card */}
+                    <Link
+                      to={c.sale_type === "fixed_price" ? "/product/$id" : "/card/$id"}
+                      params={{ id: c.id }}
+                      data-action="view"
+                      title="ดูหน้าขาย (V)"
+                    >
                       ดูหน้าขาย
                     </Link>
                   </Button>

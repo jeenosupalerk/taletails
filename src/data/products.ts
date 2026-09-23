@@ -28,7 +28,7 @@ export interface Product {
   cardNo: string;
   language: string;
   rarity: string;
-  year: number;
+  year: number | null;
   grade: string;
   gradingCompany: string;
   certificationNo: string;

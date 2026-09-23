@@ -110,13 +110,14 @@ export function ZoomableImage({
 
   return (
     <>
-      <div className={cn("relative h-full w-full", wrapperClassName)}>
+      {/* group/zoom: ชี้เมาส์บนรูปแล้วปุ่มแว่นขยายเด่นขึ้น + บอกว่ากดรูปดูเต็มจอได้ (เฉพาะอุปกรณ์ที่มีเมาส์) */}
+      <div className={cn("group/zoom relative h-full w-full", wrapperClassName)}>
         <div
           ref={ref}
           data-zooming={zoomMode ? "true" : undefined}
           className={cn(
             "relative h-full w-full",
-            zoomMode ? "cursor-crosshair touch-none" : "cursor-pointer touch-manipulation",
+            zoomMode ? "cursor-crosshair touch-none" : "cursor-zoom-in touch-manipulation",
           )}
           onMouseMove={(e) => {
             if (zoomMode) point(e.clientX, e.clientY);
@@ -183,15 +184,22 @@ export function ZoomableImage({
           aria-label={zoomMode ? "ปิดแว่นขยาย" : "เปิดแว่นขยาย"}
           title={zoomMode ? "ปิดแว่นขยาย" : "แว่นขยาย: ชี้หรือแตะบนรูปเพื่อซูม"}
           className={cn(
-            "absolute z-20 flex h-10 w-10 items-center justify-center rounded-full shadow-md ring-1 transition-[background-color,color,transform] duration-150 active:scale-90",
+            "absolute z-20 flex h-10 min-w-10 items-center justify-center gap-1.5 rounded-full shadow-md ring-1 transition-[background-color,color,padding,transform] duration-150 active:scale-90",
             zoomMode
               ? "bg-primary text-primary-foreground ring-primary"
-              : "bg-card/90 text-foreground ring-border/70 backdrop-blur hover:text-primary",
+              : "bg-card/90 text-foreground ring-border/70 backdrop-blur group-hover/zoom:bg-primary group-hover/zoom:px-3 group-hover/zoom:text-primary-foreground group-hover/zoom:ring-primary",
             zoomButtonClassName ?? "right-3 bottom-3",
           )}
         >
           {zoomMode ? <ZoomOut className="h-[18px] w-[18px]" /> : <ZoomIn className="h-[18px] w-[18px]" />}
+          {!zoomMode && <span className="hidden text-xs font-semibold group-hover/zoom:inline">ซูม</span>}
         </button>
+
+        {!zoomMode && (
+          <span aria-hidden className="pointer-events-none absolute bottom-3 left-1/2 z-20 -translate-x-1/2 rounded-full bg-foreground/75 px-3 py-1 text-[11px] font-medium whitespace-nowrap text-background opacity-0 transition-opacity duration-150 group-hover/zoom:opacity-100">
+            กดรูปเพื่อดูเต็มจอ
+          </span>
+        )}
 
         {zoomMode && !lens && (
           <span className="pointer-events-none absolute bottom-3 left-1/2 z-20 -translate-x-1/2 rounded-full bg-foreground/80 px-3 py-1 text-[11px] font-medium whitespace-nowrap text-background">

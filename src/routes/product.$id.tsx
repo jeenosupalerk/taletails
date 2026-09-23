@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { LogoLoader } from "@/components/ui/logo-loader";
-import { BadgeCheck, ChevronRight, Heart, Loader2, ShieldCheck, ShoppingBag, Star, Truck } from "lucide-react";
+import { BadgeCheck, ChevronRight, Heart, Loader2, Lock, QrCode, ShoppingBag, Star, Truck } from "lucide-react";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
@@ -55,6 +55,14 @@ export const Route = createFileRoute("/product/$id")({
   component: ProductPage,
 });
 
+/** สิ่งที่ผู้ซื้อได้รับจริงจากระบบ (ล็อกการ์ดตอนกดซื้อ, เลขพัสดุ, QR PromptPay ภายใน payment_due_at 24 ชม.) */
+const TRUST_POINTS = [
+  // หัวข้อสั้นพอให้อยู่บรรทัดเดียวในคอลัมน์แคบ รายละเอียดตัดบรรทัดได้
+  { icon: Lock, title: "กันซื้อซ้อน", detail: "ล็อกการ์ดทันทีที่กดซื้อ" },
+  { icon: Truck, title: "มีเลขพัสดุ", detail: "ติดตามได้ทุกขั้น" },
+  { icon: QrCode, title: "จ่ายผ่าน QR", detail: "PromptPay ภายใน 24 ชม." },
+] as const;
+
 function Stars({ rating }: { rating: number }) {
   return (
     <span className="flex items-center gap-0.5">
@@ -99,7 +107,14 @@ function ProductPage() {
     void navigate({ to: "/checkout/$id", params: { id: pendingOrderId }, replace: true });
   }, [pendingOrderId, navigate]);
 
-  if (pendingOrderId || (!demo && liveQuery.isLoading)) {
+  // หน้านี้สำหรับการ์ดขายราคาตายตัว — ลิงก์เก่า/ที่แชร์มาของการ์ดประมูลให้เด้งไปหน้าประมูล /card
+  const isAuctionCard = live?.saleType === "auction";
+  useEffect(() => {
+    if (!isAuctionCard) return;
+    void navigate({ to: "/card/$id", params: { id }, replace: true });
+  }, [isAuctionCard, id, navigate]);
+
+  if (pendingOrderId || isAuctionCard || (!demo && liveQuery.isLoading)) {
     return (
       <PageShell
         eyebrow="ตลาดซื้อขาย"
@@ -240,7 +255,7 @@ function ProductPage() {
       onClick={toggleWish}
       aria-label={wished ? "นำออกจากรายการที่อยากได้" : "เพิ่มลงรายการที่อยากได้"}
       aria-pressed={wished}
-      className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-card ring-1 ring-border transition-colors hover:text-primary"
+      className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-card ring-1 ring-border transition-colors hover:bg-secondary hover:ring-primary/40"
     >
       <Heart className={`h-5 w-5 ${wished ? "fill-primary text-primary" : "text-muted-foreground"}`} />
     </button>
@@ -250,17 +265,19 @@ function ProductPage() {
       variant="outline"
       onClick={addToCart}
       disabled={disabled}
-      className="min-h-12 flex-1 rounded-xl font-semibold"
+      aria-label="เพิ่มลงตะกร้า"
+      // outline ปกติ hover เป็นสีเขียวอมฟ้า (accent) → ใช้พื้นครีม + ขอบส้มให้เข้ากับปุ่มซื้อ
+      className="min-h-12 shrink-0 rounded-xl border-border bg-card px-4 font-semibold hover:border-primary/40 hover:bg-secondary hover:text-foreground lg:flex-1"
     >
       <ShoppingBag className="h-4 w-4" />
-      เพิ่มลงตะกร้า
+      <span className="hidden lg:inline">เพิ่มลงตะกร้า</span>
     </Button>
   );
   const buyButton = (
     <Button
       onClick={buyLive}
       disabled={buyNow.isPending || disabled}
-      className="min-h-12 flex-1 rounded-xl bg-gradient-ember font-semibold text-primary-foreground shadow-glow hover:opacity-90"
+      className="min-h-12 flex-1 rounded-xl text-base font-semibold hover:bg-primary hover:brightness-95 active:brightness-90"
     >
       {buyNow.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
       {buyLabel}
@@ -273,6 +290,7 @@ function ProductPage() {
       <main className="mx-auto max-w-6xl px-4 pt-4 pb-8 sm:px-6 lg:px-8 lg:pt-8 lg:pb-16">
         <nav aria-label="breadcrumb" className="mb-4 flex items-center gap-2 text-xs text-muted-foreground lg:mb-6">
           <BackButton className="lg:hidden" />
+          <div className="ml-auto lg:hidden">{wishButton}</div>
           <span className="hidden items-center gap-1.5 lg:flex">
             <Link to="/marketplace" className="hover:text-foreground">
               ตลาดซื้อขาย
@@ -295,9 +313,6 @@ function ProductPage() {
               images={product.images}
               alt={`${product.cardName} ${gradeText}`}
               status={soldOut ? "sold" : pendingPayment ? "locked" : "available"}
-              grade={product.grade}
-              gradingCompany={product.gradingCompany}
-              condition={product.conditionNote}
               dimmed={soldOut}
             />
           </div>
@@ -311,61 +326,73 @@ function ProductPage() {
               {product.cardName}
             </h1>
 
-            <div className="mt-3 flex flex-wrap gap-1.5 text-xs">
+            <div className="mt-3 flex flex-wrap gap-1.5 text-xs font-medium">
+              {/* ชิปเกรด/สภาพสีเข้มเด่นสุด — แทนป้ายที่เคยทับอยู่บนรูป */}
               {gradeText && (
-                <span className="rounded-full bg-card px-2.5 py-1 font-semibold ring-1 ring-border">{gradeText}</span>
+                <span className="rounded-full bg-foreground px-3 py-1 font-semibold text-background">{gradeText}</span>
               )}
               {product.isVerified && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-card px-2.5 py-1 font-semibold text-accent ring-1 ring-border">
+                <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-3 py-1 font-semibold text-accent">
                   <BadgeCheck className="h-3.5 w-3.5" /> ตรวจสอบแล้ว
                 </span>
               )}
               {clean(product.language) && (
-                <span className="rounded-full bg-card px-2.5 py-1 ring-1 ring-border">{product.language}</span>
+                <span className="rounded-full bg-secondary px-3 py-1">ภาษา{product.language}</span>
               )}
-              {clean(product.rarity) && (
-                <span className="rounded-full bg-card px-2.5 py-1 ring-1 ring-border">{product.rarity}</span>
-              )}
+              {clean(product.rarity) && <span className="rounded-full bg-secondary px-3 py-1">{product.rarity}</span>}
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1">
-              <p className={`font-display text-3xl font-bold tracking-tight tabular-nums ${soldOut ? "text-muted-foreground" : ""}`}>
-                {thb.format(product.price)}
-              </p>
-              <MarketDiffChip diff={diff} className="text-xs" />
-              {stockLeft !== null && !notOnSale && (
-                <span className={`text-xs font-semibold ${stockLeft > 0 && stockLeft <= 3 ? "text-primary" : stockLeft === 0 ? "text-destructive" : "text-muted-foreground"}`}>
-                  {stockLeft > 0 ? `เหลือ ${stockLeft} ชิ้น` : "สินค้าหมด"}
-                </span>
-              )}
-            </div>
-            {market?.marketPrice ? (
-              <p className="mt-1 text-xs text-muted-foreground">
-                ราคาตลาด {thb.format(market.marketPrice)} (เฉลี่ย 3 ครั้งล่าสุด) ·{" "}
-                <Link to="/market/$id" params={{ id: market.id }} className="font-semibold text-primary hover:underline">
-                  ดูสถิติราคา
-                </Link>
-              </p>
-            ) : null}
+            {/* ราคา + ปุ่มซื้อ + สิ่งที่ผู้ซื้อได้รับ รวมในกล่องเดียว */}
+            <section className="mt-5 rounded-2xl bg-card p-4 ring-1 ring-border sm:p-5">
+              <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
+                <div>
+                  <p className="text-xs text-muted-foreground">ราคา</p>
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <p className={`font-display text-3xl leading-none font-bold tracking-tight tabular-nums sm:text-4xl ${soldOut ? "text-muted-foreground" : ""}`}>
+                      {thb.format(product.price)}
+                    </p>
+                    <MarketDiffChip diff={diff} className="text-xs" />
+                  </div>
+                </div>
+                <div className="flex flex-col items-end gap-1 text-xs">
+                  {stockLeft !== null && !notOnSale && (
+                    <span className={`font-semibold ${stockLeft > 0 && stockLeft <= 3 ? "text-primary" : stockLeft === 0 ? "text-destructive" : "text-muted-foreground"}`}>
+                      {stockLeft > 0 ? `เหลือ ${stockLeft} ชิ้น` : "สินค้าหมด"}
+                    </span>
+                  )}
+                  {market?.marketPrice ? (
+                    <Link to="/market/$id" params={{ id: market.id }} className="font-semibold text-primary hover:underline">
+                      ราคากลาง {thb.format(market.marketPrice)}
+                    </Link>
+                  ) : null}
+                </div>
+              </div>
 
-            {/* ปุ่มซื้อ (เดสก์ท็อป) — มือถือใช้แถบล่าง */}
-            <div className="mt-5 hidden items-center gap-3 lg:flex">
-              {buyButton}
-              {cartButton}
-              {wishButton}
-            </div>
-            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
-              <span className="inline-flex items-center gap-1">
-                <ShieldCheck className="h-3.5 w-3.5" /> ระบบกันซื้อซ้อน
-              </span>
-              <span className="inline-flex items-center gap-1">
-                <Truck className="h-3.5 w-3.5" /> จัดส่งพร้อมเลขพัสดุ
-              </span>
-            </div>
+              {/* ปุ่มซื้อ (เดสก์ท็อป) — มือถือใช้แถบล่าง */}
+              <div className="mt-4 hidden items-center gap-2.5 lg:flex">
+                {buyButton}
+                {cartButton}
+                {wishButton}
+              </div>
+
+              <ul className="mt-4 grid gap-3 border-t border-border/70 pt-4 text-[13px] leading-snug sm:grid-cols-3">
+                {TRUST_POINTS.map(({ icon: Icon, title, detail }) => (
+                  <li key={title} className="flex items-start gap-2.5">
+                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-secondary text-primary">
+                      <Icon className="h-4 w-4" />
+                    </span>
+                    <span>
+                      <span className="block font-semibold">{title}</span>
+                      <span className="text-muted-foreground">{detail}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
 
             {/* ร้านค้า */}
-            <div className="mt-5 flex items-center gap-3 rounded-2xl bg-card p-3 ring-1 ring-border">
-              <img src="/taletails-logo.jpg" alt="" className="h-10 w-10 rounded-full object-cover" />
+            <div className="mt-4 flex items-center gap-3 rounded-2xl bg-card p-4 ring-1 ring-border">
+              <img src="/taletails-logo.jpg" alt="" className="h-11 w-11 rounded-full object-cover" />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold">{product.storeName}</p>
                 <p className="text-xs text-muted-foreground">
@@ -374,13 +401,13 @@ function ProductPage() {
               </div>
             </div>
 
-            {/* ข้อมูลการ์ด */}
+            {/* ข้อมูลการ์ด — แสดงเฉพาะช่องที่มีข้อมูลจริง */}
             {specs.length > 0 && (
-              <dl className="mt-4 grid grid-cols-2 gap-x-4 rounded-2xl bg-card p-4 ring-1 ring-border sm:grid-cols-3">
+              <dl className="mt-4 grid gap-x-8 gap-y-3 rounded-2xl bg-card p-4 text-sm ring-1 ring-border sm:grid-cols-2 sm:px-5">
                 {specs.map((s) => (
-                  <div key={s.label} className="border-b border-border/70 py-2.5 [&:nth-last-child(-n+2)]:border-0 sm:[&:nth-last-child(-n+3)]:border-0">
-                    <dt className="text-[11px] text-muted-foreground">{s.label}</dt>
-                    <dd className="mt-0.5 text-sm font-semibold break-words">{s.value}</dd>
+                  <div key={s.label} className="flex items-baseline justify-between gap-4">
+                    <dt className="shrink-0 text-muted-foreground">{s.label}</dt>
+                    <dd className="text-right font-semibold break-words">{s.value}</dd>
                   </div>
                 ))}
               </dl>
@@ -457,7 +484,12 @@ function ProductPage() {
       {/* แถบซื้อด้านล่าง (มือถือ) — เมนูล่างของเว็บถูกซ่อนในหน้านี้ จึงเหลือแถบเดียว */}
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur lg:hidden">
         <div className="mx-auto flex max-w-xl items-center gap-2.5">
-          {wishButton}
+          <div className="mr-1 min-w-0">
+            <p className="truncate font-display text-xl leading-tight font-bold tabular-nums">{thb.format(product.price)}</p>
+            {stockLeft !== null && stockLeft > 0 && !notOnSale && (
+              <p className="text-[11px] font-semibold text-primary">เหลือ {stockLeft} ชิ้น</p>
+            )}
+          </div>
           {cartButton}
           {buyButton}
         </div>

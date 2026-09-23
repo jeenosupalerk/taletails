@@ -160,7 +160,15 @@ function CardDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isWinner, auction?.id]);
 
-  if (cardQuery.isLoading || pendingOrderId) {
+  // หน้านี้คือหน้าประมูล — การ์ดขายราคาตายตัวมีหน้าของตัวเองที่ /product (มีตะกร้า ถูกใจ ราคากลาง)
+  // ลิงก์เก่า/ปุ่มในหลังร้าน/ลิงก์ที่แชร์มาจึงถูกส่งต่อไปที่นั่น ลูกค้าจะได้เห็นหน้าเดียวกันเสมอ
+  const isFixedPrice = card?.sale_type === "fixed_price";
+  useEffect(() => {
+    if (!isFixedPrice) return;
+    void navigate({ to: "/product/$id", params: { id }, replace: true });
+  }, [isFixedPrice, id, navigate]);
+
+  if (cardQuery.isLoading || pendingOrderId || isFixedPrice) {
     return (
       <Shell>
         <div className="flex h-64 items-center justify-center text-muted-foreground">
@@ -235,11 +243,10 @@ function CardDetailPage() {
           <CardGallery
             images={images}
             alt={`${card.name} ${card.grade ?? ""}`}
-            liveAuction={isAuction && !closed}
+            // ผู้ที่ยังไม่ล็อกอินอ่านได้เฉพาะรอบที่ status = active (RLS) — อ่านรอบไม่ได้ = รอบปิดไปแล้ว
+            // ห้ามขึ้นป้าย "กำลังประมูล" ในกรณีนั้น
+            liveAuction={isAuction && Boolean(auction) && !closed}
             status={card.status}
-            grade={card.grade}
-            gradingCompany={card.grading_company}
-            condition={card.condition}
           />
 
           {/* Detail */}
@@ -253,7 +260,7 @@ function CardDetailPage() {
 
             <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
               {card.grade && (
-                <span className="rounded-full border border-border px-3 py-1 font-medium">
+                <span className="rounded-full bg-foreground px-3 py-1 font-semibold text-background">
                   {card.grading_company ? `${card.grading_company} ` : ""}
                   {card.grade}
                 </span>
@@ -439,13 +446,20 @@ function CardDetailPage() {
               <h2 className="mb-2 font-display text-sm tracking-[0.16em] uppercase">
                 ข้อมูลการ์ด
               </h2>
-              <Spec label="ชุด" value={card.set_name ?? "-"} />
-              <Spec label="หมายเลขการ์ด" value={card.card_no ?? "-"} />
-              <Spec label="ภาษา" value={card.language ?? "-"} />
-              <Spec label="ปี" value={card.year ? String(card.year) : "-"} />
-              <Spec label="สภาพ" value={card.condition ?? "-"} />
-              <Spec label="สถาบันเกรด" value={card.grading_company ?? "-"} />
-              <Spec label="เลขใบรับรอง" value={card.certification_no ?? "-"} />
+              {[
+                { label: "ชุด", value: card.set_name },
+                { label: "หมายเลขการ์ด", value: card.card_no },
+                { label: "ภาษา", value: card.language },
+                { label: "ปี", value: card.year ? String(card.year) : null },
+                { label: "สภาพ", value: card.condition },
+                { label: "สถาบันเกรด", value: card.grading_company },
+                { label: "เลขใบรับรอง", value: card.certification_no },
+              ]
+                // แถวที่ว่างทำให้หน้าดูเหมือนยังกรอกไม่เสร็จ → ซ่อนไปเลย
+                .filter((row): row is { label: string; value: string } => Boolean(row.value?.trim()))
+                .map((row) => (
+                  <Spec key={row.label} label={row.label} value={row.value} />
+                ))}
               <div className="flex items-center justify-between gap-6 border-b border-border/60 py-3 last:border-0">
                 <dt className="text-[13px] tracking-wide text-muted-foreground">ผู้ขาย</dt>
                 <dd className="flex min-w-0 items-center gap-2">
@@ -527,7 +541,7 @@ function CardDetailPage() {
             </div>
             {isAuction ? (
               <Button
-                className="min-h-12 flex-1 rounded-xl bg-gradient-ember font-semibold text-primary-foreground hover:opacity-90"
+                className="min-h-12 flex-1 rounded-xl font-semibold hover:bg-primary hover:brightness-95 active:brightness-90"
                 onClick={() => {
                   document.getElementById("bid-form")?.scrollIntoView({ behavior: "smooth", block: "center" });
                   window.setTimeout(() => document.getElementById("bid-amount")?.focus({ preventScroll: true }), 350);
@@ -544,7 +558,7 @@ function CardDetailPage() {
                 onConfirm={submitBuyNow}
                 trigger={
                   <Button
-                    className="min-h-12 flex-1 rounded-xl bg-gradient-ember font-semibold text-primary-foreground hover:opacity-90"
+                    className="min-h-12 flex-1 rounded-xl font-semibold hover:bg-primary hover:brightness-95 active:brightness-90"
                     disabled={buyNow.isPending}
                   >
                     {buyNow.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingBag className="h-4 w-4" />}

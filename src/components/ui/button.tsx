@@ -4,8 +4,9 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
+// ไม่ให้ปุ่มลอยขึ้นตอน hover — เว็บซื้อขายของราคาสูงควรรู้สึกนิ่งและมั่นคง ใช้สีเข้มขึ้นแทน
 const buttonVariants = cva(
-  "inline-flex flex-wrap items-center justify-center gap-2 rounded-md text-center text-sm break-words font-medium cursor-pointer transition-[colors,transform,box-shadow] duration-150 ease-out hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.96] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex flex-wrap items-center justify-center gap-2 rounded-md text-center text-sm break-words font-medium cursor-pointer transition-[color,background-color,border-color,filter,transform,box-shadow] duration-150 ease-out active:scale-[0.98] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {

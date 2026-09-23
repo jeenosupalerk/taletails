@@ -57,7 +57,8 @@ export function cardRowToProduct(row: CardRow, sellerName = "Taletails Store"): 
     cardNo: row.card_no ?? "-",
     language: row.language ?? "-",
     rarity: row.rarity ?? "-",
-    year: row.year ?? new Date().getFullYear(),
+    // ไม่เติมปีปัจจุบันแทนค่าว่าง — เคยทำให้การ์ดที่ไม่ได้กรอกปีขึ้นว่า "ปี 2026" ซึ่งเป็นข้อมูลปลอม
+    year: row.year ?? null,
     grade: row.grade ?? "-",
     gradingCompany: row.grading_company ?? "-",
     certificationNo: row.certification_no ?? "-",

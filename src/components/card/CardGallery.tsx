@@ -1,7 +1,6 @@
 import { Lock, Radio } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import { GradeBadge } from "@/components/card/CardBits";
 import { SmartImage } from "@/components/ui/smart-image";
 import { ZoomableImage } from "@/components/ui/image-zoom";
 import { cn } from "@/lib/utils";
@@ -13,9 +12,6 @@ export interface CardGalleryProps {
   liveAuction?: boolean | undefined;
   /** สถานะการ์ด — ขายแล้ว/ถูกจองจะมีป้ายมุมขวาบน */
   status?: "available" | "locked" | "sold" | undefined;
-  grade?: string | null | undefined;
-  gradingCompany?: string | null | undefined;
-  condition?: string | null | undefined;
   /** ทำให้รูปจางลง (เช่น ขายแล้ว) */
   dimmed?: boolean | undefined;
 }
@@ -30,9 +26,6 @@ export function CardGallery({
   alt,
   liveAuction,
   status = "available",
-  grade,
-  gradingCompany,
-  condition,
   dimmed,
 }: CardGalleryProps) {
   const [active, setActive] = useState(0);
@@ -108,7 +101,8 @@ export function CardGallery({
                 "absolute inset-0 transition-opacity duration-300 ease-out",
                 i === active ? "opacity-100" : "pointer-events-none opacity-0",
               )}
-              className={cn("object-contain p-3 sm:p-5", dimmed && "opacity-50")}
+              // ไม่เว้นขอบใน และใช้ contain ไม่ใช่ cover — รูปเต็มกรอบแต่ไม่ครอปขอบการ์ด (ผู้ซื้อต้องเห็นมุม/ขอบครบ)
+              className={cn("object-contain", dimmed && "opacity-50")}
             />
           ))}
 
@@ -130,7 +124,6 @@ export function CardGallery({
               {status === "sold" ? "ขายแล้ว" : "รอชำระเงิน"}
             </span>
           )}
-          <GradeBadge grade={grade} company={gradingCompany} condition={condition} className="z-20 right-3 bottom-3" />
 
           {/* จุดบอกตำแหน่ง (มือถือ) */}
           {many && (

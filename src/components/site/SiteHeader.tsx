@@ -101,17 +101,15 @@ export function SiteHeader() {
             </Link>
           </Button>
           {isAuthenticated && user ? (
-            <Button
-              asChild
-              variant="ghost"
-              size="icon"
+            // ไม่ใช้ Button size="icon" เพราะมี padding + min-h ในตัว ทำให้ปุ่มเป็น 44×52 และพื้น hover เป็นวงรี
+            // ล็อกเป็นวงกลม 40×40 รูปเต็มปุ่ม แล้วใช้วงแหวนส้มแทนพื้นหลังตอน hover/focus
+            <Link
+              to="/profile"
               aria-label="บัญชีของฉัน"
-              className="hidden min-h-10 w-10 rounded-full md:inline-flex"
+              className="hidden h-10 w-10 shrink-0 rounded-full ring-offset-2 ring-offset-card transition-shadow duration-150 hover:ring-2 hover:ring-primary/60 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none md:inline-flex"
             >
-              <Link to="/profile">
-                <UserAvatar name={user.name} src={user.avatarUrl} className="h-9 w-9" />
-              </Link>
-            </Button>
+              <UserAvatar name={user.name} src={user.avatarUrl} className="h-10 w-10" />
+            </Link>
           ) : (
             <Button
               asChild
