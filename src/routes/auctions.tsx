@@ -1,13 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Gavel } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { AuctionShowcase } from "@/components/sections/AuctionShowcase";
-import { CountdownBadge } from "@/components/site/CountdownBadge";
+import { GradeBadge, MiniFlipCountdown } from "@/components/card/CardBits";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { BackButton } from "@/components/site/BackButton";
 import { SiteHeader } from "@/components/site/SiteHeader";
-import { Button } from "@/components/ui/button";
 import { getLiveAuctions, type Auction } from "@/data/auctions";
 import { useLiveAuctions, type LiveAuction } from "@/hooks/useLiveAuctions";
 import { thb } from "@/lib/cart";
@@ -198,72 +196,60 @@ function AuctionsPage() {
                 type="button"
                 onClick={() => select(auction.id)}
                 aria-pressed={auction.id === active?.id}
-                className={`group w-[78%] shrink-0 snap-start overflow-hidden rounded-3xl border bg-card text-left shadow-[0_16px_40px_-24px_hsl(var(--foreground)/0.35)] transition-all duration-300 hover:-translate-y-1 hover:shadow-glow sm:w-[300px] ${
-                  auction.id === active?.id ? "border-primary shadow-glow" : "border-border"
+                className={`group flex w-[62%] shrink-0 snap-start flex-col rounded-[18px] bg-card p-2 text-left ring-1 transition-[box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:shadow-card sm:w-[230px] ${
+                  auction.id === active?.id ? "shadow-glow ring-2 ring-primary" : "ring-border/70"
                 }`}
               >
-                <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-transparent p-3">
+                {/* รูป 5:7 เท่าการ์ดจริง + ตัวนับเวลาแผ่นส้มมุมซ้ายบน + ป้ายเกรดมุมขวาล่าง */}
+                <div className="relative aspect-[5/7] overflow-hidden rounded-xl bg-tile">
                   <SmartImage
                     src={auction.imageUrl}
                     alt={`${auction.cardName} — ${auction.grade}`}
-                    transformWidth={600}
-                    wrapperClassName="p-1"
-                    className="object-contain drop-shadow-xl rounded-lg transition-transform duration-500 group-hover:scale-[1.03]"
+                    transformWidth={500}
+                    className={`object-cover transition-transform duration-500 group-hover:scale-[1.03] ${
+                      auction.outcome.outcome === "live" ? "" : "opacity-60 grayscale-[30%]"
+                    }`}
                   />
-                  <span
-                    className={`absolute top-3 left-3 inline-flex max-w-[70%] items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold shadow-[0_6px_18px_-8px_rgba(0,0,0,0.6)] ${AUCTION_OUTCOME_TONE_CLASS[auction.outcome.tone]}`}
-                  >
+                  {auction.outcome.outcome === "live" ? (
+                    <MiniFlipCountdown endTime={auction.endTime} />
+                  ) : (
                     <span
-                      className={`h-1.5 w-1.5 shrink-0 rounded-full ${AUCTION_OUTCOME_DOT_CLASS[auction.outcome.tone]}`}
-                    />
-                    <span className="truncate">{auction.outcome.label}</span>
-                  </span>
-                  <span className="absolute top-3 right-3 rounded-full border border-accent/40 bg-background/85 px-2.5 py-1 font-display text-[11px] font-bold text-accent">
-                    {auction.grade}
-                  </span>
-                  <div className="absolute right-3 bottom-3 left-3">
-                    {auction.outcome.outcome === "live" ? (
-                      <CountdownBadge endTime={auction.endTime} className="w-full justify-center" />
-                    ) : (
-                      <span className="block w-full truncate rounded-full border border-border bg-background/85 px-3 py-1.5 text-center text-[11px] font-semibold text-muted-foreground">
-                        ปิดประมูลแล้ว
-                      </span>
-                    )}
-                  </div>
+                      className={`absolute top-2 left-2 inline-flex max-w-[80%] items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold shadow-[0_6px_18px_-8px_rgba(0,0,0,0.6)] ${AUCTION_OUTCOME_TONE_CLASS[auction.outcome.tone]}`}
+                    >
+                      <span
+                        className={`h-1.5 w-1.5 shrink-0 rounded-full ${AUCTION_OUTCOME_DOT_CLASS[auction.outcome.tone]}`}
+                      />
+                      <span className="truncate">{auction.outcome.label}</span>
+                    </span>
+                  )}
+                  <GradeBadge
+                    grade={auction.grade}
+                    company={auction.gradingCompany}
+                    condition={auction.conditionNote}
+                  />
                 </div>
 
-                <div className="p-3.5">
-                  <h3 className="truncate font-display text-sm font-semibold group-hover:text-primary">
+                <div className="flex flex-col px-1.5 pt-2.5 pb-1">
+                  <p className="truncate text-xs text-muted-foreground">
+                    {auction.setName !== "-" ? auction.setName : "\u00a0"}
+                  </p>
+                  <h3 className="mt-0.5 truncate text-[15px] font-semibold group-hover:text-primary">
                     {auction.cardName}
                   </h3>
-                  <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
-                    {auction.setName}
+                  <p className="mt-1.5 text-[11px] text-muted-foreground">ราคาปัจจุบัน</p>
+                  <p className="truncate font-display text-lg leading-tight font-bold">
+                    {thb.format(auction.currentBid)}
                   </p>
-
-                  <div className="mt-3 flex items-end justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-[10px] tracking-wide text-muted-foreground">
-                        ราคาปัจจุบัน
-                      </p>
-                      <p className="truncate font-display text-lg leading-tight font-bold text-primary">
-                        {thb.format(auction.currentBid)}
-                      </p>
-                    </div>
-                    <Button
-                      asChild
-                      variant={auction.outcome.outcome === "live" ? "default" : "outline"}
-                      className={`min-h-10 shrink-0 rounded-xl px-4 font-semibold transition-opacity ${
-                        auction.outcome.outcome === "live"
-                          ? "bg-gradient-ember text-primary-foreground shadow-glow hover:opacity-90"
-                          : ""
-                      }`}
-                    >
-                      <span>
-                        <Gavel className="h-4 w-4" />
-                        {auction.outcome.outcome === "live" ? "เสนอราคา" : "ดูรายละเอียด"}
-                      </span>
-                    </Button>
-                  </div>
+                  <p className="mt-0.5 flex h-4 items-center truncate text-[11px] text-muted-foreground">
+                    {auction.bidCount > 0 ? `${auction.bidCount} บิด` : "ยังไม่มีผู้เสนอราคา"}
+                    {auction.outcome.outcome === "live" &&
+                      "bidIncrement" in auction &&
+                      ` · ขั้นต่ำถัดไป ${thb.format(
+                        auction.bidCount === 0
+                          ? auction.currentBid
+                          : auction.currentBid + (auction as LiveAuction).bidIncrement,
+                      )}`}
+                  </p>
                 </div>
               </button>
             ))}

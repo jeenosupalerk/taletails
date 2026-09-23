@@ -42,6 +42,10 @@ export interface Product {
   reviews: ProductReview[];
   /** สถานะการ์ดจริงจากฐานข้อมูล (ถ้ามี) */
   status?: "available" | "locked" | "sold";
+  /** จำนวนสต็อกคงเหลือ (null = การ์ดชิ้นเดียว) */
+  stockQuantity?: number | null;
+  /** false = ฉบับร่าง/ซ่อนจากตลาด ยังไม่เปิดขาย */
+  isPublished?: boolean;
 }
 
 const baseReviews: ProductReview[] = [

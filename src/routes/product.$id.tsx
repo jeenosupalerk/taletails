@@ -1,11 +1,18 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { LogoLoader } from "@/components/ui/logo-loader";
-import { BadgeCheck, ChevronRight, Heart, Loader2, ShoppingBag, Star } from "lucide-react";
-import { useState } from "react";
+import { BadgeCheck, ChevronRight, Heart, Loader2, ShieldCheck, ShoppingBag, Star, Truck } from "lucide-react";
+import { useEffect } from "react";
 import { toast } from "sonner";
 
 import { ProductGridCard } from "@/components/sections/FeaturedMarketplace";
 import { PageShell } from "@/components/site/PageShell";
+import { BackButton } from "@/components/site/BackButton";
+import { SiteFooter } from "@/components/site/SiteFooter";
+import { SiteHeader } from "@/components/site/SiteHeader";
+import { CardGallery } from "@/components/card/CardGallery";
+import { MarketDiffChip } from "@/components/card/CardBits";
+import { useMarketPriceIndex } from "@/hooks/useMarketStats";
+import { diffVsMarket, gradeDisplay } from "@/lib/market-price";
 import {
   Accordion,
   AccordionContent,
@@ -15,14 +22,12 @@ import {
 import { Button } from "@/components/ui/button";
 
 import { getProductById, getRelatedProducts, type Product } from "@/data/products";
-import { useBuyNow } from "@/hooks/useCardDetail";
+import { useBuyNow, useMyPendingOrder } from "@/hooks/useCardDetail";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { useLiveProduct, useMarketplaceCards } from "@/hooks/useSupabaseCatalog";
 import { thb, useCart } from "@/lib/cart";
 import { useWatchlist } from "@/lib/watchlist";
 import { supabase } from "@/integrations/supabase/client";
-import { SmartImage } from "@/components/ui/smart-image";
-import { ZoomableImage } from "@/components/ui/image-zoom";
 
 const SITE_URL = "https://taletails-test.lovable.app";
 
@@ -49,15 +54,6 @@ export const Route = createFileRoute("/product/$id")({
   },
   component: ProductPage,
 });
-
-function SpecRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-start justify-between gap-4 border-b border-border/70 py-2.5 last:border-0">
-      <span className="text-sm text-muted-foreground">{label}</span>
-      <span className="text-right text-sm font-semibold break-words">{value}</span>
-    </div>
-  );
-}
 
 function Stars({ rating }: { rating: number }) {
   return (
@@ -91,11 +87,25 @@ function ProductPage() {
   const navigate = useNavigate();
   const buyNow = useBuyNow();
   const watchlist = useWatchlist();
-  const [active, setActive] = useState(0);
+  const { lookup } = useMarketPriceIndex();
 
-  if (!demo && liveQuery.isLoading) {
+  // ผู้ใช้คนนี้กดดำเนินการชำระเงินสินค้านี้ไว้แล้วแต่ยังไม่จ่าย -> พาไปหน้าชำระเงินรายการเดิมทันที
+  // ใช้ replace เพื่อให้กดย้อนกลับจากหน้าชำระเงินแล้วกลับไปหน้าตลาด ไม่วนกลับมาหน้านี้ซ้ำ
+  const myPending = useMyPendingOrder(demo ? undefined : id);
+  const pendingOrderId = myPending.data?.id ?? null;
+  useEffect(() => {
+    if (!pendingOrderId) return;
+    toast.info("คุณมีคำสั่งซื้อที่รอชำระสำหรับสินค้านี้ กำลังพาไปหน้าชำระเงิน");
+    void navigate({ to: "/checkout/$id", params: { id: pendingOrderId }, replace: true });
+  }, [pendingOrderId, navigate]);
+
+  if (pendingOrderId || (!demo && liveQuery.isLoading)) {
     return (
-      <PageShell eyebrow="ตลาดซื้อขาย" title="กำลังโหลดรายละเอียด" description="โปรดรอสักครู่">
+      <PageShell
+        eyebrow="ตลาดซื้อขาย"
+        title={pendingOrderId ? "กำลังพาไปหน้าชำระเงิน" : "กำลังโหลดรายละเอียด"}
+        description="โปรดรอสักครู่"
+      >
         <div className="flex h-56 items-center justify-center text-muted-foreground">
           <LogoLoader size={64} />
         </div>
@@ -126,6 +136,9 @@ function ProductPage() {
   const cardStatus = isLive ? live?.status : product.status;
   const soldOut = cardStatus === "sold";
   const pendingPayment = cardStatus === "locked";
+  // ฉบับร่าง / ผู้ขายซ่อนจากตลาด -> ยังเปิดดูจากลิงก์ได้ แต่ซื้อไม่ได้
+  const notOnSale = isLive && product.isPublished === false;
+  const stockLeft = isLive ? (product.stockQuantity ?? null) : null;
 
   const addToCart = () => {
     if (!requireAuth("กรุณาเข้าสู่ระบบก่อนสั่งซื้อ")) return false;
@@ -174,241 +187,283 @@ function ProductPage() {
     });
   };
 
-  return (
-    <PageShell
-      eyebrow="ตลาดซื้อขาย"
-      title={product.cardName}
-      description={`${product.setName} • ${product.grade}`}
+  const market = lookup({
+    name: product.cardName,
+    set: product.setName,
+    grade: product.grade,
+    company: product.gradingCompany,
+    condition: product.conditionNote,
+  });
+  const diff = soldOut ? null : diffVsMarket(product.price, market?.marketPrice);
+  const gradeText = gradeDisplay(product.grade, product.gradingCompany, product.conditionNote);
+  const clean = (v: string) => (v && v !== "-" ? v : "");
+  const specs = [
+    { label: "ชุด", value: clean(product.setName) },
+    { label: "หมายเลขการ์ด", value: clean(product.cardNo) },
+    { label: "ปี", value: product.year ? String(product.year) : "" },
+    { label: "ภาษา", value: clean(product.language) },
+    { label: "Rarity", value: clean(product.rarity) },
+    { label: "สภาพ", value: clean(product.conditionNote) },
+    { label: "สถาบันเกรด", value: clean(product.gradingCompany) },
+    { label: "เลขใบรับรอง", value: clean(product.certificationNo) },
+  ].filter((s) => s.value);
+
+  const disabled = soldOut || pendingPayment || notOnSale;
+  const buyLabel = notOnSale
+    ? "ยังไม่เปิดขาย"
+    : soldOut
+      ? stockLeft === 0
+        ? "สินค้าหมด"
+        : "สินค้าถูกซื้อแล้ว"
+      : pendingPayment
+        ? "กำลังรอการชำระเงิน"
+        : "ซื้อเลย";
+
+  const toggleWish = () => {
+    const added = watchlist.toggle({
+      id: product.id,
+      name: product.cardName,
+      subtitle: product.setName,
+      imageUrl: product.imageUrl,
+      price: product.price,
+      kind: "product",
+    });
+    toast[added ? "success" : "info"](
+      added ? "เพิ่มลงรายการที่อยากได้แล้ว" : "นำออกจากรายการที่อยากได้แล้ว",
+      { description: product.cardName },
+    );
+  };
+
+  const wishButton = (
+    <button
+      type="button"
+      onClick={toggleWish}
+      aria-label={wished ? "นำออกจากรายการที่อยากได้" : "เพิ่มลงรายการที่อยากได้"}
+      aria-pressed={wished}
+      className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-card ring-1 ring-border transition-colors hover:text-primary"
     >
-      <div className="mx-auto max-w-5xl px-4 pt-8 pb-44 sm:px-6 lg:px-8 lg:pb-32">
-        <div className="lg:grid lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)] lg:items-start lg:gap-8 xl:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
-        {/* แกลเลอรี */}
-        <div className="surface-panel overflow-hidden p-4 lg:sticky lg:top-24">
-          <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl border border-border bg-secondary/40">
-            <ZoomableImage
-              key={product.images[active] ?? product.imageUrl}
-              src={product.images[active] ?? product.imageUrl}
-              alt={`${product.cardName} รูปที่ ${active + 1}`}
-              transformWidth={900}
-              priority
-              galleryImages={product.images}
-              galleryIndex={active}
-              onGalleryIndexChange={setActive}
-              className={`object-cover object-center ${soldOut ? "opacity-50" : ""}`}
+      <Heart className={`h-5 w-5 ${wished ? "fill-primary text-primary" : "text-muted-foreground"}`} />
+    </button>
+  );
+  const cartButton = (
+    <Button
+      variant="outline"
+      onClick={addToCart}
+      disabled={disabled}
+      className="min-h-12 flex-1 rounded-xl font-semibold"
+    >
+      <ShoppingBag className="h-4 w-4" />
+      เพิ่มลงตะกร้า
+    </Button>
+  );
+  const buyButton = (
+    <Button
+      onClick={buyLive}
+      disabled={buyNow.isPending || disabled}
+      className="min-h-12 flex-1 rounded-xl bg-gradient-ember font-semibold text-primary-foreground shadow-glow hover:opacity-90"
+    >
+      {buyNow.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+      {buyLabel}
+    </Button>
+  );
+
+  return (
+    <div className="min-h-screen bg-background">
+      <SiteHeader />
+      <main className="mx-auto max-w-6xl px-4 pt-4 pb-8 sm:px-6 lg:px-8 lg:pt-8 lg:pb-16">
+        <nav aria-label="breadcrumb" className="mb-4 flex items-center gap-2 text-xs text-muted-foreground lg:mb-6">
+          <BackButton className="lg:hidden" />
+          <span className="hidden items-center gap-1.5 lg:flex">
+            <Link to="/marketplace" className="hover:text-foreground">
+              ตลาดซื้อขาย
+            </Link>
+            <ChevronRight className="h-3.5 w-3.5" />
+            {clean(product.setName) && (
+              <>
+                <span>{product.setName}</span>
+                <ChevronRight className="h-3.5 w-3.5" />
+              </>
+            )}
+            <span className="truncate text-foreground">{product.cardName}</span>
+          </span>
+        </nav>
+
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:items-start lg:gap-12">
+          {/* แกลเลอรี — ติดอยู่กับที่ตอนเลื่อนบนเดสก์ท็อป */}
+          <div className="lg:sticky lg:top-28">
+            <CardGallery
+              images={product.images}
+              alt={`${product.cardName} ${gradeText}`}
+              status={soldOut ? "sold" : pendingPayment ? "locked" : "available"}
+              grade={product.grade}
+              gradingCompany={product.gradingCompany}
+              condition={product.conditionNote}
+              dimmed={soldOut}
             />
-
-            {soldOut && (
-              <span className="absolute inset-x-0 top-1/2 mx-auto w-fit -translate-y-1/2 rounded-full bg-foreground/85 px-5 py-2 font-display text-sm font-bold text-background shadow-lg">
-                ขายแล้ว (Sold Out)
-              </span>
-            )}
-            {!soldOut && pendingPayment && (
-              <span className="absolute top-3 left-3 rounded-full bg-amber-500 px-3 py-1 text-xs font-semibold text-white shadow">
-                กำลังรอการชำระเงิน
-              </span>
-            )}
           </div>
-          {product.images.length > 1 && (
-            <div className="mt-4 flex gap-3 overflow-x-auto pb-1">
-              {product.images.map((img, i) => (
-                <button
-                  key={img}
-                  type="button"
-                  onClick={() => setActive(i)}
-                  aria-label={`ดูรูปที่ ${i + 1}`}
-                  className={`relative h-20 w-16 shrink-0 overflow-hidden rounded-lg border-2 bg-secondary/40 transition-colors ${
-                    i === active ? "border-primary" : "border-border"
-                  }`}
-                >
-                  <SmartImage src={img} alt="" transformWidth={160} className="object-cover object-center" />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
 
-        <div className="min-w-0">
-        {/* ชื่อ + ราคา */}
-        <div className="mt-6 lg:mt-0">
-          <h2 className="font-display text-xl font-bold break-words sm:text-2xl">
-            {product.cardName}
-          </h2>
-          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-            <span>ขายไปแล้ว {product.soldCount} ชิ้น</span>
-            {product.isVerified && (
-              <span className="inline-flex items-center gap-1 text-accent">
-                <BadgeCheck className="h-4 w-4" />
-                ตรวจสอบแล้ว
-              </span>
-            )}
-          </div>
-          {product.reviews.length > 0 && (
-            <div className="mt-2 flex items-center gap-2 text-sm">
-              <Stars rating={product.rating} />
-              <span className="font-semibold">{product.rating.toFixed(1)}</span>
-              <span className="text-muted-foreground underline">
-                ({product.reviews.length} รีวิว)
-              </span>
-            </div>
-          )}
+          <div className="min-w-0">
+            <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              {clean(product.setName) || "Taletails Collection"}
+              {product.isVerified && <BadgeCheck className="h-4 w-4 text-accent" aria-label="ตรวจสอบแล้ว" />}
+            </p>
+            <h1 className="mt-1 font-display text-2xl leading-tight font-bold break-words sm:text-3xl">
+              {product.cardName}
+            </h1>
 
-          <div className="mt-4 grid grid-cols-3 divide-x divide-border rounded-xl border border-border bg-card">
-            <div className="px-3 py-3">
-              <p className="text-xs text-muted-foreground">ราคาขาย</p>
-              <p className="mt-1 font-display text-lg font-bold">{thb.format(product.price)}</p>
+            <div className="mt-3 flex flex-wrap gap-1.5 text-xs">
+              {gradeText && (
+                <span className="rounded-full bg-card px-2.5 py-1 font-semibold ring-1 ring-border">{gradeText}</span>
+              )}
+              {product.isVerified && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-card px-2.5 py-1 font-semibold text-accent ring-1 ring-border">
+                  <BadgeCheck className="h-3.5 w-3.5" /> ตรวจสอบแล้ว
+                </span>
+              )}
+              {clean(product.language) && (
+                <span className="rounded-full bg-card px-2.5 py-1 ring-1 ring-border">{product.language}</span>
+              )}
+              {clean(product.rarity) && (
+                <span className="rounded-full bg-card px-2.5 py-1 ring-1 ring-border">{product.rarity}</span>
+              )}
             </div>
-            <div className="px-3 py-3">
-              <p className="text-xs text-muted-foreground">เสนอสูงสุด</p>
-              <p className="mt-1 font-display text-lg font-bold">
-                {product.highestBid ? thb.format(product.highestBid) : "—"}
+
+            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1">
+              <p className={`font-display text-3xl font-bold tracking-tight tabular-nums ${soldOut ? "text-muted-foreground" : ""}`}>
+                {thb.format(product.price)}
               </p>
+              <MarketDiffChip diff={diff} className="text-xs" />
+              {stockLeft !== null && !notOnSale && (
+                <span className={`text-xs font-semibold ${stockLeft > 0 && stockLeft <= 3 ? "text-primary" : stockLeft === 0 ? "text-destructive" : "text-muted-foreground"}`}>
+                  {stockLeft > 0 ? `เหลือ ${stockLeft} ชิ้น` : "สินค้าหมด"}
+                </span>
+              )}
             </div>
-            <div className="px-3 py-3">
-              <p className="text-xs text-muted-foreground">ขายไปแล้ว</p>
-              <p className="mt-1 font-display text-lg font-bold">{product.soldCount} ชิ้น</p>
-            </div>
-          </div>
-        </div>
+            {market?.marketPrice ? (
+              <p className="mt-1 text-xs text-muted-foreground">
+                ราคาตลาด {thb.format(market.marketPrice)} (เฉลี่ย 3 ครั้งล่าสุด) ·{" "}
+                <Link to="/market/$id" params={{ id: market.id }} className="font-semibold text-primary hover:underline">
+                  ดูสถิติราคา
+                </Link>
+              </p>
+            ) : null}
 
-        {/* รายละเอียดการ์ด */}
-        <section className="surface-panel mt-6 p-4">
-          <h3 className="font-display text-base font-bold">รายละเอียดการ์ด</h3>
-          <div className="mt-2">
-            <SpecRow label="ชื่อการ์ด" value={product.cardName} />
-            <SpecRow label="Set" value={product.setName} />
-            <SpecRow label="Card No." value={product.cardNo} />
-            <SpecRow label="ภาษา" value={product.language} />
-            <SpecRow label="Rarity" value={product.rarity} />
-            <SpecRow label="ปี" value={String(product.year)} />
-            <SpecRow label="Grade" value={product.grade} />
-            <SpecRow label="Grading Company" value={product.gradingCompany} />
-            <SpecRow label="Certification No." value={product.certificationNo} />
-            <SpecRow label="สภาพ/ตำหนิ" value={product.conditionNote} />
-          </div>
-          {product.sellerNote && (
-            <div className="mt-3 rounded-xl bg-secondary/50 p-3">
-              <p className="text-xs font-semibold text-muted-foreground">รายละเอียดจากผู้ขาย</p>
-              <p className="mt-1 text-sm break-words">{product.sellerNote}</p>
+            {/* ปุ่มซื้อ (เดสก์ท็อป) — มือถือใช้แถบล่าง */}
+            <div className="mt-5 hidden items-center gap-3 lg:flex">
+              {buyButton}
+              {cartButton}
+              {wishButton}
             </div>
-          )}
-        </section>
+            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
+              <span className="inline-flex items-center gap-1">
+                <ShieldCheck className="h-3.5 w-3.5" /> ระบบกันซื้อซ้อน
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <Truck className="h-3.5 w-3.5" /> จัดส่งพร้อมเลขพัสดุ
+              </span>
+            </div>
 
-        {/* รีวิว */}
-        {product.reviews.length > 0 && (
-          <section className="surface-panel mt-6 p-4">
-            <div className="flex items-center justify-between rounded-xl bg-secondary/50 px-4 py-3">
-              <div>
-                <p className="font-display text-2xl font-bold">{product.rating.toFixed(1)}</p>
-                <p className="text-xs text-muted-foreground">จาก 5 คะแนน</p>
-              </div>
-              <div className="text-right">
-                <Stars rating={product.rating} />
-                <p className="mt-1 text-xs text-muted-foreground underline">
-                  {product.reviews.length} รีวิว
+            {/* ร้านค้า */}
+            <div className="mt-5 flex items-center gap-3 rounded-2xl bg-card p-3 ring-1 ring-border">
+              <img src="/taletails-logo.jpg" alt="" className="h-10 w-10 rounded-full object-cover" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold">{product.storeName}</p>
+                <p className="text-xs text-muted-foreground">
+                  {product.soldCount > 0 ? `การ์ดรุ่นนี้ขายไปแล้ว ${product.soldCount} ชิ้น` : "ร้านค้าบน Taletails"}
                 </p>
               </div>
             </div>
-            <ul className="mt-4 space-y-4">
-              {product.reviews.map((review) => (
-                <li key={review.id} className="border-b border-border pb-4 last:border-0 last:pb-0">
-                  <div className="flex items-center gap-2">
-                    <Stars rating={review.rating} />
-                    <span className="text-xs text-muted-foreground">{review.timeAgo}</span>
+
+            {/* ข้อมูลการ์ด */}
+            {specs.length > 0 && (
+              <dl className="mt-4 grid grid-cols-2 gap-x-4 rounded-2xl bg-card p-4 ring-1 ring-border sm:grid-cols-3">
+                {specs.map((s) => (
+                  <div key={s.label} className="border-b border-border/70 py-2.5 [&:nth-last-child(-n+2)]:border-0 sm:[&:nth-last-child(-n+3)]:border-0">
+                    <dt className="text-[11px] text-muted-foreground">{s.label}</dt>
+                    <dd className="mt-0.5 text-sm font-semibold break-words">{s.value}</dd>
                   </div>
-                  <p className="mt-1 text-xs text-muted-foreground">{review.condition}</p>
-                  <p className="mt-1 text-sm">{review.comment}</p>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
+                ))}
+              </dl>
+            )}
 
-        {/* ข้อมูลเพิ่มเติม */}
-        <Accordion type="multiple" className="surface-panel mt-6 px-4 py-2">
-          <AccordionItem value="authenticity">
-            <AccordionTrigger className="py-5 text-sm font-semibold">การตรวจสอบของแท้</AccordionTrigger>
-            <AccordionContent className="text-sm text-muted-foreground">
-              ทุกใบผ่านการตรวจสอบโดยทีม Taletails และยืนยันรหัสจาก {product.gradingCompany} ก่อนส่งถึงมือผู้ซื้อ
-              รหัสรายการ: {product.cardIdCode}
-            </AccordionContent>
-          </AccordionItem>
-          <AccordionItem value="shipping">
-            <AccordionTrigger className="py-5 text-sm font-semibold">การจัดส่งและการคืนสินค้า</AccordionTrigger>
-            <AccordionContent className="text-sm text-muted-foreground">
-              จัดส่งภายใน 1–2 วันทำการ พร้อมกล่องกันกระแทกและประกันการขนส่งเต็มมูลค่า
-              คืนสินค้าได้ภายใน 7 วันหากสภาพไม่ตรงตามที่ระบุ
-            </AccordionContent>
-          </AccordionItem>
-          <AccordionItem value="sales">
-            <AccordionTrigger className="py-5 text-sm font-semibold">ประวัติการขาย</AccordionTrigger>
-            <AccordionContent className="text-sm text-muted-foreground">
-              ขายไปแล้ว {product.soldCount} ชิ้น ราคาขายปัจจุบัน {thb.format(product.price)}
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
-        </div>
+            {product.sellerNote && (
+              <div className="mt-4 rounded-2xl bg-secondary/50 p-4">
+                <p className="text-xs font-semibold text-muted-foreground">รายละเอียดจากผู้ขาย</p>
+                <p className="mt-1 text-sm break-words whitespace-pre-line">{product.sellerNote}</p>
+              </div>
+            )}
+
+            {/* รีวิว */}
+            {product.reviews.length > 0 && (
+              <section className="surface-panel mt-4 p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="font-display text-xl font-bold">{product.rating.toFixed(1)}</span>
+                    <Stars rating={product.rating} />
+                  </div>
+                  <span className="text-xs text-muted-foreground">{product.reviews.length} รีวิว</span>
+                </div>
+                <ul className="mt-3 space-y-3">
+                  {product.reviews.map((review) => (
+                    <li key={review.id} className="border-b border-border pb-3 last:border-0 last:pb-0">
+                      <div className="flex items-center gap-2">
+                        <Stars rating={review.rating} />
+                        <span className="text-xs text-muted-foreground">{review.timeAgo}</span>
+                      </div>
+                      <p className="mt-1 text-sm">{review.comment}</p>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            <Accordion type="multiple" className="surface-panel mt-4 px-4 py-1">
+              <AccordionItem value="authenticity">
+                <AccordionTrigger className="py-4 text-sm font-semibold">การตรวจสอบของแท้</AccordionTrigger>
+                <AccordionContent className="text-sm text-muted-foreground">
+                  ทุกใบผ่านการตรวจสอบโดยทีม Taletails
+                  {clean(product.gradingCompany) ? ` และยืนยันรหัสจาก ${product.gradingCompany}` : ""} ก่อนส่งถึงมือผู้ซื้อ
+                  รหัสรายการ: {product.cardIdCode}
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="shipping">
+                <AccordionTrigger className="py-4 text-sm font-semibold">การจัดส่งและการคืนสินค้า</AccordionTrigger>
+                <AccordionContent className="text-sm text-muted-foreground">
+                  จัดส่งภายใน 1–2 วันทำการ พร้อมกล่องกันกระแทกและประกันการขนส่งเต็มมูลค่า
+                  คืนสินค้าได้ภายใน 7 วันหากสภาพไม่ตรงตามที่ระบุ
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
         </div>
 
-        {/* สินค้าที่คุณอาจจะชอบ */}
         {related.length > 0 && (
-          <section className="mt-10">
+          <section className="mt-12">
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="font-display text-lg font-bold">สินค้าที่คุณอาจจะชอบ</h3>
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              <h2 className="font-display text-lg font-bold">สินค้าที่คุณอาจจะชอบ</h2>
+              <Link to="/marketplace" className="flex items-center gap-1 text-sm font-semibold text-primary">
+                ดูทั้งหมด <ChevronRight className="h-4 w-4" />
+              </Link>
             </div>
-            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 lg:gap-5">
               {related.map((item) => (
                 <ProductGridCard key={item.id} product={item} />
               ))}
             </div>
           </section>
         )}
-      </div>
+      </main>
 
-      {/* แถบซื้อด้านล่าง — บนมือถือยกขึ้นเหนือเมนูล่าง (MobileBottomNav) */}
-      <div className="fixed inset-x-0 bottom-[calc(88px+max(1rem,env(safe-area-inset-bottom)))] z-40 px-4 lg:bottom-0 lg:border-t lg:border-border lg:bg-background/95 lg:px-0 lg:backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center gap-4 rounded-2xl border border-border/70 bg-card/95 px-4 py-3 shadow-glow backdrop-blur sm:px-6 lg:rounded-none lg:border-0 lg:bg-transparent lg:py-3 lg:shadow-none lg:backdrop-blur-none">
-          <button
-            type="button"
-            onClick={() => {
-              const added = watchlist.toggle({
-                id: product.id,
-                name: product.cardName,
-                subtitle: product.setName,
-                imageUrl: product.imageUrl,
-                price: product.price,
-                kind: "product",
-              });
-              toast[added ? "success" : "info"](
-                added ? "เพิ่มลงรายการที่อยากได้แล้ว" : "นำออกจากรายการที่อยากได้แล้ว",
-                { description: product.cardName },
-              );
-            }}
-            className="flex min-h-11 shrink-0 flex-col items-center justify-center px-2 text-[10px] text-muted-foreground"
-            aria-label="เพิ่มลงรายการที่อยากได้"
-          >
-            <Heart className={`h-5 w-5 ${wished ? "fill-primary text-primary" : ""}`} />
-            อยากได้
-          </button>
-          <Button
-            variant="secondary"
-            onClick={addToCart}
-            disabled={soldOut || pendingPayment}
-            className="min-h-11 flex-1 rounded-xl font-semibold"
-          >
-            <ShoppingBag className="h-4 w-4" />
-            เพิ่มลงตะกร้า
-          </Button>
-          <Button
-            onClick={buyLive}
-            disabled={buyNow.isPending || soldOut || pendingPayment}
-            className="min-h-11 flex-1 rounded-xl bg-gradient-ember font-semibold text-primary-foreground hover:opacity-90"
-          >
-            {buyNow.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-            {soldOut ? "สินค้าถูกซื้อแล้ว" : pendingPayment ? "กำลังรอการชำระเงิน" : "ดำเนินการชำระเงิน"}
-          </Button>
+      {/* แถบซื้อด้านล่าง (มือถือ) — เมนูล่างของเว็บถูกซ่อนในหน้านี้ จึงเหลือแถบเดียว */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur lg:hidden">
+        <div className="mx-auto flex max-w-xl items-center gap-2.5">
+          {wishButton}
+          {cartButton}
+          {buyButton}
         </div>
       </div>
-    </PageShell>
+
+      <SiteFooter />
+    </div>
   );
 }

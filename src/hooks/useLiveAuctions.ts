@@ -73,7 +73,7 @@ function toLiveAuction(row: AuctionJoinRow): LiveAuction | null {
     bidIncrement: Number(row.bid_increment ?? 50),
     auctionStatus,
     cardStatus,
-    outcome: getAuctionOutcome(auctionStatus, cardStatus, row.end_time),
+    outcome: getAuctionOutcome(auctionStatus, cardStatus, row.end_time, Number(row.bid_count ?? 0)),
     id: row.id,
     cardName: card.name,
     setName: card.set_name ?? "-",

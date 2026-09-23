@@ -19,8 +19,11 @@ export function getAuctionOutcome(
   auctionStatus: AuctionDbStatus,
   cardStatus: CardDbStatus,
   endTime?: string,
+  /** จำนวนครั้งที่มีการเสนอราคาในรอบนี้ — ใช้แยก "ไม่มีผู้เสนอราคา" ออกจาก "ผู้ชนะไม่ชำระเงิน" */
+  bidCount?: number,
 ): AuctionOutcomeInfo {
   const timeUp = endTime ? new Date(endTime).getTime() <= Date.now() : false;
+  const noBids = bidCount === 0;
 
   if (auctionStatus === "active" && !timeUp) {
     return { outcome: "live", label: "กำลังประมูล", tone: "live" };
@@ -44,12 +47,32 @@ export function getAuctionOutcome(
     };
   }
 
+  // หมดเวลาแล้วแต่ไม่มีใครเสนอราคาเลย — แสดงทันทีตอนหมดเวลา ไม่ต้องรอระบบปิดรอบ
+  if (noBids && (auctionStatus === "ended" || (auctionStatus === "active" && timeUp))) {
+    return {
+      outcome: "failed",
+      label: "ไม่มีผู้เสนอราคา",
+      hint: "ปิดประมูลแล้ว สินค้ายังไม่ถูกขาย",
+      tone: "muted",
+    };
+  }
+
   if (auctionStatus === "active" && timeUp) {
     return {
       outcome: "waiting_payment",
       label: "รอชำระเงิน",
       hint: "ปิดประมูลแล้ว กำลังสรุปผลผู้ชนะ",
       tone: "warning",
+    };
+  }
+
+  // มีผู้ชนะแต่ไม่ชำระเงินตามเวลา (ระบบยกเลิกสิทธิ์แล้ว)
+  if (auctionStatus === "ended" && bidCount !== undefined && bidCount > 0) {
+    return {
+      outcome: "failed",
+      label: "ผู้ชนะไม่ชำระเงิน",
+      hint: "รอผู้ขายเปิดประมูลรอบใหม่",
+      tone: "muted",
     };
   }
 

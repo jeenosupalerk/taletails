@@ -24,8 +24,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const add = useCallback((line: Omit<CartLine, "qty">) => {
     setLines((prev) => {
-      const found = prev.find((l) => l.id === line.id);
-      if (found) return prev.map((l) => (l.id === line.id ? { ...l, qty: l.qty + 1 } : l));
+      // ซื้อได้ครั้งละ 1 ชิ้นต่อรายการ (ระบบจองสต็อกทีละชิ้นตอนกดชำระเงิน) — กดเพิ่มซ้ำไม่เพิ่มจำนวน
+      if (prev.some((l) => l.id === line.id)) return prev;
       return [...prev, { ...line, qty: 1 }];
     });
   }, []);

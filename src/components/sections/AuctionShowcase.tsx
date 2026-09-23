@@ -10,7 +10,6 @@ import {
   History,
   Lock,
   Radio,
-  Timer,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -20,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import type { Auction } from "@/data/auctions";
-import type { AuctionOutcomeInfo } from "@/lib/auction-status";
+import { AUCTION_OUTCOME_TONE_CLASS, type AuctionOutcomeInfo } from "@/lib/auction-status";
 import { timeAgo, useBidHistory } from "@/hooks/useBidHistory";
 import {
   useAuctionRealtime,
@@ -28,7 +27,8 @@ import {
   useBids,
   usePlaceBid,
 } from "@/hooks/useCardDetail";
-import { pad, useCountdown } from "@/hooks/useCountdown";
+import { useCountdown } from "@/hooks/useCountdown";
+import { FlipCountdown } from "@/components/site/FlipCountdown";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { thb } from "@/lib/cart";
 import { useWatchlist } from "@/lib/watchlist";
@@ -85,7 +85,7 @@ export function AuctionShowcase({
   const requireAuth = useRequireAuth();
   const gallery = auction.images?.length ? auction.images : [auction.imageUrl];
   const minNext = auction.currentBid + (auction.bidCount === 0 ? 0 : bidIncrement);
-  const urgent = !!c && !c.isFinished && c.totalMs < 3 * 60 * 60 * 1000;
+  const urgent = !closed && !!c && !c.isFinished && c.totalMs < 3 * 60 * 60 * 1000;
 
   const entries = auctionId
     ? (liveBids.data ?? []).map((b) => ({
@@ -101,18 +101,6 @@ export function AuctionShowcase({
   useEffect(() => {
     setBid((b) => (b < auction.currentBid + bidIncrement ? auction.currentBid + bidIncrement : b));
   }, [auction.currentBid, bidIncrement]);
-
-  const time = c
-    ? [
-        { v: pad(c.days * 24 + c.hours), l: "ชม." },
-        { v: pad(c.minutes), l: "นาที" },
-        { v: pad(c.seconds), l: "วินาที" },
-      ]
-    : [
-        { v: "--", l: "ชม." },
-        { v: "--", l: "นาที" },
-        { v: "--", l: "วินาที" },
-      ];
 
   const canBid = () => {
     if (!requireAuth("กรุณาเข้าสู่ระบบก่อนเสนอราคา")) return false;
@@ -151,7 +139,7 @@ export function AuctionShowcase({
           >
             {/* Card viewer */}
             <div className="relative flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-card">
-              <div className="relative flex aspect-[3/4] w-full min-h-[320px] items-center justify-center bg-transparent p-4 lg:aspect-auto lg:min-h-0 lg:flex-1 lg:p-6">
+              <div className="relative flex aspect-[3/4] w-full min-h-[320px] items-center justify-center p-4 lg:aspect-auto lg:min-h-0 lg:flex-1 lg:p-6 bg-tile">
                 {gallery.map((src, i) => (
                   <ZoomableImage
                     key={src + i}
@@ -162,6 +150,7 @@ export function AuctionShowcase({
                     galleryImages={gallery}
                     galleryIndex={i}
                     onGalleryIndexChange={setShot}
+                    zoomButtonClassName="right-3 top-14 sm:right-4 sm:top-16"
 
                     wrapperClassName={`absolute inset-0 p-4 transition-opacity duration-500 lg:p-6 ${
                       i === shot ? "opacity-100" : "opacity-0 pointer-events-none"
@@ -170,10 +159,20 @@ export function AuctionShowcase({
                   />
                 ))}
 
-                <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-gradient-ember px-2.5 py-1 text-[11px] font-bold text-primary-foreground shadow-glow sm:top-4 sm:left-4 sm:px-3 sm:py-1.5 sm:text-xs">
-                  <Radio className="h-3.5 w-3.5" />
-                  กำลังประมูล
-                </span>
+                {/* ป้ายสถานะตามผลจริง — เดิมเขียนตายตัวว่า "กำลังประมูล" ทำให้รอบที่ปิดแล้วยังดูเหมือนเปิดอยู่ */}
+                {closed && outcome ? (
+                  <span
+                    className={`absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold shadow sm:top-4 sm:left-4 sm:px-3 sm:py-1.5 sm:text-xs ${AUCTION_OUTCOME_TONE_CLASS[outcome.tone]}`}
+                  >
+                    <Lock className="h-3.5 w-3.5" />
+                    {outcome.label}
+                  </span>
+                ) : (
+                  <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-gradient-ember px-2.5 py-1 text-[11px] font-bold text-primary-foreground shadow-glow sm:top-4 sm:left-4 sm:px-3 sm:py-1.5 sm:text-xs">
+                    <Radio className="h-3.5 w-3.5" />
+                    กำลังประมูล
+                  </span>
+                )}
                 <span className="absolute top-3 right-3 rounded-full border border-accent/50 bg-background/70 px-2.5 py-1 font-display text-[11px] font-bold text-accent sm:top-4 sm:right-4 sm:px-3 sm:py-1.5 sm:text-xs">
                   {auction.grade}
                 </span>
@@ -318,30 +317,13 @@ export function AuctionShowcase({
                 <p className="text-xs text-muted-foreground sm:text-sm">{auction.setName}</p>
               </div>
 
-              <div className="rounded-2xl bg-gradient-ember p-3 text-primary-foreground shadow-glow sm:rounded-3xl sm:p-5">
-                <p className="flex items-center gap-2 text-xs font-semibold sm:text-sm">
-                  <Timer className="h-4 w-4" />
-                  เหลือเวลา
-                </p>
-                <div className="mt-1 flex items-end gap-2 tabular-nums sm:mt-2 sm:gap-3">
-                  {time.map((p, i) => (
-                    <div key={p.l} className="flex items-end gap-2 sm:gap-3">
-                      {i > 0 && (
-                        <span className="pb-1.5 font-display text-xl font-bold opacity-70 sm:pb-2 sm:text-3xl">
-                          :
-                        </span>
-                      )}
-                      <div className="text-center">
-                        <div className="font-display text-2xl leading-none font-extrabold sm:text-5xl">
-                          {p.v}
-                        </div>
-                        <div className="mt-0.5 text-[10px] opacity-90 sm:mt-1 sm:text-[11px]">
-                          {p.l}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              <div className="rounded-2xl border border-border bg-card p-3 sm:rounded-3xl sm:p-5">
+                <FlipCountdown
+                  endTime={auction.endTime}
+                  closed={closed}
+                  closedLabel={outcome?.label}
+                  size="lg"
+                />
               </div>
 
               {urgent && (

@@ -304,6 +304,7 @@ export type Database = {
           grading_company: string | null
           id: string
           images: string[]
+          is_published: boolean
           language: string | null
           locked_at: string | null
           locked_by: string | null
@@ -314,6 +315,7 @@ export type Database = {
           seller_id: string | null
           set_name: string | null
           status: Database["public"]["Enums"]["card_status"]
+          stock_quantity: number | null
           updated_at: string
           year: number | null
         }
@@ -327,6 +329,7 @@ export type Database = {
           grading_company?: string | null
           id?: string
           images?: string[]
+          is_published?: boolean
           language?: string | null
           locked_at?: string | null
           locked_by?: string | null
@@ -337,6 +340,7 @@ export type Database = {
           seller_id?: string | null
           set_name?: string | null
           status?: Database["public"]["Enums"]["card_status"]
+          stock_quantity?: number | null
           updated_at?: string
           year?: number | null
         }
@@ -350,6 +354,7 @@ export type Database = {
           grading_company?: string | null
           id?: string
           images?: string[]
+          is_published?: boolean
           language?: string | null
           locked_at?: string | null
           locked_by?: string | null
@@ -360,6 +365,7 @@ export type Database = {
           seller_id?: string | null
           set_name?: string | null
           status?: Database["public"]["Enums"]["card_status"]
+          stock_quantity?: number | null
           updated_at?: string
           year?: number | null
         }
@@ -889,6 +895,7 @@ export type Database = {
           card_id: string
           card_name: string
           grade: string
+          grading_company: string
           image: string
           is_auction: boolean
           price: number
@@ -1003,6 +1010,16 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      update_card_listing: {
+        Args: {
+          _auction_end_time?: string
+          _bid_increment?: number
+          _card_id: string
+          _is_published?: boolean
+          _stock_quantity?: number
+        }
+        Returns: Database["public"]["Tables"]["cards"]["Row"]
       }
       relist_auction: {
         Args: { _auction_id: string; _end_time: string }

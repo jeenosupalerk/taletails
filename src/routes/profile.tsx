@@ -23,7 +23,7 @@ import type { ReactNode } from "react";
 import { InstallAppCard } from "@/components/site/InstallAppCard";
 import { PushNotificationToggle } from "@/components/site/PushNotificationToggle";
 import { PageShell } from "@/components/site/PageShell";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ProfileIdentity } from "@/components/profile/ProfileIdentity";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -89,17 +89,7 @@ function ProfilePage() {
           <div className="space-y-5">
             {/* Header */}
             <div className="surface-panel p-5">
-              <div className="flex items-center gap-4">
-                <Avatar className="h-16 w-16 rounded-full border-2 border-primary/20">
-                  <AvatarFallback className="bg-gradient-ember text-lg font-bold text-primary-foreground">
-                    {initials(user.name)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0 flex-1">
-                  <h2 className="truncate text-lg font-bold">{user.name}</h2>
-                  <p className="truncate text-sm text-muted-foreground">{user.email}</p>
-                </div>
-              </div>
+              <ProfileIdentity />
 
               <div className="mt-5">
                 <PointsSummary />
@@ -277,14 +267,6 @@ function ThemeRow() {
   );
 }
 
-function initials(name: string) {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "TT";
-  if (parts.length === 1) return (parts[0]?.slice(0, 2) ?? "TT").toUpperCase();
-  const first = parts[0]?.[0] ?? "";
-  const last = parts[parts.length - 1]?.[0] ?? "";
-  return `${first}${last}`.toUpperCase();
-}
 
 /** ยอด TT Points คงเหลือของผู้ใช้ที่ล็อกอินอยู่ */
 function PointsSummary() {

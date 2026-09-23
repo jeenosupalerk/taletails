@@ -24,6 +24,10 @@ export interface CardDetailRow {
   sale_type: "auction" | "fixed_price";
   price: number;
   status: "available" | "locked" | "sold";
+  /** null = การ์ดชิ้นเดียว */
+  stock_quantity: number | null;
+  /** false = ฉบับร่าง/ซ่อนจากตลาด */
+  is_published: boolean;
   users?: { username: string | null; avatar_url: string | null } | null;
 }
 
@@ -50,7 +54,7 @@ export interface BidRow {
 }
 
 const CARD_COLUMNS =
-  "id, seller_id, name, details, images, set_name, card_no, language, rarity, year, condition, grade, grading_company, certification_no, sale_type, price, status, users:seller_id (username, avatar_url)";
+  "id, seller_id, name, details, images, set_name, card_no, language, rarity, year, condition, grade, grading_company, certification_no, sale_type, price, status, stock_quantity, is_published, users:seller_id (username, avatar_url)";
 
 /** Current Supabase auth user id (client-side only). */
 export function useAuthUserId() {
@@ -226,7 +230,8 @@ export function useBuyNow() {
     onSuccess: (_o, cardId) => {
       void flushPush({}).catch(() => undefined);
       void queryClient.invalidateQueries({ queryKey: ["card", cardId] });
-      void queryClient.invalidateQueries({ queryKey: ["cards", "marketplace"] });
+      void queryClient.invalidateQueries({ queryKey: ["cards"] });
+      void queryClient.invalidateQueries({ queryKey: ["my-pending-order", cardId] });
     },
   });
 }
@@ -281,6 +286,41 @@ export function useOrder(orderId: string) {
   });
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export interface MyPendingOrder {
+  id: string;
+  payment_due_at: string;
+}
+
+/**
+ * คำสั่งซื้อที่ผู้ใช้คนนี้กด "ดำเนินการชำระเงิน" ไว้แล้วแต่ยังไม่จ่าย (และยังไม่หมดเวลา) ของสินค้าชิ้นนี้
+ * ใช้ในตะกร้า (สลับปุ่มลบเป็นปุ่มยกเลิกคำสั่งซื้อ) และหน้าสินค้า (พาไปหน้าชำระเงินทันที)
+ */
+export function useMyPendingOrder(cardId?: string) {
+  const userId = useAuthUserId();
+  const valid = Boolean(cardId && UUID_RE.test(cardId));
+  return useQuery({
+    queryKey: ["my-pending-order", cardId, userId],
+    enabled: valid && Boolean(userId),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("id, payment_due_at")
+        .eq("card_id", cardId!)
+        .eq("user_id", userId!)
+        .eq("status", "pending")
+        .gt("payment_due_at", new Date().toISOString())
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return (data as MyPendingOrder | null) ?? null;
+    },
+    staleTime: 5_000,
+  });
+}
+
 /** Buyer cancels their own pending order — the DB trigger releases the card back to "available". */
 export function useCancelOrder(orderId: string) {
   const queryClient = useQueryClient();
@@ -299,7 +339,8 @@ export function useCancelOrder(orderId: string) {
       void flushPush({}).catch(() => undefined);
       void queryClient.invalidateQueries({ queryKey: ["order", orderId] });
       void queryClient.invalidateQueries({ queryKey: ["card"] });
-      void queryClient.invalidateQueries({ queryKey: ["cards", "marketplace"] });
+      void queryClient.invalidateQueries({ queryKey: ["cards"] });
+      void queryClient.invalidateQueries({ queryKey: ["my-pending-order"] });
     },
   });
 }

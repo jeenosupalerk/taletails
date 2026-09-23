@@ -27,6 +27,18 @@ export interface CardRow {
   sale_type: "auction" | "fixed_price";
   price: number;
   status: "available" | "locked" | "sold";
+  stock_quantity?: number | null;
+  is_published?: boolean;
+  updated_at?: string;
+}
+
+/** การ์ดที่ขายหมดแล้วยังโชว์ในหน้าตลาดต่อได้กี่วัน (นับจากการอัปเดตล่าสุด) */
+export const SOLD_VISIBLE_DAYS = 14;
+
+/** true เมื่อการ์ดขายหมดและไม่มีการอัปเดตเกิน 14 วัน -> ไม่แสดงในหน้าตลาดแล้ว (ยังอยู่ในร้าน) */
+export function isSoldExpiredFromMarket(status: string, updatedAt?: string | null) {
+  if (status !== "sold" || !updatedAt) return false;
+  return Date.now() - new Date(updatedAt).getTime() > SOLD_VISIBLE_DAYS * 86_400_000;
 }
 
 export function cardRowToProduct(row: CardRow, sellerName = "Taletails Store"): Product {
@@ -57,11 +69,13 @@ export function cardRowToProduct(row: CardRow, sellerName = "Taletails Store"): 
     rating: 5,
     reviews: [],
     status: row.status,
+    stockQuantity: row.stock_quantity ?? null,
+    isPublished: row.is_published ?? true,
   };
 }
 
 const CARD_COLUMNS =
-  "id, seller_id, name, details, images, set_name, card_no, language, rarity, year, condition, grade, grading_company, certification_no, sale_type, price, status, users:seller_id (username)";
+  "id, seller_id, name, details, images, set_name, card_no, language, rarity, year, condition, grade, grading_company, certification_no, sale_type, price, status, stock_quantity, is_published, updated_at, users:seller_id (username)";
 
 /**
  * Real "sold" totals: how many cards with the same name have already been sold.
@@ -85,17 +99,24 @@ export function useSoldCounts() {
   return useQuery({ queryKey: ["cards", "sold-counts"], queryFn: fetchSoldCounts, staleTime: 60_000 });
 }
 
-/** Fixed-price cards available in the marketplace. */
+/**
+ * Fixed-price cards shown in the marketplace:
+ *  - เฉพาะที่ผู้ขายเปิดแสดงในตลาด (is_published) — ฉบับร่าง/ที่ซ่อนไว้จะไม่ขึ้น
+ *  - การ์ดที่ขายหมดแล้วยังโชว์ต่อ 14 วันนับจากอัปเดตล่าสุด จากนั้นหายจากตลาด (แต่ยังอยู่ในหน้าร้านของผู้ขาย)
+ */
 export function useMarketplaceCards() {
   return useQuery({
     queryKey: ["cards", "marketplace"],
     queryFn: async () => {
+      const soldCutoff = new Date(Date.now() - SOLD_VISIBLE_DAYS * 86_400_000).toISOString();
       const [{ data, error }, soldCounts] = await Promise.all([
         supabase
           .from("cards")
           .select(CARD_COLUMNS)
           .in("status", ["available", "locked", "sold"])
           .eq("sale_type", "fixed_price")
+          .eq("is_published", true)
+          .or(`status.neq.sold,updated_at.gt."${soldCutoff}"`)
           .order("created_at", { ascending: false })
           .limit(24),
         fetchSoldCounts(),

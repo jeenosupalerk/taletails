@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -7,7 +7,7 @@ import {
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   CartesianGrid,
   Line,
@@ -22,7 +22,10 @@ import { PageShell } from "@/components/site/PageShell";
 import { Badge } from "@/components/ui/badge";
 import { LogoLoader } from "@/components/ui/logo-loader";
 import { formatThb, rangeDays, type MarketRange } from "@/data/market";
-import { historyInRange, useMarketCard } from "@/hooks/useMarketStats";
+import { historyInRange, useMarketCard, useMarketStats } from "@/hooks/useMarketStats";
+import { CrossGradeTable } from "@/components/market/CrossGradeTable";
+import { useActiveListings } from "@/hooks/useMarketListings";
+import { diffVsMarket, timeAgo } from "@/lib/market-price";
 import { cn } from "@/lib/utils";
 import { SmartImage } from "@/components/ui/smart-image";
 
@@ -68,6 +71,8 @@ export const Route = createFileRoute("/market/$id")({
 function MarketDetailPage() {
   const { id } = Route.useParams();
   const { card, isLoading } = useMarketCard(id);
+  const { cards: allMarketCards } = useMarketStats();
+  const { byKey: listingsByKey } = useActiveListings();
   const [tab, setTab] = useState<"chart" | "history">("chart");
   const [range, setRange] = useState<MarketRange>("1m");
 
@@ -100,7 +105,9 @@ function MarketDetailPage() {
     );
   }
 
-  const diffVsAvg = card.avg30d ? ((card.lastPrice - card.avg30d) / card.avg30d) * 100 : 0;
+  // เทียบราคาขายล่าสุดกับราคาตลาด (เฉลี่ย 3 ครั้งล่าสุด)
+  const diffVsAvg = card.marketPrice ? ((card.lastPrice - card.marketPrice) / card.marketPrice) * 100 : 0;
+  const forSale = listingsByKey.get(card.key ?? "") ?? [];
   const up = diffVsAvg >= 0;
   const hasData = card.transactions.length > 0;
 
@@ -112,43 +119,108 @@ function MarketDetailPage() {
       description={`สถิติราคาและประวัติการซื้อขาย • เกรด ${card.grade}`}
     >
       <section className="mx-auto max-w-5xl space-y-6 px-4 py-6 pb-28 sm:px-6 lg:px-8">
-        {/* Stock-style header */}
-        <div className="surface-panel flex flex-wrap items-center gap-4 p-5 sm:gap-6">
+        {/* ส่วนหัว: ราคาตลาดของการ์ดรุ่นนี้ */}
+        <div className="surface-panel flex flex-wrap items-center gap-4 p-4 sm:gap-6 sm:p-5">
           <SmartImage
             src={card.imageUrl}
             alt={card.cardName}
             transformWidth={220}
             priority
-            wrapperClassName="h-28 w-[84px] shrink-0 rounded-xl border border-border"
+            wrapperClassName="h-28 w-20 shrink-0 overflow-hidden rounded-xl bg-tile ring-1 ring-border"
             className="object-cover"
           />
           <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-xl font-bold">{card.cardName}</h2>
-              <Badge variant="secondary" className="rounded-md">{card.grade}</Badge>
-            </div>
-            <p className="mt-0.5 text-sm text-muted-foreground">{card.setName}</p>
-            <div className="mt-2 flex flex-wrap items-end gap-3">
-              <p className="text-3xl font-bold tracking-tight tabular-nums">
-                {formatThb(card.lastPrice)}
-              </p>
+            <p className="text-xs text-muted-foreground">
+              {card.setName} · {card.grade}
+            </p>
+            <h2 className="mt-0.5 text-xl font-bold">{card.cardName}</h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              ขายแล้ว {card.totalSold} ครั้ง
+              {card.lastSoldAt ? (
+                <>
+                  {" "}· ขายล่าสุด <ClientTimeAgo ms={card.lastSoldAt} />
+                </>
+              ) : null}
+            </p>
+          </div>
+          <div className="w-full rounded-2xl bg-gradient-to-br from-primary/[0.07] to-card p-4 ring-1 ring-primary/25 sm:w-auto sm:min-w-[240px]">
+            <p className="text-xs text-muted-foreground">ราคาตลาด (เฉลี่ย 3 ครั้งล่าสุด)</p>
+            <p className="font-display text-3xl font-bold tracking-tight tabular-nums">
+              {card.marketPrice ? formatThb(card.marketPrice) : "—"}
+            </p>
+            {card.marketPrice ? (
               <span
                 className={cn(
-                  "mb-1 inline-flex items-center gap-1 rounded-md px-2 py-1 text-sm font-semibold tabular-nums",
+                  "mt-1 inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold tabular-nums",
                   up ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive",
                 )}
               >
-                {up ? (
-                  <ArrowUpRight className="h-4 w-4" />
-                ) : (
-                  <ArrowDownRight className="h-4 w-4" />
-                )}
-                {up ? "+" : ""}
-                {diffVsAvg.toFixed(2)}% เทียบค่าเฉลี่ย 30 วัน
+                {up ? <ArrowUpRight className="h-3.5 w-3.5" /> : <ArrowDownRight className="h-3.5 w-3.5" />}
+                ขายล่าสุด {formatThb(card.lastPrice)} ({up ? "+" : ""}
+                {diffVsAvg.toFixed(1)}%)
               </span>
-            </div>
+            ) : (
+              <p className="mt-1 text-xs text-muted-foreground">ยังไม่มีการขายใน 90 วันที่ผ่านมา</p>
+            )}
           </div>
         </div>
+
+        {/* มีขาย/ประมูลอยู่ตอนนี้ */}
+        {forSale.length > 0 && (
+          <div>
+            <h3 className="mb-2 text-sm font-bold">มีขายอยู่ตอนนี้ · {forSale.length} ใบ</h3>
+            <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+              {forSale.slice(0, 6).map((l) => {
+                const d = diffVsMarket(l.price, card.marketPrice);
+                const inner = (
+                  <>
+                    <SmartImage
+                      src={l.image}
+                      alt={l.name}
+                      transformWidth={100}
+                      wrapperClassName="h-14 w-10 shrink-0 overflow-hidden rounded-md bg-tile ring-1 ring-border"
+                      className="object-cover"
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-display text-base font-bold tabular-nums">{formatThb(l.price)}</span>
+                      <span
+                        className={cn(
+                          "block truncate text-[11px]",
+                          l.kind === "fixed" && d !== null && d <= -1 ? "font-semibold text-success" : "text-muted-foreground",
+                        )}
+                      >
+                        {l.kind === "auction"
+                          ? "ประมูล · ราคาปัจจุบัน"
+                          : d === null
+                            ? "ขายราคาปกติ"
+                            : Math.abs(d) < 1
+                              ? "ใกล้เคียงราคาตลาด"
+                              : `${d < 0 ? "ถูกกว่า" : "สูงกว่า"}ราคาตลาด ${Math.abs(d).toFixed(0)}%`}
+                      </span>
+                    </span>
+                    <span className="shrink-0 rounded-lg bg-gradient-ember px-3 py-1.5 text-xs font-semibold text-primary-foreground">
+                      {l.kind === "auction" ? "เข้าประมูล" : "ซื้อเลย"}
+                    </span>
+                  </>
+                );
+                const cls =
+                  "flex items-center gap-3 rounded-2xl bg-card p-2 ring-1 ring-border transition-shadow hover:shadow-card";
+                return l.kind === "auction" ? (
+                  <Link key={l.cardId} to="/card/$id" params={{ id: l.cardId }} className={cls}>
+                    {inner}
+                  </Link>
+                ) : (
+                  <Link key={l.cardId} to="/product/$id" params={{ id: l.cardId }} className={cls}>
+                    {inner}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* เทียบราคาการ์ดใบเดียวกันในแต่ละเกรด (SQC / PSA / BGS / Raw ...) */}
+        <CrossGradeTable current={card} cards={allMarketCards} listingsByKey={listingsByKey} />
 
         {/* Key metrics */}
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -343,4 +415,11 @@ function MetricCard({
       <p className="mt-1.5 text-lg font-bold tracking-tight tabular-nums sm:text-xl">{value}</p>
     </div>
   );
+}
+
+/** แสดงเวลาที่ผ่านมาเฉพาะฝั่ง client (กัน hydration ไม่ตรง) */
+function ClientTimeAgo({ ms }: { ms: number }) {
+  const [text, setText] = useState("");
+  useEffect(() => setText(timeAgo(ms)), [ms]);
+  return <>{text}</>;
 }

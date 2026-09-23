@@ -1,14 +1,14 @@
 import { Link } from "@tanstack/react-router";
-import { LayoutDashboard, Search, ShoppingBag, X } from "lucide-react";
+import { LayoutDashboard, Search, ShoppingBag } from "lucide-react";
 import { useState } from "react";
 
 import taletailsLogo from "@/assets/taletails-logo.jpg";
+import { GlobalSearchDialog, SearchTrigger } from "@/components/site/GlobalSearch";
 import { NotificationsMenu } from "@/components/site/NotificationsMenu";
 import { ThemeToggle } from "@/components/site/ThemeToggle";
+import { UserAvatar } from "@/components/site/UserAvatar";
 import { WatchlistMenu } from "@/components/site/WatchlistMenu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth";
 import { useCart } from "@/lib/cart";
 import { useIsAdmin } from "@/hooks/useAdmin";
@@ -22,7 +22,7 @@ export const navItems = [
 ] as const;
 
 export function SiteHeader() {
-  const [open, setOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const { count } = useCart();
   const { user, isAuthenticated } = useAuth();
   const { isAdmin } = useIsAdmin();
@@ -52,26 +52,20 @@ export function SiteHeader() {
         </nav>
 
 
-        <div className="relative ml-auto hidden max-w-sm flex-1 md:block">
-          <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            type="search"
-            aria-label="ค้นหาการ์ด"
-            placeholder="ค้นหาการ์ด ชุด หรือรหัสการ์ด…"
-            className="min-h-10 rounded-full border-border bg-white pl-9"
-          />
+        <div className="ml-auto hidden max-w-sm flex-1 md:block">
+          <SearchTrigger onOpen={() => setSearchOpen(true)} />
         </div>
 
         <div className="ml-auto flex shrink-0 items-center gap-0.5 sm:gap-1 md:ml-0">
-          {/* Mobile: search toggle only */}
+          {/* Mobile: เปิดค้นหาทั้งเว็บแบบเต็มจอ */}
           <Button
             variant="ghost"
             size="icon"
             aria-label="ค้นหา"
             className="min-h-11 w-11 md:hidden"
-            onClick={() => setOpen((v) => !v)}
+            onClick={() => setSearchOpen(true)}
           >
-            {open ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
+            <Search className="h-5 w-5" />
           </Button>
 
           <div className="hidden items-center gap-1 md:flex">
@@ -115,11 +109,7 @@ export function SiteHeader() {
               className="hidden min-h-10 w-10 rounded-full md:inline-flex"
             >
               <Link to="/profile">
-                <Avatar className="h-9 w-9 rounded-full">
-                  <AvatarFallback className="bg-gradient-ember text-xs font-bold text-primary-foreground">
-                    {initials(user.name)}
-                  </AvatarFallback>
-                </Avatar>
+                <UserAvatar name={user.name} src={user.avatarUrl} className="h-9 w-9" />
               </Link>
             </Button>
           ) : (
@@ -133,30 +123,8 @@ export function SiteHeader() {
         </div>
       </div>
 
-      {open && (
-        <div className="border-t border-border bg-background px-4 py-3 md:hidden">
-          <div className="relative">
-            <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              autoFocus
-              type="search"
-              aria-label="ค้นหาการ์ด"
-              placeholder="ค้นหาการ์ด ชุด หรือรหัสการ์ด…"
-              className="min-h-11 rounded-full border-border bg-white pl-9"
-            />
-          </div>
-        </div>
-      )}
-
+      <GlobalSearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
     </header>
   );
 }
 
-function initials(name: string) {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "TT";
-  if (parts.length === 1) return (parts[0]?.slice(0, 2) ?? "TT").toUpperCase();
-  const first = parts[0]?.[0] ?? "";
-  const last = parts[parts.length - 1]?.[0] ?? "";
-  return `${first}${last}`.toUpperCase();
-}

@@ -71,13 +71,24 @@ export interface AdminCardRow {
   price: number;
   sale_type: "auction" | "fixed_price";
   status: "available" | "locked" | "sold";
+  /** null = การ์ดชิ้นเดียว */
+  stock_quantity: number | null;
+  /** false = ฉบับร่าง / ซ่อนจากตลาด */
+  is_published: boolean;
   created_at: string;
-  auctions?: { id: string; end_time: string; current_price: number; status: string }[];
+  updated_at: string;
+  auctions?: {
+    id: string;
+    end_time: string;
+    current_price: number;
+    status: string;
+    bid_count: number;
+  }[];
   orders?: { id: string; status: string; payment_due_at: string }[];
 }
 
 const CARD_SELECT =
-  "id, name, set_name, grade, condition, images, price, sale_type, status, created_at, auctions (id, end_time, current_price, status), orders (id, status, payment_due_at)";
+  "id, name, set_name, grade, condition, images, price, sale_type, status, stock_quantity, is_published, created_at, updated_at, auctions (id, end_time, current_price, status, bid_count), orders (id, status, payment_due_at)";
 
 export function useAdminCards(enabled = true) {
   return useQuery({
@@ -223,7 +234,66 @@ export interface NewCardInput {
   startingPrice: string;
   bidIncrement: string;
   endTime: string;
+  /** จำนวนสต็อก (เฉพาะขายราคาปกติ) */
+  stockQuantity: string;
   files: File[];
+  /** true = ลงตลาดทันที, false = บันทึกเป็นฉบับร่าง */
+  publish: boolean;
+}
+
+/** ย่อรูปแล้วอัปโหลดขึ้น bucket card-images คืน signed URL อายุ 10 ปี */
+async function uploadCardImage(userId: string, original: File): Promise<string> {
+  const file = await compressImageFile(original);
+  const ext = file.name.split(".").pop() ?? "jpg";
+  const path = `${userId}/${crypto.randomUUID()}.${ext}`;
+  const { error: upErr } = await supabase.storage
+    .from("card-images")
+    .upload(path, file, { contentType: file.type, upsert: false });
+  if (upErr) throw new Error(upErr.message);
+  const { data: signed, error: signErr } = await supabase.storage
+    .from("card-images")
+    .createSignedUrl(path, TEN_YEARS);
+  if (signErr) throw new Error(signErr.message);
+  return signed.signedUrl;
+}
+
+/** รูปในตัวแก้ไข: รูปเดิมที่อยู่บนเซิร์ฟเวอร์ หรือไฟล์ใหม่/ที่ครอบใหม่ */
+export type PickedImage = { kind: "remote"; url: string } | { kind: "file"; file: File };
+
+/**
+ * แก้ไขรูปของการ์ดที่ลงไว้แล้ว (เรียงลำดับ ลบ เพิ่ม ครอบใหม่)
+ * อัปโหลดเฉพาะไฟล์ใหม่ รูปเดิมใช้ URL เดิม แล้วบันทึกลำดับใหม่ลง cards.images
+ */
+export function useUpdateCardImages() {
+  const queryClient = useQueryClient();
+  const { userId } = useIsAdmin();
+  return useMutation({
+    mutationFn: async (input: { cardId: string; images: PickedImage[] }) => {
+      if (!userId) throw new Error("กรุณาเข้าสู่ระบบก่อน");
+      if (!input.images.length) throw new Error("ต้องมีรูปอย่างน้อย 1 รูป");
+      const urls: string[] = [];
+      for (const img of input.images) {
+        urls.push(img.kind === "remote" ? img.url : await uploadCardImage(userId, img.file));
+      }
+      const { data, error } = await supabase
+        .from("cards")
+        .update({ images: urls })
+        .eq("id", input.cardId)
+        .select("id");
+      if (error) throw new Error(error.message);
+      if (!data?.length) throw new Error("ไม่มีสิทธิ์แก้ไขการ์ดใบนี้");
+      return urls;
+    },
+    onSuccess: (_d, input) => {
+      void queryClient.invalidateQueries({ queryKey: ["admin", "cards"] });
+      void queryClient.invalidateQueries({ queryKey: ["shop", "cards"] });
+      void queryClient.invalidateQueries({ queryKey: ["cards"] });
+      void queryClient.invalidateQueries({ queryKey: ["card", input.cardId] });
+      void queryClient.invalidateQueries({ queryKey: ["auctions"] });
+      void queryClient.invalidateQueries({ queryKey: ["global-search"] });
+      void queryClient.invalidateQueries({ queryKey: ["shop", "listing-history"] });
+    },
+  });
 }
 
 /** Uploads images, creates the card and (optionally) opens its auction round. */
@@ -237,22 +307,12 @@ export function useCreateCard() {
 
       const images: string[] = [];
       for (const original of input.files) {
-        const file = await compressImageFile(original);
-        const ext = file.name.split(".").pop() ?? "jpg";
-        const path = `${userId}/${crypto.randomUUID()}.${ext}`;
-        const { error: upErr } = await supabase.storage
-          .from("card-images")
-          .upload(path, file, { contentType: file.type, upsert: false });
-        if (upErr) throw new Error(upErr.message);
-        const { data: signed, error: signErr } = await supabase.storage
-          .from("card-images")
-          .createSignedUrl(path, TEN_YEARS);
-        if (signErr) throw new Error(signErr.message);
-        images.push(signed.signedUrl);
+        images.push(await uploadCardImage(userId, original));
       }
 
       const isAuction = input.saleType === "auction";
       const startPrice = Number(input.startingPrice || input.price || 0);
+      const stock = isAuction ? null : Math.max(0, Math.floor(Number(input.stockQuantity || 1)));
 
       const { data: card, error } = await supabase
         .from("cards")
@@ -273,12 +333,15 @@ export function useCreateCard() {
           sale_type: input.saleType,
           price: isAuction ? startPrice : Number(input.price || 0),
           status: "available",
+          stock_quantity: stock,
+          is_published: input.publish,
         })
         .select("id")
         .single();
       if (error) throw new Error(error.message);
 
-      if (isAuction) {
+      // ฉบับร่างของการ์ดประมูลจะยังไม่เปิดรอบประมูล (ยังไม่เริ่มนับเวลา) จนกว่าจะกดเปิดประมูลจากหน้าร้าน
+      if (isAuction && input.publish) {
         if (!input.endTime) throw new Error("กรุณาระบุวันเวลาปิดประมูล");
         const { error: aErr } = await supabase.from("auctions").insert({
           card_id: card.id,
@@ -294,8 +357,52 @@ export function useCreateCard() {
       return card.id as string;
     },
     onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["card-suggestions"] });
       void queryClient.invalidateQueries({ queryKey: ["admin", "cards"] });
+      void queryClient.invalidateQueries({ queryKey: ["shop", "cards"] });
       void queryClient.invalidateQueries({ queryKey: ["cards", "marketplace"] });
+      void queryClient.invalidateQueries({ queryKey: ["auctions"] });
+    },
+  });
+}
+
+/**
+ * ผู้ขายแก้สต็อก / เปิด-ปิดการแสดงในตลาด / เปิดประมูลจากฉบับร่าง
+ * (ตรวจสิทธิ์และเงื่อนไขทั้งหมดในฐานข้อมูล — RPC update_card_listing)
+ */
+export function useUpdateCardListing() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: {
+      cardId: string;
+      isPublished?: boolean;
+      stockQuantity?: number;
+      auctionEndTime?: string;
+      bidIncrement?: number;
+    }) => {
+      // ส่งเฉพาะค่าที่ต้องการเปลี่ยน (exactOptionalPropertyTypes ห้ามส่ง undefined)
+      const args: {
+        _card_id: string;
+        _is_published?: boolean;
+        _stock_quantity?: number;
+        _auction_end_time?: string;
+        _bid_increment?: number;
+      } = { _card_id: input.cardId };
+      if (input.isPublished !== undefined) args._is_published = input.isPublished;
+      if (input.stockQuantity !== undefined) args._stock_quantity = input.stockQuantity;
+      if (input.auctionEndTime) args._auction_end_time = new Date(input.auctionEndTime).toISOString();
+      if (input.bidIncrement !== undefined) args._bid_increment = input.bidIncrement;
+
+      const { data, error } = await supabase.rpc("update_card_listing", args);
+      if (error) throw new Error(error.message);
+      return data;
+    },
+    onSuccess: (_d, input) => {
+      void queryClient.invalidateQueries({ queryKey: ["admin", "cards"] });
+      void queryClient.invalidateQueries({ queryKey: ["shop", "cards"] });
+      void queryClient.invalidateQueries({ queryKey: ["shop", "listing-history"] });
+      void queryClient.invalidateQueries({ queryKey: ["cards"] });
+      void queryClient.invalidateQueries({ queryKey: ["card", input.cardId] });
       void queryClient.invalidateQueries({ queryKey: ["auctions"] });
     },
   });

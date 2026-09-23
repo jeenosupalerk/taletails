@@ -1,5 +1,6 @@
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { SmartImage } from "@/components/ui/smart-image";
 import { optimizedImageUrl } from "@/lib/images";
@@ -20,11 +21,15 @@ export interface ZoomableImageProps {
   galleryIndex?: number;
   /** Notified when the lightbox moves to another image. */
   onGalleryIndexChange?: (index: number) => void;
+  /** Position classes for the magnifier toggle button (default: bottom-right). */
+  zoomButtonClassName?: string;
 }
 
 /**
- * Product image with a hover/touch-hold magnifier lens and a click-to-open
- * full-screen lightbox (with next/prev when a gallery is provided).
+ * Product image with a click-to-open full-screen lightbox (with next/prev when a
+ * gallery is provided) and an opt-in magnifier: the lens only follows the
+ * pointer after the user taps the magnifier icon, so browsing never triggers it
+ * by accident. Tap the icon again (or press Esc) to turn it off.
  */
 export function ZoomableImage({
   src,
@@ -37,11 +42,12 @@ export function ZoomableImage({
   galleryImages,
   galleryIndex = 0,
   onGalleryIndexChange,
+  zoomButtonClassName,
 }: ZoomableImageProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const holdTimer = useRef<number | null>(null);
   const [lens, setLens] = useState<{ x: number; y: number } | null>(null);
   const [open, setOpen] = useState(false);
+  const [zoomMode, setZoomMode] = useState(false);
   const [current, setCurrent] = useState(galleryIndex);
 
   const gallery = galleryImages && galleryImages.length > 1 ? galleryImages : null;
@@ -74,6 +80,18 @@ export function ZoomableImage({
   });
 
 
+  useEffect(() => {
+    if (!zoomMode) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setZoomMode(false);
+        setLens(null);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [zoomMode]);
+
   const point = (clientX: number, clientY: number) => {
     const el = ref.current;
     if (!el) return;
@@ -87,74 +105,105 @@ export function ZoomableImage({
     setLens({ x, y });
   };
 
-  const clearHold = () => {
-    if (holdTimer.current) {
-      window.clearTimeout(holdTimer.current);
-      holdTimer.current = null;
-    }
-  };
 
   if (!src) return <SmartImage src={src} alt={alt} className={className ?? ""} wrapperClassName={wrapperClassName ?? ""} />;
 
   return (
     <>
-      <div
-        ref={ref}
-        className={cn("relative h-full w-full cursor-zoom-in touch-manipulation", wrapperClassName)}
-        onMouseMove={(e) => point(e.clientX, e.clientY)}
-        onMouseLeave={() => setLens(null)}
-        onTouchStart={(e) => {
-          const t = e.touches[0];
-          if (!t) return;
-          const { clientX, clientY } = t;
-          clearHold();
-          holdTimer.current = window.setTimeout(() => point(clientX, clientY), 250);
-        }}
-        onTouchMove={(e) => {
-          const t = e.touches[0];
-          if (t && lens) point(t.clientX, t.clientY);
-        }}
-        onTouchEnd={() => {
-          clearHold();
-          setLens(null);
-        }}
-        onClick={() => {
-          setCurrent(galleryIndex);
-          setOpen(true);
-        }}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
+      <div className={cn("relative h-full w-full", wrapperClassName)}>
+        <div
+          ref={ref}
+          data-zooming={zoomMode ? "true" : undefined}
+          className={cn(
+            "relative h-full w-full",
+            zoomMode ? "cursor-crosshair touch-none" : "cursor-pointer touch-manipulation",
+          )}
+          onMouseMove={(e) => {
+            if (zoomMode) point(e.clientX, e.clientY);
+          }}
+          onMouseLeave={() => setLens(null)}
+          onTouchStart={(e) => {
+            if (!zoomMode) return;
+            const t = e.touches[0];
+            if (t) point(t.clientX, t.clientY);
+          }}
+          onTouchMove={(e) => {
+            if (!zoomMode) return;
+            const t = e.touches[0];
+            if (t) point(t.clientX, t.clientY);
+          }}
+          onTouchEnd={() => {
+            if (zoomMode) setLens(null);
+          }}
+          onClick={() => {
+            // โหมดแว่นขยาย: คลิกบนรูปไม่เปิดหน้าต่างเต็มจอ เพื่อให้เลื่อนดูรายละเอียดได้
+            if (zoomMode) return;
             setCurrent(galleryIndex);
             setOpen(true);
-          }
-        }}
-
-        aria-label={`ขยายรูป ${alt}`}
-      >
-        <SmartImage
-          src={src}
-          alt={alt}
-          transformWidth={transformWidth}
-          priority={priority}
-          className={className}
-        />
-        {lens && (
-          <span
-            aria-hidden
-            className="pointer-events-none absolute inset-0 z-10 rounded-xl bg-no-repeat"
-            style={{
-              backgroundImage: `url("${bigSrc}")`,
-              backgroundSize: `${zoom * 100}% ${zoom * 100}%`,
-              backgroundPosition: `${lens.x}% ${lens.y}%`,
-            }}
+          }}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setCurrent(galleryIndex);
+              setOpen(true);
+            }
+          }}
+          aria-label={`ดูรูป ${alt} แบบเต็มจอ`}
+        >
+          <SmartImage
+            src={src}
+            alt={alt}
+            transformWidth={transformWidth}
+            priority={priority}
+            className={className}
           />
+          {zoomMode && lens && (
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-0 z-10 rounded-xl bg-tile bg-no-repeat"
+              style={{
+                backgroundImage: `url("${bigSrc}")`,
+                backgroundSize: `${zoom * 100}% ${zoom * 100}%`,
+                backgroundPosition: `${lens.x}% ${lens.y}%`,
+              }}
+            />
+          )}
+        </div>
+
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setZoomMode((z) => !z);
+            setLens(null);
+          }}
+          aria-pressed={zoomMode}
+          aria-label={zoomMode ? "ปิดแว่นขยาย" : "เปิดแว่นขยาย"}
+          title={zoomMode ? "ปิดแว่นขยาย" : "แว่นขยาย: ชี้หรือแตะบนรูปเพื่อซูม"}
+          className={cn(
+            "absolute z-20 flex h-10 w-10 items-center justify-center rounded-full shadow-md ring-1 transition-[background-color,color,transform] duration-150 active:scale-90",
+            zoomMode
+              ? "bg-primary text-primary-foreground ring-primary"
+              : "bg-card/90 text-foreground ring-border/70 backdrop-blur hover:text-primary",
+            zoomButtonClassName ?? "right-3 bottom-3",
+          )}
+        >
+          {zoomMode ? <ZoomOut className="h-[18px] w-[18px]" /> : <ZoomIn className="h-[18px] w-[18px]" />}
+        </button>
+
+        {zoomMode && !lens && (
+          <span className="pointer-events-none absolute bottom-3 left-1/2 z-20 -translate-x-1/2 rounded-full bg-foreground/80 px-3 py-1 text-[11px] font-medium whitespace-nowrap text-background">
+            ชี้หรือแตะบนรูปเพื่อซูม
+          </span>
         )}
       </div>
 
-      {open && (
+      {open &&
+        typeof document !== "undefined" &&
+        // วาดผ่าน portal ที่ body — ไม่งั้นจะติดอยู่ใต้ header เมื่ออยู่ในกล่อง sticky
+        createPortal(
         <div
           className="fixed inset-0 z-[120] flex animate-fade-in items-center justify-center bg-foreground/80 p-4 backdrop-blur-md"
           onClick={() => setOpen(false)}
@@ -228,8 +277,9 @@ export function ZoomableImage({
               </div>
             </>
           )}
-        </div>
-      )}
+        </div>,
+          document.body,
+        )}
     </>
   );
 

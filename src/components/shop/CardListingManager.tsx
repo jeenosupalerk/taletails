@@ -3,17 +3,20 @@ import {
   AlarmClock,
   ChevronLeft,
   ChevronRight,
+  Eye,
+  EyeOff,
   Gavel,
   ImagePlus,
   Loader2,
   Lock,
-
+  Package,
   PackageOpen,
   Plus,
+  Save,
   Tag,
   Trash2,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -36,8 +39,11 @@ import {
   useMyCards,
   useRelistAuction,
   useUpdateAuctionEndTime,
+  useUpdateCardListing,
+  type AdminCardRow,
   type NewCardInput,
 } from "@/hooks/useAdmin";
+import { isSoldExpiredFromMarket, SOLD_VISIBLE_DAYS } from "@/hooks/useSupabaseCatalog";
 import {
   getAuctionOutcome,
   type AuctionDbStatus,
@@ -47,6 +53,11 @@ import {
 import { thb } from "@/lib/cart";
 
 import { SmartImage } from "@/components/ui/smart-image";
+import { ImagePicker, MAX_IMAGES } from "@/components/shop/ImagePicker";
+import { EditImagesButton } from "@/components/shop/EditImagesDialog";
+import { GradingCompanyField } from "@/components/shop/GradingCompanyField";
+import { SuggestInput } from "@/components/shop/SuggestInput";
+import { useCardSuggestions } from "@/hooks/useCardSuggestions";
 
 const EMPTY: NewCardInput = {
   name: "",
@@ -65,7 +76,9 @@ const EMPTY: NewCardInput = {
   startingPrice: "",
   bidIncrement: "50",
   endTime: "",
+  stockQuantity: "1",
   files: [],
+  publish: true,
 };
 
 const PAGE_SIZE = 8;
@@ -78,12 +91,37 @@ const STATUS_LABEL: Record<string, string> = {
 
 export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "shop" }) {
   const [form, setForm] = useState<NewCardInput>(EMPTY);
+  const [submitting, setSubmitting] = useState<"publish" | "draft" | null>(null);
   const [open, setOpen] = useState(false);
   const [page, setPage] = useState(1);
   const adminCards = useAdminCards(scope === "admin");
   const myCards = useMyCards(scope === "shop");
   const cards = scope === "shop" ? myCards : adminCards;
   const create = useCreateCard();
+  // ชื่อการ์ด/ชุดที่เคยลงไว้ — ช่วยให้พิมพ์ตรงกันทุกครั้ง ราคากลางจะได้รวมเป็นรุ่นเดียวกัน
+  const suggest = useCardSuggestions(open);
+  const nameItems = useMemo(
+    () =>
+      suggest.cards.map((c) => ({
+        key: `${c.name}|${c.setName}|${c.cardNo}`,
+        text: c.name,
+        detail: [c.setName, c.cardNo && `#${c.cardNo}`, `ลงแล้ว ${c.count} ใบ`].filter(Boolean).join(" · "),
+        weight: c.count,
+        value: c,
+      })),
+    [suggest.cards],
+  );
+  const setItems = useMemo(
+    () =>
+      suggest.sets.map((x) => ({
+        key: x.setName,
+        text: x.setName,
+        detail: `ลงแล้ว ${x.count} ใบ`,
+        weight: x.count,
+        value: x.setName,
+      })),
+    [suggest.sets],
+  );
   const del = useDeleteCard();
   const setEnd = useUpdateAuctionEndTime();
 
@@ -102,6 +140,8 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
   const pageItems = items.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   const onRowKeyDown = (e: React.KeyboardEvent<HTMLLIElement>) => {
+    // ไม่รับคีย์ลัดที่ bubble มาจาก dialog (portal) เช่น หน้าแก้ไขรูป/ครอบรูป
+    if (!e.currentTarget.contains(e.target as Node)) return;
     const target = e.target as HTMLElement;
     if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
     const key = e.key.toLowerCase();
@@ -116,7 +156,8 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
   const set = <K extends keyof NewCardInput>(key: K, value: NewCardInput[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
 
-  const submit = () => {
+  /** publish = true ลงตลาดทันที / false บันทึกเป็นฉบับร่าง (ยังไม่แสดงในตลาด) */
+  const submit = (publish: boolean) => {
     if (!form.name.trim()) {
       toast.error("กรุณากรอกชื่อการ์ด");
       return;
@@ -125,14 +166,23 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
       toast.error("กรุณากรอกราคาขาย");
       return;
     }
-    if (form.saleType === "auction" && !form.endTime) {
+    if (form.saleType === "fixed_price") {
+      const stock = Number(form.stockQuantity);
+      if (!Number.isInteger(stock) || stock < 1 || stock > 9999) {
+        toast.error("จำนวนสต็อกต้องเป็นจำนวนเต็ม 1 – 9,999");
+        return;
+      }
+    }
+    if (publish && form.saleType === "auction" && !form.endTime) {
       toast.error("กรุณาระบุวันเวลาปิดประมูล");
       return;
     }
 
-    create.mutate(form, {
+    setSubmitting(publish ? "publish" : "draft");
+    create.mutate({ ...form, publish }, {
+      onSettled: () => setSubmitting(null),
       onSuccess: () => {
-        toast.success("ลงการ์ดใหม่เรียบร้อย");
+        toast.success(publish ? "ลงการ์ดในตลาดเรียบร้อย" : "บันทึกฉบับร่างแล้ว ยังไม่แสดงในตลาด");
         setForm(EMPTY);
         setOpen(false);
       },
@@ -158,17 +208,34 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
 
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <Field label="ชื่อการ์ด *">
-              <Input
-                className="min-h-11 rounded-xl"
+              <SuggestInput
                 value={form.name}
-                onChange={(e) => set("name", e.target.value)}
+                onChange={(v) => set("name", v)}
+                placeholder="พิมพ์ชื่อการ์ด เช่น Moltres V"
+                items={nameItems}
+                similar={suggest.similarName(form.name)}
+                onPick={(it) =>
+                  // เลือกการ์ดที่เคยลง → เติมชื่อ + ชุด และช่องที่ยังว่าง (เลขการ์ด/ความหายาก/ภาษา/ปี)
+                  setForm((f) => ({
+                    ...f,
+                    name: it.value.name,
+                    setName: it.value.setName || f.setName,
+                    cardNo: f.cardNo || it.value.cardNo,
+                    rarity: f.rarity || it.value.rarity,
+                    language: f.language || it.value.language,
+                    year: f.year || it.value.year,
+                  }))
+                }
               />
             </Field>
             <Field label="ชุด / เซ็ต">
-              <Input
-                className="min-h-11 rounded-xl"
+              <SuggestInput
                 value={form.setName}
-                onChange={(e) => set("setName", e.target.value)}
+                onChange={(v) => set("setName", v)}
+                placeholder="พิมพ์ชื่อชุด"
+                items={setItems}
+                similar={suggest.similarSet(form.setName)}
+                onPick={(it) => set("setName", it.value)}
               />
             </Field>
             <Field label="เลขการ์ด">
@@ -208,19 +275,19 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                 onChange={(e) => set("condition", e.target.value)}
               />
             </Field>
+            <Field label="บริษัทเกรด">
+              <GradingCompanyField
+                key={open ? "open" : "closed"}
+                value={form.gradingCompany}
+                onChange={(v) => set("gradingCompany", v)}
+              />
+            </Field>
             <Field label="เกรด">
               <Input
                 className="min-h-11 rounded-xl"
-                placeholder="PSA 10"
+                placeholder={form.gradingCompany ? "เช่น 10 หรือ 9.5" : "ไม่เกรด — เว้นว่างได้"}
                 value={form.grade}
                 onChange={(e) => set("grade", e.target.value)}
-              />
-            </Field>
-            <Field label="บริษัทเกรด">
-              <Input
-                className="min-h-11 rounded-xl"
-                value={form.gradingCompany}
-                onChange={(e) => set("gradingCompany", e.target.value)}
               />
             </Field>
             <Field label="เลขใบรับรอง">
@@ -244,18 +311,10 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
           </div>
 
           <div className="mt-4">
-            <Label className="text-xs font-medium text-muted-foreground">รูปการ์ด (หลายรูปได้)</Label>
-            <label className="mt-1.5 flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-dashed border-border px-4 text-sm text-muted-foreground transition-colors hover:bg-secondary/50">
-              <ImagePlus className="h-4 w-4" />
-              {form.files.length ? `เลือกแล้ว ${form.files.length} รูป` : "เลือกไฟล์รูปภาพ"}
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={(e) => set("files", Array.from(e.target.files ?? []))}
-              />
-            </label>
+            <Label className="text-xs font-medium text-muted-foreground">
+              รูปการ์ด (สูงสุด {MAX_IMAGES} รูป · รูปแรกคือรูปปก)
+            </Label>
+            <ImagePicker files={form.files} onChange={(files) => set("files", files)} />
           </div>
 
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -275,14 +334,30 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
             </Field>
 
             {form.saleType === "fixed_price" ? (
-              <Field label="ราคาขาย (บาท) *">
-                <Input
-                  type="number"
-                  className="min-h-11 rounded-xl"
-                  value={form.price}
-                  onChange={(e) => set("price", e.target.value)}
-                />
-              </Field>
+              <>
+                <Field label="ราคาขาย (บาท) *">
+                  <Input
+                    type="number"
+                    className="min-h-11 rounded-xl"
+                    value={form.price}
+                    onChange={(e) => set("price", e.target.value)}
+                  />
+                </Field>
+                <Field label="จำนวนสต็อก (ชิ้น) *">
+                  <Input
+                    type="number"
+                    min={1}
+                    max={9999}
+                    step={1}
+                    className="min-h-11 rounded-xl"
+                    value={form.stockQuantity}
+                    onChange={(e) => set("stockQuantity", e.target.value)}
+                  />
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    ระบบตัดสต็อกให้อัตโนมัติเมื่อมีคนซื้อ พอเหลือ 0 ปุ่มซื้อจะปิดเอง
+                  </p>
+                </Field>
+              </>
             ) : (
               <>
                 <Field label="ราคาเริ่มต้น (บาท)">
@@ -301,7 +376,7 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                     onChange={(e) => set("bidIncrement", e.target.value)}
                   />
                 </Field>
-                <Field label="วันเวลาปิดประมูล *">
+                <Field label="วันเวลาปิดประมูล * (ไม่ต้องใส่ถ้าบันทึกฉบับร่าง)">
                   <Input
                     type="datetime-local"
                     className="min-h-11 rounded-xl"
@@ -313,10 +388,28 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
             )}
           </div>
 
-          <div className="mt-6 flex gap-2">
-            <Button className="min-h-11 rounded-xl" disabled={create.isPending} onClick={submit}>
-              {create.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              บันทึกการ์ด
+          <div className="mt-6 flex flex-wrap gap-2">
+            <Button
+              className="min-h-11 rounded-xl"
+              disabled={create.isPending}
+              onClick={() => submit(true)}
+            >
+              {submitting === "publish" && <Loader2 className="h-4 w-4 animate-spin" />}
+              {form.saleType === "auction" ? "ลงการ์ดและเปิดประมูล" : "ลงขายในตลาด"}
+            </Button>
+            <Button
+              variant="secondary"
+              className="min-h-11 rounded-xl"
+              disabled={create.isPending}
+              onClick={() => submit(false)}
+              title="เก็บไว้ในร้านก่อน ยังไม่แสดงในตลาด"
+            >
+              {submitting === "draft" ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4" />
+              )}
+              บันทึกฉบับร่าง
             </Button>
             <Button variant="ghost" className="min-h-11 rounded-xl" onClick={() => setOpen(false)}>
               ยกเลิก
@@ -378,6 +471,7 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                   auction.status as AuctionDbStatus,
                   c.status as CardDbStatus,
                   auction.end_time,
+                  Number(auction.bid_count ?? 0),
                 )
               : null;
 
@@ -404,9 +498,16 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                   : false) ||
                   (!!auction && c.status === "locked")));
             const lockedNote =
-              c.status === "sold" || outcome?.outcome === "completed"
-                ? "ประมูลสำเร็จแล้ว ไม่สามารถแก้ไขหรือเปิดประมูลใหม่ได้"
-                : "อยู่ระหว่างรอผู้ชนะชำระเงิน ไม่สามารถแก้ไขหรือเปิดประมูลใหม่ได้";
+              c.sale_type === "fixed_price"
+                ? "ขายหมดแล้ว • เติมสต็อกเพื่อเปิดขายต่อได้เลย ไม่ต้องลงใหม่"
+                : c.status === "sold" || outcome?.outcome === "completed"
+                  ? "ประมูลสำเร็จแล้ว ไม่สามารถแก้ไขหรือเปิดประมูลใหม่ได้"
+                  : "อยู่ระหว่างรอผู้ชนะชำระเงิน ไม่สามารถแก้ไขหรือเปิดประมูลใหม่ได้";
+            const isDraftAuction = c.sale_type === "auction" && !auction && !c.is_published;
+            const expiredFromMarket =
+              c.sale_type === "fixed_price" &&
+              c.is_published &&
+              isSoldExpiredFromMarket(c.status, c.updated_at);
 
             return (
               <li
@@ -438,6 +539,33 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                       <span className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-muted-foreground">
                         {STATUS_LABEL[c.status]}
                       </span>
+                      {c.sale_type === "fixed_price" && c.stock_quantity !== null && (
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 ${
+                            c.stock_quantity > 0
+                              ? "bg-secondary text-muted-foreground"
+                              : "bg-destructive/10 text-destructive"
+                          }`}
+                        >
+                          <Package className="h-3 w-3" />
+                          สต็อก {c.stock_quantity}
+                        </span>
+                      )}
+                      {!c.is_published && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 font-medium text-amber-600 dark:text-amber-400">
+                          <EyeOff className="h-3 w-3" />
+                          {isDraftAuction ? "ฉบับร่าง • ยังไม่เปิดประมูล" : "ฉบับร่าง / ไม่แสดงในตลาด"}
+                        </span>
+                      )}
+                      {expiredFromMarket && (
+                        <span
+                          className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-muted-foreground"
+                          title={`ขายหมดและไม่มีการอัปเดตเกิน ${SOLD_VISIBLE_DAYS} วัน จึงไม่แสดงในหน้าตลาดแล้ว (ยังอยู่ในร้านของคุณ) — เติมสต็อกเพื่อกลับขึ้นตลาด`}
+                        >
+                          <EyeOff className="h-3 w-3" />
+                          ขายหมดเกิน {SOLD_VISIBLE_DAYS} วัน • หายจากตลาดแล้ว
+                        </span>
+                      )}
                     </p>
                   </div>
                   <p className="shrink-0 font-display text-sm font-semibold">
@@ -466,6 +594,10 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                     />
                   )}
 
+                  {c.sale_type === "fixed_price" && <StockControl card={c} />}
+                  {c.sale_type === "fixed_price" && <PublishToggle card={c} />}
+                  {isDraftAuction && <PublishAuctionDraft cardId={c.id} />}
+
                   <Button
                     asChild
                     variant="secondary"
@@ -475,6 +607,10 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                       ดูหน้าขาย
                     </Link>
                   </Button>
+                  {/* การ์ดที่ขายหมดเกิน 14 วัน: แก้รูปแล้ว updated_at จะเปลี่ยน ทำให้กลับขึ้นตลาด → ซ่อนปุ่ม */}
+                  {!expiredFromMarket && (
+                    <EditImagesButton cardId={c.id} cardName={c.name} images={c.images ?? []} />
+                  )}
                   {paymentOverdue && (
                     <span className="inline-flex min-h-10 w-full items-center gap-1.5 rounded-xl bg-destructive/10 px-3 text-xs font-medium text-destructive sm:w-auto">
                       <AlarmClock className="h-3.5 w-3.5" />
@@ -607,6 +743,150 @@ function RelistAuctionControl({ auctionId }: { auctionId: string }) {
       >
         {relist.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Gavel className="h-4 w-4" />}
         เปิดประมูลใหม่
+      </Button>
+    </div>
+  );
+}
+
+/** แก้จำนวนสต็อก — การ์ดชิ้นเดียวแบบเดิม (ยังไม่มีสต็อก) ก็ตั้งเพื่อเติมของได้ */
+function StockControl({ card }: { card: AdminCardRow }) {
+  const update = useUpdateCardListing();
+  const [value, setValue] = useState(card.stock_quantity === null ? "" : String(card.stock_quantity));
+
+  useEffect(() => {
+    setValue(card.stock_quantity === null ? "" : String(card.stock_quantity));
+  }, [card.stock_quantity]);
+
+  const current = card.stock_quantity === null ? "" : String(card.stock_quantity);
+  const dirty = value.trim() !== "" && value.trim() !== current;
+
+  const save = () => {
+    const n = Number(value);
+    if (!Number.isInteger(n) || n < 0 || n > 9999) {
+      toast.error("จำนวนสต็อกต้องเป็นจำนวนเต็ม 0 – 9,999");
+      return;
+    }
+    update.mutate(
+      { cardId: card.id, stockQuantity: n },
+      {
+        onSuccess: () =>
+          toast.success(n > 0 ? `อัปเดตสต็อกเป็น ${n} ชิ้นแล้ว` : "ตั้งสต็อกเป็น 0 — ปิดการซื้อแล้ว"),
+        onError: (e) => toast.error(e instanceof Error ? e.message : "อัปเดตสต็อกไม่สำเร็จ"),
+      },
+    );
+  };
+
+  return (
+    <div className="flex w-full items-center gap-2 sm:w-auto">
+      <Input
+        type="number"
+        min={0}
+        max={9999}
+        step={1}
+        inputMode="numeric"
+        aria-label="จำนวนสต็อก"
+        placeholder={card.stock_quantity === null ? "ชิ้นเดียว" : undefined}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && dirty) save();
+        }}
+        className="min-h-10 w-24 rounded-xl text-xs"
+      />
+      <Button
+        variant="secondary"
+        disabled={!dirty || update.isPending}
+        onClick={save}
+        className="min-h-10 rounded-xl px-3 text-xs"
+      >
+        {update.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Package className="h-4 w-4" />}
+        {card.stock_quantity === null || card.stock_quantity === 0 ? "เติมสต็อก" : "บันทึกสต็อก"}
+      </Button>
+    </div>
+  );
+}
+
+/** ปุ่มเอาขึ้นตลาด / เอาลงจากตลาด (สินค้าขายราคาปกติ) */
+function PublishToggle({ card }: { card: AdminCardRow }) {
+  const update = useUpdateCardListing();
+  const next = !card.is_published;
+
+  return (
+    <Button
+      variant={card.is_published ? "ghost" : "default"}
+      disabled={update.isPending}
+      onClick={() =>
+        update.mutate(
+          { cardId: card.id, isPublished: next },
+          {
+            onSuccess: () =>
+              toast.success(next ? "นำสินค้าขึ้นตลาดแล้ว" : "ซ่อนสินค้าจากตลาดแล้ว (ยังอยู่ในร้านของคุณ)"),
+            onError: (e) => toast.error(e instanceof Error ? e.message : "ไม่สำเร็จ"),
+          },
+        )
+      }
+      className="min-h-10 flex-1 rounded-xl px-3 text-xs sm:flex-none"
+    >
+      {update.isPending ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : card.is_published ? (
+        <EyeOff className="h-4 w-4" />
+      ) : (
+        <Eye className="h-4 w-4" />
+      )}
+      {card.is_published ? "เอาลงจากตลาด" : "ลงตลาด"}
+    </Button>
+  );
+}
+
+/** ฉบับร่างของการ์ดประมูล: ตั้งเวลาปิดแล้วกดเปิดประมูล (เริ่มนับเวลาตอนนี้) */
+function PublishAuctionDraft({ cardId }: { cardId: string }) {
+  const update = useUpdateCardListing();
+  const [endTime, setEndTime] = useState("");
+  const [increment, setIncrement] = useState("50");
+
+  return (
+    <div className="flex w-full flex-wrap items-center gap-2">
+      <Input
+        type="datetime-local"
+        aria-label="วันเวลาปิดประมูล"
+        value={endTime}
+        onChange={(e) => setEndTime(e.target.value)}
+        className="min-h-10 w-full rounded-xl text-xs sm:w-auto sm:flex-1"
+      />
+      <Input
+        type="number"
+        min={1}
+        aria-label="ขั้นต่ำการเคาะ (บาท)"
+        title="ขั้นต่ำการเคาะ (บาท)"
+        value={increment}
+        onChange={(e) => setIncrement(e.target.value)}
+        className="min-h-10 w-24 rounded-xl text-xs"
+      />
+      <Button
+        disabled={update.isPending}
+        className="min-h-10 flex-1 rounded-xl px-3 text-xs sm:flex-none"
+        onClick={() => {
+          if (!endTime) {
+            toast.error("กรุณาระบุวันเวลาปิดประมูล");
+            return;
+          }
+          update.mutate(
+            {
+              cardId,
+              isPublished: true,
+              auctionEndTime: endTime,
+              bidIncrement: Number(increment) || 50,
+            },
+            {
+              onSuccess: () => toast.success("เปิดประมูลแล้ว"),
+              onError: (e) => toast.error(e instanceof Error ? e.message : "ไม่สำเร็จ"),
+            },
+          );
+        }}
+      >
+        {update.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Gavel className="h-4 w-4" />}
+        เปิดประมูล
       </Button>
     </div>
   );

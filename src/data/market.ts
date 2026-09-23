@@ -34,6 +34,17 @@ export interface MarketCard {
   totalSold: number;
   priceHistory: PricePoint[];
   transactions: MarketTransaction[];
+  /* ---- ข้อมูลจากการรวม "การ์ดรุ่นเดียวกัน" (มีเฉพาะข้อมูลจริง) ---- */
+  /** คีย์การ์ดรุ่นเดียวกัน (ชื่อ|ชุด|เกรด) */
+  key?: string;
+  /** รหัสการ์ดทุกใบในรุ่นนี้ที่เคยขายได้ */
+  cardIds?: string[];
+  /** ราคาตลาด = เฉลี่ย 3 ครั้งล่าสุดใน 90 วัน */
+  marketPrice?: number | null;
+  /** เวลาขายล่าสุด (epoch ms) */
+  lastSoldAt?: number;
+  /** รายการขายทั้งหมด (สำหรับคำนวณตามช่วงเวลา) */
+  sales?: { price: number; soldAt: number; isAuction: boolean }[];
 }
 
 function genHistory(endPrice: number, trend: number, days = 365): PricePoint[] {

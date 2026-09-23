@@ -18,6 +18,9 @@ export function MobileBottomNav() {
   const { isAuthenticated } = useAuth();
   const { unread } = useNotifications();
 
+  // หน้ารายละเอียดสินค้า/ประมูลมีแถบซื้อ-เสนอราคาของตัวเองด้านล่าง → ซ่อนเมนูล่าง ไม่ให้ซ้อนกัน 2 ชั้น
+  if (/^\/(product|card)\//.test(pathname)) return null;
+
   const items = [
     ...baseItems,
     { label: "บัญชี", to: isAuthenticated ? "/profile" : "/auth", icon: User },

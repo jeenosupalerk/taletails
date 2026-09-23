@@ -9,83 +9,109 @@ import { useMarketplaceCards } from "@/hooks/useSupabaseCatalog";
 import { thb } from "@/lib/cart";
 import { useWatchlist } from "@/lib/watchlist";
 import { SmartImage } from "@/components/ui/smart-image";
+import { GradeBadge, MarketDiffChip } from "@/components/card/CardBits";
+import { useMarketPriceIndex } from "@/hooks/useMarketStats";
+import { diffVsMarket } from "@/lib/market-price";
 
 export function ProductGridCard({ product }: { product: Product }) {
   const watchlist = useWatchlist();
   const wished = watchlist.has(product.id);
+  const { lookup } = useMarketPriceIndex();
   const isSold = product.status === "sold";
   const isPending = product.status === "locked";
+  const stock = product.stockQuantity ?? null;
+  const lowStock = !isSold && stock !== null && stock > 0 && stock <= 3;
+
+  // เทียบราคาที่ตั้งขายกับราคาตลาดของ "การ์ดรุ่นเดียวกัน" (ชื่อ + ชุด + เกรด)
+  const market = lookup({
+    name: product.cardName,
+    set: product.setName,
+    grade: product.grade,
+    company: product.gradingCompany,
+    condition: product.conditionNote,
+  });
+  const diff = isSold ? null : diffVsMarket(product.price, market?.marketPrice);
+
+  const toggleWish = () => {
+    const added = watchlist.toggle({
+      id: product.id,
+      name: product.cardName,
+      subtitle: product.setName,
+      imageUrl: product.imageUrl,
+      price: product.price,
+      kind: "product",
+    });
+    toast[added ? "success" : "info"](
+      added ? "เพิ่มลงรายการที่อยากได้แล้ว" : "นำออกจากรายการที่อยากได้แล้ว",
+      { description: product.cardName },
+    );
+  };
 
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-2xl bg-white border-2 border-transparent shadow-sm transition-[box-shadow,border-color] duration-200 hover:shadow-card active:border-primary active:shadow-glow dark:bg-card">
+    <article className="group relative flex flex-col rounded-[18px] bg-card p-2 shadow-[0_1px_2px_oklch(0.3_0.03_55/0.06)] ring-1 ring-border/70 transition-shadow duration-200 hover:shadow-card">
       <Link
         to="/product/$id"
         params={{ id: product.id }}
-        className="flex flex-col transition-transform duration-200 active:scale-[0.98]"
+        className="flex flex-col rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         aria-label={product.cardName}
       >
-        <div className="relative aspect-square shrink-0 overflow-hidden border-b border-border bg-secondary/40 p-3 sm:p-4">
+        {/* ช่องรูป 5:7 เท่าการ์ดจริง — รูปที่ครอบตอนลงสินค้าจะพอดีช่องเต็มใบ */}
+        <div className="relative aspect-[5/7] overflow-hidden rounded-xl bg-tile transition-transform duration-200 group-active:scale-[0.98]">
           <SmartImage
             src={product.imageUrl}
-            alt={`${product.cardName} — ${product.setName}`}
+            alt={`${product.cardName} ${product.setName}`}
             transformWidth={600}
-            className={`h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105 ${
-              isSold ? "opacity-50" : ""
-            }`}
+            className={`object-cover ${isSold ? "opacity-45 grayscale-[40%]" : ""}`}
           />
-          {isSold && (
-            <span className="absolute inset-x-0 top-1/2 mx-auto w-fit -translate-y-1/2 rounded-full bg-foreground/85 px-4 py-1.5 text-xs font-bold tracking-wide text-background shadow-lg">
-              ขายแล้ว (Sold Out)
+
+          {(isSold || isPending) && (
+            <span
+              className={`absolute top-2 left-2 rounded-full px-2.5 py-1 text-[11px] font-semibold shadow-sm ${
+                isSold ? "bg-foreground/85 text-background" : "bg-amber-500 text-white"
+              }`}
+            >
+              {isSold ? "ขายแล้ว" : "รอชำระเงิน"}
             </span>
           )}
-          {isPending && (
-            <span className="absolute top-2 left-2 rounded-full bg-amber-500 px-2 py-0.5 text-[11px] font-semibold text-white shadow-sm">
-              กำลังรอการชำระเงิน
-            </span>
-          )}
+
+          <GradeBadge grade={product.grade} company={product.gradingCompany} condition={product.conditionNote} />
         </div>
 
-        <div className="flex flex-col gap-0.5 px-3.5 pt-3 pb-2">
-          <p className="flex min-h-5 items-center gap-1 text-sm font-bold">
-            <span className="truncate">{product.setName}</span>
-            {product.isVerified && <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-accent" />}
+        <div className="flex flex-col px-1.5 pt-2.5 pb-1">
+          <p className="flex min-h-4 items-center gap-1 text-xs text-muted-foreground">
+            <span className="truncate">{product.setName !== "-" ? product.setName : " "}</span>
+            {product.isVerified && (
+              <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-accent" aria-label="ตรวจสอบแล้ว" />
+            )}
           </p>
-          <p className="line-clamp-2 min-h-10 text-[13px] leading-snug break-words text-muted-foreground">
+          <h3 className="mt-0.5 line-clamp-2 min-h-10 text-[15px] leading-snug font-semibold break-words text-foreground sm:text-base">
             {product.cardName}
-          </p>
-          <p className="min-h-[16px] text-[11px] font-medium text-primary">
-            {!isSold && product.soldCount > 0 ? `ขายแล้ว ${product.soldCount} ใบ` : ""}
+          </h3>
+          <div className="mt-1.5 flex items-center justify-between gap-1.5">
+            <p className={`truncate font-display text-base font-bold sm:text-lg ${isSold ? "text-muted-foreground" : ""}`}>
+              {thb.format(product.price)}
+            </p>
+            <MarketDiffChip diff={diff} />
+          </div>
+          {/* บรรทัดสต็อก/ยอดขาย — เว้นความสูงไว้เสมอให้การ์ดทุกใบเรียงตรงกัน */}
+          <p className="mt-0.5 flex h-4 items-center gap-1 truncate text-[11px] text-muted-foreground">
+            {lowStock && <span className="font-semibold text-primary">เหลือ {stock} ชิ้น</span>}
+            {lowStock && product.soldCount > 0 && <span aria-hidden>·</span>}
+            {product.soldCount > 0 && <span>ขายแล้ว {product.soldCount}</span>}
           </p>
         </div>
       </Link>
 
-      <div className="flex min-h-14 items-end justify-between gap-2 px-3.5 pb-3.5">
-        <div className="min-w-0">
-          <p className="text-[11px] text-muted-foreground">ราคาเริ่มต้น</p>
-          <p className="truncate font-display text-base font-bold">{thb.format(product.price)}</p>
-        </div>
-        <button
-          type="button"
-          aria-label="เพิ่มลงรายการที่อยากได้"
-          onClick={() => {
-            const added = watchlist.toggle({
-              id: product.id,
-              name: product.cardName,
-              subtitle: product.setName,
-              imageUrl: product.imageUrl,
-              price: product.price,
-              kind: "product",
-            });
-            toast[added ? "success" : "info"](
-              added ? "เพิ่มลงรายการที่อยากได้แล้ว" : "นำออกจากรายการที่อยากได้แล้ว",
-              { description: product.cardName },
-            );
-          }}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-card shadow-sm transition-[colors,transform,border-color] duration-150 hover:border-primary/40 hover:text-primary active:scale-90 active:border-primary"
-        >
-          <Heart className={`h-4 w-4 ${wished ? "fill-primary text-primary" : "text-muted-foreground"}`} />
-        </button>
-      </div>
+      {/* ปุ่มหัวใจลอยมุมรูป แยกจากลิงก์ กดแล้วไม่เปิดหน้าสินค้า */}
+      <button
+        type="button"
+        aria-label={wished ? "นำออกจากรายการที่อยากได้" : "เพิ่มลงรายการที่อยากได้"}
+        aria-pressed={wished}
+        onClick={toggleWish}
+        className="absolute top-4 right-4 flex h-9 w-9 items-center justify-center rounded-full bg-card/90 shadow-sm ring-1 ring-border/60 backdrop-blur transition-transform duration-150 hover:text-primary active:scale-90"
+      >
+        <Heart className={`h-4 w-4 ${wished ? "fill-primary text-primary" : "text-muted-foreground"}`} />
+      </button>
     </article>
   );
 }
@@ -182,7 +208,7 @@ export function FeaturedMarketplace({
             ยังไม่มีสินค้าในสถานะนี้
           </p>
         )}
-        <div className="grid grid-cols-2 items-start gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 lg:gap-6">
+        <div className="grid grid-cols-2 items-start gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 lg:gap-5">
           {items.map((product) => (
             <ProductGridCard key={product.id} product={product} />
           ))}

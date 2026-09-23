@@ -1,12 +1,14 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { ChevronLeft, Loader2, ShoppingBag, Trash2 } from "lucide-react";
+import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
+import { ChevronLeft, CreditCard, Loader2, ShoppingBag, Trash2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { WonAuctionsPanel } from "@/components/site/WonAuctionsPanel";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { SmartImage } from "@/components/ui/smart-image";
+import { useCancelOrder, useMyPendingOrder } from "@/hooks/useCardDetail";
 import { useStartCheckout } from "@/hooks/useStartCheckout";
-import { thb, useCart } from "@/lib/cart";
+import { thb, useCart, type CartLine } from "@/lib/cart";
 
 const SITE_URL = "https://taletails-test.lovable.app";
 const title = "ตะกร้าสินค้า — Taletails";
@@ -80,43 +82,16 @@ function CartPage() {
           <>
             <ul className="space-y-3">
               {lines.map((line) => (
-                <li key={line.id} className="surface-panel p-3">
-                  <div className="flex gap-3">
-                    <SmartImage
-                      src={line.imageUrl}
-                      alt={line.name}
-                      transformWidth={240}
-                      wrapperClassName="h-28 w-20 shrink-0 rounded-xl border border-border"
-                      className="object-cover"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold break-words">{line.name}</p>
-                      <p className="mt-1 font-display text-lg font-bold text-primary">
-                        {thb.format(line.price * line.qty)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">จำนวน {line.qty} ใบ</p>
-                    </div>
-                    <button
-                      type="button"
-                      aria-label="ลบออกจากตะกร้า"
-                      onClick={() => {
-                        remove(line.id);
-                        toast.info("นำออกจากตะกร้าแล้ว", { description: line.name });
-                      }}
-                      className="flex min-h-10 w-10 shrink-0 items-center justify-center self-start rounded-xl text-muted-foreground transition-colors hover:bg-secondary hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                  <Button
-                    onClick={() => go(line.id)}
-                    disabled={checkout.isPending}
-                    className="mt-3 min-h-11 w-full rounded-xl bg-gradient-ember font-semibold text-primary-foreground hover:opacity-90"
-                  >
-                    {checkout.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-                    ดำเนินการชำระเงิน
-                  </Button>
-                </li>
+                <CartLineItem
+                  key={line.id}
+                  line={line}
+                  onCheckout={() => go(line.id)}
+                  checkoutPending={checkout.isPending}
+                  onRemove={() => {
+                    remove(line.id);
+                    toast.info("นำออกจากตะกร้าแล้ว", { description: line.name });
+                  }}
+                />
               ))}
             </ul>
 
@@ -133,5 +108,120 @@ function CartPage() {
         )}
       </main>
     </div>
+  );
+}
+
+/**
+ * หนึ่งรายการในตะกร้า
+ *  - ยังไม่ได้กดชำระเงิน: ปุ่ม "ดำเนินการชำระเงิน" + ปุ่มลบออกจากตะกร้า
+ *  - กดชำระเงินไปแล้ว (มีคำสั่งซื้อรอชำระ): ปุ่ม "ไปหน้าชำระเงิน" + ปุ่ม "ยกเลิกคำสั่งซื้อ"
+ *    ลบออกจากตะกร้าไม่ได้จนกว่าจะยกเลิกคำสั่งซื้อก่อน (กันของถูกจองค้างโดยไม่รู้ตัว)
+ */
+function CartLineItem({
+  line,
+  onCheckout,
+  checkoutPending,
+  onRemove,
+}: {
+  line: CartLine;
+  onCheckout: () => void;
+  checkoutPending: boolean;
+  onRemove: () => void;
+}) {
+  const navigate = useNavigate();
+  const pendingQuery = useMyPendingOrder(line.id);
+  const pending = pendingQuery.data ?? null;
+  const cancel = useCancelOrder(pending?.id ?? "");
+
+  const dueLabel = pending
+    ? new Date(pending.payment_due_at).toLocaleTimeString("th-TH", {
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : null;
+
+  return (
+    <li className="surface-panel p-3">
+      <div className="flex gap-3">
+        <SmartImage
+          src={line.imageUrl}
+          alt={line.name}
+          transformWidth={240}
+          wrapperClassName="h-28 w-20 shrink-0 rounded-xl border border-border"
+          className="object-cover"
+        />
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold break-words">{line.name}</p>
+          <p className="mt-1 font-display text-lg font-bold text-primary">
+            {thb.format(line.price * line.qty)}
+          </p>
+          <p className="text-xs text-muted-foreground">จำนวน {line.qty} ใบ</p>
+          {pending && (
+            <p className="mt-1.5 inline-flex rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-medium text-amber-600 dark:text-amber-400">
+              จองไว้แล้ว • ชำระภายใน {dueLabel} น.
+            </p>
+          )}
+        </div>
+        {!pending && (
+          <button
+            type="button"
+            aria-label="ลบออกจากตะกร้า"
+            disabled={pendingQuery.isLoading}
+            onClick={onRemove}
+            className="flex min-h-10 w-10 shrink-0 items-center justify-center self-start rounded-xl text-muted-foreground transition-colors hover:bg-secondary hover:text-destructive disabled:opacity-40"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+
+      {pending ? (
+        <div className="mt-3 flex gap-2">
+          <Button
+            onClick={() => void navigate({ to: "/checkout/$id", params: { id: pending.id } })}
+            className="min-h-11 flex-1 rounded-xl bg-gradient-ember font-semibold text-primary-foreground hover:opacity-90"
+          >
+            <CreditCard className="h-4 w-4" />
+            ไปหน้าชำระเงิน
+          </Button>
+          <ConfirmDialog
+            title="ยกเลิกคำสั่งซื้อ"
+            description={`ต้องการยกเลิกคำสั่งซื้อ "${line.name}" หรือไม่? สินค้าจะถูกปล่อยให้คนอื่นซื้อได้ และคุณสามารถลบรายการนี้ออกจากตะกร้าได้หลังยกเลิก`}
+            confirmLabel="ยกเลิกคำสั่งซื้อ"
+            tone="destructive"
+            disabled={cancel.isPending}
+            onConfirm={() =>
+              cancel.mutate(undefined, {
+                onSuccess: () => toast.success("ยกเลิกคำสั่งซื้อแล้ว", { description: line.name }),
+                onError: (e) => toast.error(e instanceof Error ? e.message : "ยกเลิกไม่สำเร็จ"),
+              })
+            }
+            trigger={
+              <Button
+                variant="secondary"
+                disabled={cancel.isPending}
+                className="min-h-11 rounded-xl px-4 font-semibold text-destructive"
+              >
+                {cancel.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <XCircle className="h-4 w-4" />
+                )}
+                ยกเลิกคำสั่งซื้อ
+              </Button>
+            }
+          />
+        </div>
+      ) : (
+        <Button
+          onClick={onCheckout}
+          disabled={checkoutPending || pendingQuery.isLoading}
+          className="mt-3 min-h-11 w-full rounded-xl bg-gradient-ember font-semibold text-primary-foreground hover:opacity-90"
+        >
+          {checkoutPending && <Loader2 className="h-4 w-4 animate-spin" />}
+          ดำเนินการชำระเงิน
+        </Button>
+      )}
+    </li>
   );
 }

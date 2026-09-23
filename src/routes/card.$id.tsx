@@ -7,16 +7,17 @@ import {
   Lock,
   ShieldCheck,
   ShoppingBag,
-  Timer,
   TrendingUp,
+  Zap,
 } from "lucide-react";
 import { CardGallery } from "@/components/card/CardGallery";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { BackButton } from "@/components/site/BackButton";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
+import { UserAvatar } from "@/components/site/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
@@ -28,9 +29,11 @@ import {
   useCard,
   useCardAuction,
   useClaimAuctionWin,
+  useMyPendingOrder,
   usePlaceBid,
 } from "@/hooks/useCardDetail";
-import { pad, useCountdown } from "@/hooks/useCountdown";
+import { useCountdown } from "@/hooks/useCountdown";
+import { FlipCountdown } from "@/components/site/FlipCountdown";
 import { AUCTION_OUTCOME_TONE_CLASS, getAuctionOutcome } from "@/lib/auction-status";
 import { thb } from "@/lib/cart";
 import { cn } from "@/lib/utils";
@@ -95,9 +98,21 @@ function CardDetailPage() {
   const closed =
     !!auction && (auction.status !== "active" || (!!countdown && countdown.isFinished));
 
+  // Anti-sniping: ฐานข้อมูลจะยืดเวลาปิดประมูลอัตโนมัติเมื่อมีการเคาะราคาในช่วงวินาทีสุดท้าย
+  // (ดู trg_bids_apply ใน Supabase) — ฝั่งนี้แค่คอยเทียบเวลาที่เปลี่ยนแล้วแจ้งเตือนผู้ดูสด
+  const prevEndTimeRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!auction?.end_time) return;
+    const prev = prevEndTimeRef.current;
+    if (prev && new Date(auction.end_time).getTime() > new Date(prev).getTime()) {
+      toast(`⏱️ ต่อเวลาประมูลอัตโนมัติ! เพราะมีการเสนอราคาในช่วงวินาทีสุดท้าย`);
+    }
+    prevEndTimeRef.current = auction.end_time;
+  }, [auction?.end_time]);
+
   const outcome =
     auction && card
-      ? getAuctionOutcome(auction.status, card.status, auction.end_time)
+      ? getAuctionOutcome(auction.status, card.status, auction.end_time, Number(auction.bid_count))
       : null;
 
 
@@ -123,6 +138,15 @@ function CardDetailPage() {
 
   const isWinner = !!auction && closed && !!userId && auction.winner_id === userId;
 
+  // สินค้าราคาปกติที่ผู้ใช้คนนี้จองไว้และยังไม่จ่าย -> พาไปหน้าชำระเงินรายการเดิม
+  const myPending = useMyPendingOrder(card && !isAuction ? id : undefined);
+  const pendingOrderId = myPending.data?.id ?? null;
+  useEffect(() => {
+    if (!pendingOrderId) return;
+    toast.info("คุณมีคำสั่งซื้อที่รอชำระสำหรับสินค้านี้ กำลังพาไปหน้าชำระเงิน");
+    void navigate({ to: "/checkout/$id", params: { id: pendingOrderId }, replace: true });
+  }, [pendingOrderId, navigate]);
+
   // Winner is routed to checkout as soon as the auction closes.
   useEffect(() => {
     if (!isWinner || !auction) return;
@@ -136,7 +160,7 @@ function CardDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isWinner, auction?.id]);
 
-  if (cardQuery.isLoading) {
+  if (cardQuery.isLoading || pendingOrderId) {
     return (
       <Shell>
         <div className="flex h-64 items-center justify-center text-muted-foreground">
@@ -199,20 +223,8 @@ function CardDetailPage() {
   };
 
   const price = isAuction ? Number(auction?.current_price ?? card.price) : Number(card.price);
-  const timeParts = countdown
-    ? [
-        { v: pad(countdown.days * 24 + countdown.hours), l: "ชั่วโมง" },
-        { v: pad(countdown.minutes), l: "นาที" },
-        { v: pad(countdown.seconds), l: "วินาที" },
-      ]
-    : [
-        { v: "--", l: "ชั่วโมง" },
-        { v: "--", l: "นาที" },
-        { v: "--", l: "วินาที" },
-      ];
-
   return (
-    <div className="min-h-screen bg-background pb-28 lg:pb-0">
+    <div className="min-h-screen bg-background">
       <SiteHeader />
 
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
@@ -225,11 +237,9 @@ function CardDetailPage() {
             alt={`${card.name} ${card.grade ?? ""}`}
             liveAuction={isAuction && !closed}
             status={card.status}
-            gradeBadge={
-              card.grade
-                ? `${card.grading_company ? `${card.grading_company} ` : ""}${card.grade}`
-                : undefined
-            }
+            grade={card.grade}
+            gradingCompany={card.grading_company}
+            condition={card.condition}
           />
 
           {/* Detail */}
@@ -283,27 +293,21 @@ function CardDetailPage() {
 
               {isAuction && auction && (
                 <>
-                  <div className="mt-5 flex items-center justify-between gap-4 border-t border-dashed border-border pt-5">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Timer className="h-4 w-4" />
-                      {closed ? "ปิดประมูลแล้ว" : "เหลือเวลา"}
-                    </div>
-                    {!closed && (
-                      <div className="flex items-end gap-2 tabular-nums">
-                        {timeParts.map((p, i) => (
-                          <div key={p.l} className="flex items-end gap-2">
-                            {i > 0 && <span className="pb-1 text-lg opacity-40">:</span>}
-                            <div className="text-center">
-                              <div className="font-display text-2xl leading-none font-semibold">
-                                {p.v}
-                              </div>
-                              <div className="mt-1 text-[10px] text-muted-foreground">{p.l}</div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                  <div className="mt-5 border-t border-dashed border-border pt-5">
+                    <FlipCountdown
+                      endTime={auction.end_time}
+                      startTime={auction.start_time}
+                      closed={closed}
+                      closedLabel={outcome?.label}
+                    />
                   </div>
+
+                  {!closed && countdown && countdown.totalMs < 5 * 60 * 1000 && (
+                    <p className="mt-3 flex items-center gap-1.5 rounded-xl bg-primary/10 px-3 py-2 text-[11px] font-medium text-primary">
+                      <Zap className="h-3.5 w-3.5 shrink-0" />
+                      กันแซงวินาทีสุดท้าย: เคาะราคาตอนนี้ ระบบจะต่อเวลาให้อัตโนมัติอีก 2 นาที
+                    </p>
+                  )}
 
                   <div className="mt-5 grid grid-cols-2 gap-4 text-xs">
                     <div>
@@ -321,9 +325,10 @@ function CardDetailPage() {
                   </div>
 
                   {!closed ? (
-                    <div className="mt-6 flex flex-wrap items-center gap-2">
+                    <div id="bid-form" className="mt-6 flex scroll-mt-28 flex-wrap items-center gap-2">
                       <Input
                         type="number"
+                        id="bid-amount"
                         aria-label="จำนวนเงินที่ต้องการเสนอ"
                         value={amount}
                         min={minNext}
@@ -381,23 +386,43 @@ function CardDetailPage() {
 
               {!isAuction && (
                 <div className="mt-6">
+                  {card.stock_quantity !== null && card.is_published && (
+                    <p
+                      className={cn(
+                        "mb-3 text-xs font-medium",
+                        card.stock_quantity > 0 ? "text-muted-foreground" : "text-destructive",
+                      )}
+                    >
+                      {card.stock_quantity > 0
+                        ? `เหลือ ${card.stock_quantity} ชิ้น`
+                        : card.status === "locked"
+                          ? "ชิ้นสุดท้ายถูกจองอยู่ รอผู้ซื้อชำระเงิน"
+                          : "สินค้าหมด"}
+                    </p>
+                  )}
                   <ConfirmDialog
                     title="ยืนยันการซื้อการ์ด"
-                    description={`ยืนยันซื้อ "${card.name}" ราคา ${thb.format(Number(card.price ?? 0))} ระบบจะล็อกการ์ดใบนี้ไว้ให้คุณและพาไปหน้าชำระเงิน`}
+                    description={`ยืนยันซื้อ "${card.name}" ราคา ${thb.format(Number(card.price ?? 0))} ระบบจะจองสินค้าไว้ให้คุณและพาไปหน้าชำระเงิน`}
                     confirmLabel="ซื้อเลย"
-                    disabled={buyNow.isPending || card.status !== "available"}
+                    disabled={buyNow.isPending || card.status !== "available" || !card.is_published}
                     onConfirm={submitBuyNow}
                     trigger={
                       <Button
                         className="min-h-11 w-full rounded-xl"
-                        disabled={buyNow.isPending || card.status !== "available"}
+                        disabled={buyNow.isPending || card.status !== "available" || !card.is_published}
                       >
                         {buyNow.isPending ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
                           <ShoppingBag className="h-4 w-4" />
                         )}
-                        {card.status === "available" ? "ซื้อเลย" : "การ์ดนี้ไม่พร้อมขาย"}
+                        {!card.is_published
+                          ? "สินค้านี้ยังไม่เปิดขาย"
+                          : card.status === "available"
+                            ? "ซื้อเลย"
+                            : card.stock_quantity === 0 && card.status === "sold"
+                              ? "สินค้าหมด"
+                              : "การ์ดนี้ไม่พร้อมขาย"}
                       </Button>
                     }
                   />
@@ -421,7 +446,20 @@ function CardDetailPage() {
               <Spec label="สภาพ" value={card.condition ?? "-"} />
               <Spec label="สถาบันเกรด" value={card.grading_company ?? "-"} />
               <Spec label="เลขใบรับรอง" value={card.certification_no ?? "-"} />
-              <Spec label="ผู้ขาย" value={card.users?.username ?? "Taletails Store"} />
+              <div className="flex items-center justify-between gap-6 border-b border-border/60 py-3 last:border-0">
+                <dt className="text-[13px] tracking-wide text-muted-foreground">ผู้ขาย</dt>
+                <dd className="flex min-w-0 items-center gap-2">
+                  <UserAvatar
+                    name={card.users?.username ?? "Taletails Store"}
+                    src={card.users?.avatar_url}
+                    className="h-7 w-7 shrink-0"
+                    fallbackClassName="text-[10px]"
+                  />
+                  <span className="truncate text-[13px] font-medium">
+                    {card.users?.username ?? "Taletails Store"}
+                  </span>
+                </dd>
+              </div>
             </dl>
 
             {card.details && (
@@ -447,8 +485,14 @@ function CardDetailPage() {
                     </p>
                   )}
                   {(bidsQuery.data ?? []).map((b, i) => (
-                    <div key={b.id} className="flex items-center justify-between px-4 py-3">
-                      <div className="min-w-0">
+                    <div key={b.id} className="flex items-center justify-between gap-3 px-4 py-3">
+                      <UserAvatar
+                        name={b.users?.username ?? "ผู้ประมูล"}
+                        src={b.users?.avatar_url}
+                        className="h-8 w-8 shrink-0"
+                        fallbackClassName="text-[10px]"
+                      />
+                      <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium">
                           {b.users?.username ?? "ผู้ประมูล"}
                           {i === 0 && (
@@ -472,6 +516,46 @@ function CardDetailPage() {
           </section>
         </div>
       </main>
+
+      {/* แถบล่างบนมือถือ: ราคา + ปุ่มหลัก (เมนูล่างของเว็บถูกซ่อนในหน้านี้) */}
+      {((isAuction && auction && !closed) || (!isAuction && card.status === "available" && card.is_published)) && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur lg:hidden">
+          <div className="mx-auto flex max-w-xl items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] text-muted-foreground">{isAuction ? "ราคาปัจจุบัน" : "ราคาขาย"}</p>
+              <p className="truncate font-display text-xl leading-tight font-bold tabular-nums">{thb.format(price)}</p>
+            </div>
+            {isAuction ? (
+              <Button
+                className="min-h-12 flex-1 rounded-xl bg-gradient-ember font-semibold text-primary-foreground hover:opacity-90"
+                onClick={() => {
+                  document.getElementById("bid-form")?.scrollIntoView({ behavior: "smooth", block: "center" });
+                  window.setTimeout(() => document.getElementById("bid-amount")?.focus({ preventScroll: true }), 350);
+                }}
+              >
+                <Gavel className="h-4 w-4" /> เสนอราคา
+              </Button>
+            ) : (
+              <ConfirmDialog
+                title="ยืนยันการซื้อการ์ด"
+                description={`ยืนยันซื้อ "${card.name}" ราคา ${thb.format(Number(card.price ?? 0))} ระบบจะจองสินค้าไว้ให้คุณและพาไปหน้าชำระเงิน`}
+                confirmLabel="ซื้อเลย"
+                disabled={buyNow.isPending}
+                onConfirm={submitBuyNow}
+                trigger={
+                  <Button
+                    className="min-h-12 flex-1 rounded-xl bg-gradient-ember font-semibold text-primary-foreground hover:opacity-90"
+                    disabled={buyNow.isPending}
+                  >
+                    {buyNow.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingBag className="h-4 w-4" />}
+                    ซื้อเลย
+                  </Button>
+                }
+              />
+            )}
+          </div>
+        </div>
+      )}
 
       <SiteFooter />
     </div>
