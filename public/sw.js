@@ -14,8 +14,10 @@ function buildOptions(payload) {
     badge: "/icon-192.png",
     image: payload.image || undefined,
     data: { link: payload.link || "/" },
+    // tag = id ของแจ้งเตือน: ถ้าเรื่องเดียวกันมาซ้ำ ให้แทนที่อันเดิมเงียบ ๆ ไม่เด้งเตือนใหม่
+    // (เดิม renotify: true ทำให้เรื่องเดียวกันเด้งซ้ำหลายรอบบนเครื่องเดียว)
     tag: payload.tag || undefined,
-    renotify: Boolean(payload.tag),
+    renotify: false,
     vibrate: [80, 40, 80],
     timestamp: Date.now(),
     requireInteraction: false,

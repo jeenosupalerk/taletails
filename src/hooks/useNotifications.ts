@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -16,39 +16,9 @@ export interface NotificationRow {
   created_at: string;
 }
 
-/**
- * แสดงการแจ้งเตือนระดับระบบผ่าน service worker (เด้งบนหน้าจอมือถือ/เดสก์ท็อป
- * แม้ผู้ใช้สลับแอปหรือไม่ได้เปิดหน้าเว็บค้างไว้) พร้อม fallback เป็น Notification ปกติ
- */
-async function showSystemNotification(row: NotificationRow) {
-  if (typeof window === "undefined" || !("Notification" in window)) return;
-  if (Notification.permission !== "granted") return;
-  const options = {
-    body: row.body ?? "",
-    icon: "/icon-192.png",
-    badge: "/icon-192.png",
-    tag: row.id,
-    data: { link: row.link ?? "/" },
-  };
-  try {
-    if ("serviceWorker" in navigator) {
-      const reg = await navigator.serviceWorker.ready;
-      await reg.showNotification(row.title, options);
-      return;
-    }
-  } catch {
-    /* ตกไปใช้ fallback ด้านล่าง */
-  }
-  if (document.visibilityState !== "visible") {
-    new Notification(row.title, options);
-  }
-}
-
-/** Fetches the signed-in user's notifications, live-updated via Realtime. */
+/** รายการแจ้งเตือนของผู้ใช้ (อัปเดตสดผ่าน useNotificationRealtime ที่ติดตั้งไว้ที่เดียวใน __root) */
 export function useNotifications() {
   const userId = useAuthUserId();
-  const queryClient = useQueryClient();
-  const permissionAsked = useRef(false);
 
   const query = useQuery({
     queryKey: ["notifications", userId],
@@ -67,19 +37,25 @@ export function useNotifications() {
     },
   });
 
-  // ลงทะเบียน service worker + ขอสิทธิ์แจ้งเตือนหนึ่งครั้ง เพื่อให้การแจ้งเตือน
-  // เด้งบนหน้าจอได้แม้ผู้ใช้ไม่ได้เปิดหน้าเว็บค้างไว้
+  const items = query.data ?? [];
+  return { items, unread: items.filter((n) => !n.read_at).length, isLoading: query.isLoading };
+}
+
+/**
+ * ฟังแจ้งเตือนใหม่แบบสด (Realtime) — ต้องเรียกที่เดียวทั้งเว็บ (NotificationListener ใน __root)
+ * เดิมอยู่ใน useNotifications ซึ่งถูกใช้ทั้งกระดิ่งเมนูบนและเมนูล่างมือถือ → เปิดช่องฟัง 2 ช่อง
+ * ขึ้น toast ซ้ำ 2 อัน และสั่งแจ้งเตือนระบบซ้อนกับ push จากเซิร์ฟเวอร์ จนเด้ง 3 ครั้ง (23 ก.ย. 2026)
+ * แจ้งเตือนระดับระบบให้ push จากเซิร์ฟเวอร์ทำหน้าที่อย่างเดียว ที่นี่แค่ toast ในหน้าเว็บ
+ */
+export function useNotificationRealtime() {
+  const userId = useAuthUserId();
+  const queryClient = useQueryClient();
+
   useEffect(() => {
-    if (!userId || permissionAsked.current) return;
-    permissionAsked.current = true;
-    if (typeof window === "undefined") return;
-    if ("serviceWorker" in navigator) {
+    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       void navigator.serviceWorker.register("/sw.js").catch(() => undefined);
     }
-    if ("Notification" in window && Notification.permission === "default") {
-      void Notification.requestPermission();
-    }
-  }, [userId]);
+  }, []);
 
   useEffect(() => {
     if (!userId) return;
@@ -92,20 +68,15 @@ export function useNotifications() {
           const row = payload.new as NotificationRow;
           void queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
           void queryClient.invalidateQueries({ queryKey: ["order"] });
-          toast(row.title, { description: row.body ?? undefined });
-          void showSystemNotification(row);
+          // id เดียวกัน = toast อันเดียว กันซ้ำแม้ช่องฟังถูกสร้างซ้อนชั่วคราว
+          toast(row.title, { id: row.id, description: row.body ?? undefined });
         },
       )
       .subscribe();
-
-
     return () => {
       void supabase.removeChannel(channel);
     };
   }, [userId, queryClient]);
-
-  const items = query.data ?? [];
-  return { items, unread: items.filter((n) => !n.read_at).length, isLoading: query.isLoading };
 }
 
 export function useMarkNotificationsRead() {

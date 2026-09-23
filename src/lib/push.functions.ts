@@ -67,6 +67,17 @@ export const savePushSubscription = createServerFn({ method: "POST" })
       { onConflict: "endpoint" },
     );
     if (error) throw new Error(error.message);
+
+    // เบราว์เซอร์เดิมลงทะเบียนใหม่ได้ endpoint ใหม่ แต่แถวเก่ายังค้าง → เครื่องเดียวได้ push ซ้ำหลายรอบ
+    // (iPhone ของเจ้าของร้านมี 4 แถวจากเครื่องเดียว, 23 ก.ย. 2026) — เก็บไว้แค่แถวล่าสุดต่อบัญชี + เบราว์เซอร์
+    if (data.userAgent) {
+      await context.supabase
+        .from("push_subscriptions")
+        .delete()
+        .eq("user_id", context.userId)
+        .eq("user_agent", data.userAgent)
+        .neq("endpoint", data.endpoint);
+    }
     return { ok: true };
   });
 

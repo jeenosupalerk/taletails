@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import { AuctionWinWatcher } from "@/components/site/AuctionWinWatcher";
 import { PushPermissionPrompt } from "@/components/site/PushPermissionPrompt";
 import { MobileBottomNav } from "@/components/site/MobileBottomNav";
+import { NotificationListener } from "@/components/site/NotificationListener";
 import { SplashScreen } from "@/components/ui/SplashScreen";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/auth";
@@ -166,6 +167,7 @@ function RootComponent() {
               <Outlet />
             </div>
             <MobileBottomNav />
+            <NotificationListener />
             <AuctionWinWatcher />
             <PushPermissionPrompt />
 
