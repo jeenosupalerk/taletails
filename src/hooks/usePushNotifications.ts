@@ -50,6 +50,8 @@ export interface PushState {
   permission: NotificationPermission | "unsupported";
   enabled: boolean;
   busy: boolean;
+  /** เบราว์เซอร์ซ่อนคำขออนุญาตไว้ (ไอคอนกระดิ่งในแถบที่อยู่) — รอผู้ใช้ไปกดอนุญาต */
+  waitingPermission: boolean;
 }
 
 /** จัดการการเปิด/ปิดการแจ้งเตือนแบบ Push บนอุปกรณ์นี้ */
@@ -60,6 +62,7 @@ export function usePushNotifications() {
     permission: "unsupported",
     enabled: false,
     busy: false,
+    waitingPermission: false,
   });
 
   const save = useServerFn(savePushSubscription);
@@ -139,9 +142,24 @@ export function usePushNotifications() {
   const enable = useCallback(async () => {
     if (!state.supported) return false;
     setState((s) => ({ ...s, busy: true }));
+    // Edge/Chrome อาจ "ซ่อนคำขอ" ไว้เป็นไอคอนกระดิ่งในแถบที่อยู่ — requestPermission จะรอไม่จบ
+    // จนผู้ใช้ไปกดตรงนั้น ปุ่มเลยค้าง "กำลังเปิด…" (เจอจริง 23 ก.ย. 2026)
+    // ถ้า 3 วินาทียังไม่ตอบ: เลิกหมุน บอกให้กดกระดิ่ง แล้วรอผลต่อเงียบ ๆ (อนุญาตเมื่อไรก็เปิดรับต่อให้เอง)
+    const hintTimer = window.setTimeout(() => {
+      setState((s) => ({ ...s, busy: false, waitingPermission: true }));
+      toast.info("กดไอคอนกระดิ่งในแถบที่อยู่ด้านบน", {
+        description: "แล้วเลือก “อนุญาต” เพื่อเปิดรับการแจ้งเตือน",
+        duration: 12_000,
+      });
+    }, 3000);
     try {
-      const permission = await Notification.requestPermission();
-      setState((s) => ({ ...s, permission }));
+      let permission: NotificationPermission;
+      try {
+        permission = await Notification.requestPermission();
+      } finally {
+        window.clearTimeout(hintTimer);
+      }
+      setState((s) => ({ ...s, permission, busy: true, waitingPermission: false }));
       if (permission !== "granted") {
         toast.error("ยังไม่ได้อนุญาตการแจ้งเตือน", {
           description: "โปรดอนุญาตการแจ้งเตือนในการตั้งค่าเบราว์เซอร์",

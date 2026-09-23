@@ -1,4 +1,4 @@
-import { BellRing, Share } from "lucide-react";
+import { Bell, BellRing, Share } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,8 @@ const askedKey = (userId: string) => `taletails-push-prompt-${userId}`;
  */
 export function PushPermissionPrompt() {
   const userId = useAuthUserId();
-  const { supported, needsInstall, permission, enabled, busy, enable } = usePushNotifications();
+  const { supported, needsInstall, permission, enabled, busy, waitingPermission, enable } =
+    usePushNotifications();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -72,6 +73,18 @@ export function PushPermissionPrompt() {
             <Share className="mt-0.5 h-3.5 w-3.5 shrink-0" />
             บน iPhone/iPad ให้กด “แชร์” แล้วเลือก “เพิ่มไปยังหน้าจอโฮม” ก่อน
             แล้วเปิดแอปจากหน้าจอโฮมเพื่อเปิดรับการแจ้งเตือน
+          </p>
+        )}
+
+        {/* เบราว์เซอร์ซ่อนคำขอไว้เป็นไอคอนกระดิ่งในแถบที่อยู่ — บอกให้ไปกดตรงนั้น
+            ปิดหน้าต่างนี้ได้เลย อนุญาตเมื่อไรระบบจะเปิดรับให้ต่อเอง */}
+        {waitingPermission && (
+          <p className="flex items-start gap-2 rounded-xl bg-secondary p-3 text-sm">
+            <Bell className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+            <span>
+              กด<b className="font-semibold">ไอคอนกระดิ่ง</b>ในแถบที่อยู่ด้านบนของเบราว์เซอร์ แล้วเลือก
+              “อนุญาต” ปิดหน้าต่างนี้ได้เลย
+            </span>
           </p>
         )}
 
