@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 
 /*
  * ครอบรูป banner 2 ขนาดในหน้าเดียว (mockup 28 ก.ย. 2026)
- * - จอคอม 16:5 → 2400×750 · มือถือ 1:1 → 1080×1080 (ตรงกับกล่อง banner ใน HeroCarousel)
+ * - จอคอม 16:5 → 2400×750 · มือถือ 4:3 → 1440×1080 (ตรงกับกล่อง banner ใน HeroCarousel)
  * - เส้นประบอกตำแหน่งข้อความ/ปุ่มที่จะทับรูป ใช้ข้อความจริงจากฟอร์ม
  * - บันทึกเป็น WebP คุณภาพสูง ย่อให้พอดีขนาดที่แสดงจริง → ไฟล์เล็ก แต่ภาพไม่แตก
  */
@@ -22,7 +22,7 @@ export const BANNER_SPECS: Record<
   { label: string; aspect: number; outWidth: number; outHeight: number; minWidth: number }
 > = {
   desktop: { label: "จอคอม", aspect: 16 / 5, outWidth: 2400, outHeight: 750, minWidth: 1600 },
-  mobile: { label: "มือถือ", aspect: 1, outWidth: 1080, outHeight: 1080, minWidth: 800 },
+  mobile: { label: "มือถือ", aspect: 4 / 3, outWidth: 1440, outHeight: 1080, minWidth: 1000 },
 };
 
 /** ตำแหน่งข้อความบน banner (สัดส่วนของกล่อง) — ตรงกับ padding/ความกว้างใน HeroCarousel */
@@ -32,8 +32,8 @@ const TEXT_ZONE: Record<
 > = {
   // วัดจากหน้าแรกจริง (28 ก.ย. 2026): จอ 1280 → กล่อง 1199×375, ข้อความเริ่มที่ 158px เว้นขอบ 40px
   desktop: { left: "3.3%", bottom: "10.7%", width: "56%", height: "47%" },
-  // มือถือ 375 → กล่อง 341×341, ข้อความ (โลโก้ + หัวข้อ + ข้อความรอง + ปุ่ม 2 แถว) สูง 69%
-  mobile: { left: "5.9%", bottom: "5.9%", width: "88%", height: "69%" },
+  // มือถือ 375 → กล่อง 341×256 (4:3) เหลือหัวข้อ + ปุ่มเดียว สูง 34% เว้นขอบ 20px
+  mobile: { left: "5.9%", bottom: "7.8%", width: "88%", height: "34%" },
 };
 
 interface CropState {
@@ -230,7 +230,7 @@ export function BannerCropDialog({
                       tab === k ? "bg-card shadow-sm" : "text-muted-foreground",
                     )}
                   >
-                    {BANNER_SPECS[k].label} {k === "desktop" ? "16:5" : "1:1"}
+                    {BANNER_SPECS[k].label} {k === "desktop" ? "16:5" : "4:3"}
                     {visited[k] && states[k].area && (
                       <Check className="h-3.5 w-3.5 text-emerald-600" />
                     )}
@@ -427,7 +427,8 @@ function CropStage({
               >
                 {preview.title || "หัวข้อ banner"}
               </p>
-              {preview.subtitle && (
+              {/* มือถือซ่อนข้อความรองและปุ่มตลาด (ตรงกับ HeroCarousel) */}
+              {preview.subtitle && target === "desktop" && (
                 <p className="line-clamp-2 text-[10px] text-white/80 sm:text-xs">
                   {preview.subtitle}
                 </p>
@@ -438,9 +439,11 @@ function CropStage({
                     {preview.cta}
                   </span>
                 )}
-                <span className="rounded-md bg-white px-2 py-1 text-[10px] font-semibold text-neutral-900">
-                  ดูตลาดซื้อขาย
-                </span>
+                {target === "desktop" && (
+                  <span className="rounded-md bg-white px-2 py-1 text-[10px] font-semibold text-neutral-900">
+                    ดูตลาดซื้อขาย
+                  </span>
+                )}
               </div>
             </div>
             <span className="absolute top-2 right-2 rounded-full bg-black/45 px-2 py-0.5 text-[10px] text-white">

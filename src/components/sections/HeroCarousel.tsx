@@ -43,8 +43,8 @@ export function HeroCarousel() {
   return (
     <section className="relative mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
       <div className="relative overflow-hidden rounded-3xl border border-border shadow-card">
-        {/* มือถือ 1:1 ตรงกับรูปที่ครอบในหลังบ้าน · จอใหญ่ 16:5 */}
-        <div className="relative aspect-square sm:aspect-[16/5] sm:min-h-[18rem]">
+        {/* มือถือ 4:3 ตรงกับรูปที่ครอบในหลังบ้าน (เตี้ยพอให้เห็นการ์ดประมูลในจอแรก) · จอใหญ่ 16:5 */}
+        <div className="relative aspect-[4/3] sm:aspect-[16/5] sm:min-h-[18rem]">
           {slides.map((slide, i) => (
             <div
               key={slide.id}
@@ -54,7 +54,7 @@ export function HeroCarousel() {
               )}
               aria-hidden={i !== current}
             >
-              {/* มือถือโหลดรูป 1:1 ที่ครอบไว้ จอใหญ่โหลดรูป 16:5 — ไม่โหลดทั้งสองรูป */}
+              {/* มือถือโหลดรูป 4:3 ที่ครอบไว้ จอใหญ่โหลดรูป 16:5 — ไม่โหลดทั้งสองรูป */}
               <picture>
                 {slide.imageUrlMobile && (
                   <source media="(max-width: 639px)" srcSet={slide.imageUrlMobile} />
@@ -71,7 +71,8 @@ export function HeroCarousel() {
               <div className="absolute inset-0 bg-gradient-fade" />
               <div className="absolute inset-0 flex items-end overflow-hidden">
                 <div className="w-full p-5 sm:p-8 lg:p-10">
-                  <div className="flex items-center gap-2">
+                  {/* มือถือเหลือแค่หัวข้อ + ปุ่มหลัก — โลโก้/ข้อความรอง/ปุ่มตลาด (มีในแถบทางลัดแล้ว) โชว์เฉพาะจอใหญ่ */}
+                  <div className="hidden items-center gap-2 sm:flex">
                     <img
                       src={taletailsLogo}
                       alt=""
@@ -83,13 +84,13 @@ export function HeroCarousel() {
                       Taletails Originals
                     </span>
                   </div>
-                  <h2 className="mt-3 max-w-2xl text-2xl leading-tight font-bold text-white sm:text-3xl lg:text-4xl">
+                  <h2 className="max-w-2xl sm:mt-3 text-2xl leading-tight font-bold text-white sm:text-3xl lg:text-4xl">
                     {slide.title}
                   </h2>
-                  <p className="mt-2 line-clamp-2 max-w-xl text-sm text-white/80 sm:text-base">
+                  <p className="mt-2 line-clamp-2 hidden max-w-xl text-sm text-white/80 sm:block sm:text-base">
                     {slide.subtitle}
                   </p>
-                  <div className="mt-4 flex flex-wrap gap-3">
+                  <div className="mt-3 flex flex-wrap gap-3 sm:mt-4">
                     {slide.ctaText && slide.ctaLink && (
                       <Button
                         asChild
@@ -105,7 +106,12 @@ export function HeroCarousel() {
                         )}
                       </Button>
                     )}
-                    <Button asChild size="lg" variant="secondary" className="font-semibold">
+                    <Button
+                      asChild
+                      size="lg"
+                      variant="secondary"
+                      className="hidden font-semibold sm:inline-flex"
+                    >
                       <Link to="/marketplace">ดูตลาดซื้อขาย</Link>
                     </Button>
                   </div>

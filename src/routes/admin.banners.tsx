@@ -310,7 +310,7 @@ function BannerEditor({ initial, onClose }: { initial: BannerInput; onClose: () 
         </Button>
       </div>
 
-      {/* ตัวอย่าง 2 ขนาดตามที่แสดงจริง: จอคอม 16:5 + มือถือ 1:1 */}
+      {/* ตัวอย่าง 2 ขนาดตามที่แสดงจริง: จอคอม 16:5 + มือถือ 4:3 */}
       {notice && (
         <p className="rounded-xl bg-amber-500/10 px-3 py-2.5 text-sm text-amber-800 dark:text-amber-300">
           {notice}
@@ -325,11 +325,11 @@ function BannerEditor({ initial, onClose }: { initial: BannerInput; onClose: () 
         </figure>
         <figure className="w-40 space-y-1.5 sm:w-auto">
           <figcaption className="text-xs font-semibold text-muted-foreground">
-            มือถือ 1:1{sizes && ` · ${kb(sizes.mobile)}`}
+            มือถือ 4:3{sizes && ` · ${kb(sizes.mobile)}`}
           </figcaption>
           <BannerPreview
             src={form.image_url_mobile || form.image_url || banner1}
-            ratio="aspect-square"
+            ratio="aspect-[4/3]"
             title={form.title}
             small
           />

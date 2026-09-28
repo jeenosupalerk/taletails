@@ -22,7 +22,7 @@ export interface SiteBanner {
   title: string;
   subtitle: string | null;
   image_url: string | null;
-  /** รูปที่ครอบ 1:1 สำหรับมือถือ (null/ไม่มีคอลัมน์ = ใช้รูปจอคอม) */
+  /** รูปที่ครอบ 4:3 สำหรับมือถือ (null/ไม่มีคอลัมน์ = ใช้รูปจอคอม) */
   image_url_mobile?: string | null | undefined;
   cta_text: string | null;
   cta_link: string | null;
