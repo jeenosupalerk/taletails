@@ -73,3 +73,7 @@
 - `auction_start_time`: `auctions.opened_notified_at`, trigger `trg_bids_guard_start` (ห้ามบิดก่อน start_time), `notify_due_auction_openings()` ถูกเรียกจาก cron `/api/public/cron/auctions` ทุกนาที → แจ้ง "เปิดประมูลใหม่แล้ว" ตอนถึงเวลาเริ่มจริง
 - `categories_banners`: ตาราง `categories` (หมวดเกม) + `cards.category_id` (null = "อื่น ๆ"), ตาราง `banners` (หน้าแรก, RLS ให้คนทั่วไปเห็นเฉพาะที่เปิด+อยู่ในช่วงเวลา), bucket `banners` (public, แอดมินอัปโหลด/แก้ได้ ไม่มีสิทธิ์ลบ)
 - จัดการได้ที่หลังบ้าน `/admin/banners` · hooks อยู่ใน `src/hooks/useSiteContent.ts`
+- `safe_delete_card`: `admin_delete_card` ห้ามลบการ์ดที่มีคำสั่งซื้อไม่ถูกยกเลิก หรือประมูลเปิดอยู่และมีคนบิด · `update_card_listing` ซ่อนการ์ดประมูลที่ปิดรอบแล้วได้
+- `shop_reviews`: ตาราง `reviews` (1 order = 1 รีวิว, รีวิวได้เมื่อ status = completed, แก้ได้ 30 วัน) + `shop_profiles` (ชื่อร้าน/คำอธิบาย) · ฟังก์ชัน `submit_review` (ครั้งแรกได้แต้ม `tt_settings.review_points` = 20, point_transactions kind='review'), `reply_review` (ตอบได้ 1 ครั้ง), `seller_ship_order` (ผู้ขายกรอกเลขพัสดุเอง), `get_shop_summary` · bucket `review-images` (public, อัปได้เฉพาะโฟลเดอร์ uid ตัวเอง, ไม่มีสิทธิ์ลบ)
+  - ค่า 20 แต้มในปุ่มหน้าเว็บเขียนไว้ที่ `REVIEW_POINTS` ใน `src/components/reviews/ReviewBits.tsx` (get_tt_public_settings ยังไม่ส่งค่านี้) ถ้าแก้ในฐานข้อมูลต้องแก้ตรงนี้ด้วย
+- `banner_mobile_image`: `banners.image_url_mobile` (รูปครอบ 1:1 สำหรับมือถือ, null = ใช้รูปจอคอม) · หน้าครอบ `src/components/admin/BannerCropDialog.tsx` บันทึก WebP จอคอม 2400×750 / มือถือ 1080×1080
