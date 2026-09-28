@@ -118,7 +118,7 @@ export const MENU_ITEMS: (SearchResult & { adminOnly?: boolean; guestOnly?: bool
   { id: "m-market", group: "menu", title: "ตลาดซื้อขาย", subtitle: "การ์ดราคาคงที่ พร้อมส่ง", icon: "store", href: "/marketplace", keywords: "marketplace shop ซื้อ ร้าน" },
   { id: "m-stats", group: "menu", title: "สถิติ/ตลาด", subtitle: "ราคาและเทรนด์การ์ด", icon: "chart", href: "/market", keywords: "stats price ราคา กราฟ เทรนด์" },
   { id: "m-stats-sqc", group: "menu", title: "ราคากลางเกรดไทย (SQC)", subtitle: "สถิติราคาการ์ดเกรด SQC", icon: "chart", href: "/market?grade=sqc", keywords: "sqc เกรดไทย ราคากลาง thai grade" },
-  { id: "m-vault", group: "menu", title: "ประเมินการ์ดสะสม", subtitle: "ห้องนิรภัยและประเมินมูลค่า", icon: "shield", href: "/vault", keywords: "vault ห้องนิรภัย ประเมิน มูลค่า" },
+  // m-vault (ประเมินการ์ดสะสม) ปิดไว้ก่อน — ยังไม่เปิดให้บริการ
   { id: "m-news", group: "menu", title: "ข่าวสาร", subtitle: "ข่าวและคู่มือการ์ดสะสม", icon: "news", href: "/news", keywords: "news บทความ คู่มือ" },
   { id: "m-cart", group: "menu", title: "ตะกร้าสินค้า", subtitle: "รายการที่รอชำระเงิน", icon: "bag", href: "/checkout", keywords: "cart checkout ชำระเงิน จ่ายเงิน" },
   { id: "m-orders", group: "menu", title: "คำสั่งซื้อของฉัน", subtitle: "ติดตามสถานะและการชำระเงิน", icon: "receipt", href: "/orders", keywords: "orders ออเดอร์ สถานะ" },

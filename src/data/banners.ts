@@ -29,7 +29,8 @@ export const banners: Banner[] = [
     imageUrl: banner2,
     ctaText: "เริ่มฝากขาย",
     ctaLink: "/vault",
-    isActive: true,
+    // ปิดไว้ก่อน: บริการฝากขาย/ห้องนิรภัยยังไม่เปิด (28 ก.ย. 2026)
+    isActive: false,
   },
   {
     id: "bnr-003",
@@ -38,7 +39,8 @@ export const banners: Banner[] = [
     imageUrl: banner3,
     ctaText: "ห้องนิรภัยทำงานอย่างไร",
     ctaLink: "/vault",
-    isActive: true,
+    // ปิดไว้ก่อน: บริการฝากขาย/ห้องนิรภัยยังไม่เปิด (28 ก.ย. 2026)
+    isActive: false,
   },
 ];
 
