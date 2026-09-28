@@ -46,6 +46,8 @@ export interface Product {
   stockQuantity?: number | null;
   /** false = ฉบับร่าง/ซ่อนจากตลาด ยังไม่เปิดขาย */
   isPublished?: boolean;
+  /** เวลาลงขาย ใช้กรอง "มาใหม่ 7 วัน" */
+  createdAt?: string | undefined;
 }
 
 const baseReviews: ProductReview[] = [

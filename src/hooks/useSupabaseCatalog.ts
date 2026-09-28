@@ -30,6 +30,7 @@ export interface CardRow {
   stock_quantity?: number | null;
   is_published?: boolean;
   updated_at?: string;
+  created_at?: string;
 }
 
 /** การ์ดที่ขายหมดแล้วยังโชว์ในหน้าตลาดต่อได้กี่วัน (นับจากการอัปเดตล่าสุด) */
@@ -72,11 +73,12 @@ export function cardRowToProduct(row: CardRow, sellerName = "Taletails Store"): 
     status: row.status,
     stockQuantity: row.stock_quantity ?? null,
     isPublished: row.is_published ?? true,
+    ...(row.created_at ? { createdAt: row.created_at } : {}),
   };
 }
 
 const CARD_COLUMNS =
-  "id, seller_id, name, details, images, set_name, card_no, language, rarity, year, condition, grade, grading_company, certification_no, sale_type, price, status, stock_quantity, is_published, updated_at, users:seller_id (username)";
+  "id, seller_id, name, details, images, set_name, card_no, language, rarity, year, condition, grade, grading_company, certification_no, sale_type, price, status, stock_quantity, is_published, updated_at, created_at, users:seller_id (username)";
 
 /**
  * Real "sold" totals: how many cards with the same name have already been sold.
