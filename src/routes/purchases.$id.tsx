@@ -9,21 +9,16 @@ import { PageShell } from "@/components/site/PageShell";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { SmartImage } from "@/components/ui/smart-image";
+import { OrderReviewButton } from "@/components/reviews/ReviewBits";
 import { supabase } from "@/integrations/supabase/client";
 import { thb } from "@/lib/cart";
 import { flushPendingPush } from "@/lib/push.functions";
 import { cn } from "@/lib/utils";
-import {
-  PURCHASE_SELECT,
-  STATUS_META,
-  useAuthUserId,
-  type PurchaseOrder,
-} from "./purchases.index";
+import { PURCHASE_SELECT, STATUS_META, useAuthUserId, type PurchaseOrder } from "./purchases.index";
 
 const SITE_URL = "https://taletails-test.lovable.app";
 const title = "รายละเอียดสถานะคำสั่งซื้อ — Taletails";
-const description =
-  "ดูสถานะคำสั่งซื้อการ์ด เลขพัสดุจัดส่ง และยืนยันการรับสินค้าบน Taletails";
+const description = "ดูสถานะคำสั่งซื้อการ์ด เลขพัสดุจัดส่ง และยืนยันการรับสินค้าบน Taletails";
 
 export const Route = createFileRoute("/purchases/$id")({
   head: () => ({
@@ -80,7 +75,7 @@ function PurchaseDetailPage() {
     },
     onSuccess: () => {
       void flushPush().catch(() => undefined);
-      toast.success("ยืนยันรับสินค้าแล้ว ขอบคุณครับ");
+      toast.success("ยืนยันรับสินค้าแล้ว ให้คะแนนร้านได้ด้านล่าง");
       void queryClient.invalidateQueries({ queryKey: ["purchase", id] });
       void queryClient.invalidateQueries({ queryKey: ["purchases"] });
     },
@@ -235,8 +230,9 @@ function PurchaseDetailPage() {
             {order.status === "shipped" && (
               <div className="surface-panel space-y-3 p-4">
                 <p className="text-xs leading-relaxed text-muted-foreground">
-                  เมื่อได้รับสินค้าแล้ว กรุณากดยืนยันการรับสินค้า หากไม่กดยืนยัน ระบบจะเปลี่ยนสถานะเป็น
-                  “สำเร็จ” อัตโนมัติภายใน 7 วันหลังจัดส่ง (ประมาณ {fmt(autoDeadline)})
+                  เมื่อได้รับสินค้าแล้ว กรุณากดยืนยันการรับสินค้า หากไม่กดยืนยัน
+                  ระบบจะเปลี่ยนสถานะเป็น “สำเร็จ” อัตโนมัติภายใน 7 วันหลังจัดส่ง (ประมาณ{" "}
+                  {fmt(autoDeadline)})
                 </p>
                 <ConfirmDialog
                   title="ยืนยันการรับสินค้า"
@@ -256,6 +252,19 @@ function PurchaseDetailPage() {
                       ยืนยันการรับสินค้า
                     </Button>
                   }
+                />
+              </div>
+            )}
+
+            {/* สำเร็จแล้ว → ให้คะแนนร้าน (1 คำสั่งซื้อ = 1 รีวิว) */}
+            {order.status === "completed" && userId && (
+              <div className="surface-panel space-y-2 p-4">
+                <p className="text-sm font-semibold">การ์ดถึงมือแล้ว เป็นยังไงบ้าง</p>
+                <OrderReviewButton
+                  orderId={order.id}
+                  cardName={order.cards?.name ?? "การ์ด"}
+                  cardImage={order.cards?.images?.[0]}
+                  userId={userId}
                 />
               </div>
             )}

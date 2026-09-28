@@ -1,6 +1,15 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { LogoLoader } from "@/components/ui/logo-loader";
-import { BadgeCheck, ChevronRight, Heart, Loader2, Lock, QrCode, ShoppingBag, Star, Truck } from "lucide-react";
+import {
+  BadgeCheck,
+  ChevronRight,
+  Heart,
+  Loader2,
+  Lock,
+  QrCode,
+  ShoppingBag,
+  Truck,
+} from "lucide-react";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
@@ -11,6 +20,7 @@ import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { CardGallery } from "@/components/card/CardGallery";
 import { MarketDiffChip } from "@/components/card/CardBits";
+import { SellerReviews } from "@/components/reviews/ReviewBits";
 import { useMarketPriceIndex } from "@/hooks/useMarketStats";
 import { diffVsMarket, gradeDisplay } from "@/lib/market-price";
 import {
@@ -63,18 +73,6 @@ const TRUST_POINTS = [
   { icon: QrCode, title: "จ่ายผ่าน QR", detail: "PromptPay ภายใน 24 ชม." },
 ] as const;
 
-function Stars({ rating }: { rating: number }) {
-  return (
-    <span className="flex items-center gap-0.5">
-      {[1, 2, 3, 4, 5].map((n) => (
-        <Star
-          key={n}
-          className={`h-3.5 w-3.5 ${n <= Math.round(rating) ? "fill-primary text-primary" : "text-muted-foreground/40"}`}
-        />
-      ))}
-    </span>
-  );
-}
 
 function ProductPage() {
   const { id } = Route.useParams();
@@ -257,7 +255,9 @@ function ProductPage() {
       aria-pressed={wished}
       className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-card ring-1 ring-border transition-colors hover:bg-secondary hover:ring-primary/40"
     >
-      <Heart className={`h-5 w-5 ${wished ? "fill-primary text-primary" : "text-muted-foreground"}`} />
+      <Heart
+        className={`h-5 w-5 ${wished ? "fill-primary text-primary" : "text-muted-foreground"}`}
+      />
     </button>
   );
   const cartButton = (
@@ -288,7 +288,10 @@ function ProductPage() {
     <div className="min-h-screen bg-background">
       <SiteHeader />
       <main className="mx-auto max-w-6xl px-4 pt-4 pb-8 sm:px-6 lg:px-8 lg:pt-8 lg:pb-16">
-        <nav aria-label="breadcrumb" className="mb-4 flex items-center gap-2 text-xs text-muted-foreground lg:mb-6">
+        <nav
+          aria-label="breadcrumb"
+          className="mb-4 flex items-center gap-2 text-xs text-muted-foreground lg:mb-6"
+        >
           <BackButton className="lg:hidden" />
           <div className="ml-auto lg:hidden">{wishButton}</div>
           <span className="hidden items-center gap-1.5 lg:flex">
@@ -320,7 +323,9 @@ function ProductPage() {
           <div className="min-w-0">
             <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
               {clean(product.setName) || "Taletails Collection"}
-              {product.isVerified && <BadgeCheck className="h-4 w-4 text-accent" aria-label="ตรวจสอบแล้ว" />}
+              {product.isVerified && (
+                <BadgeCheck className="h-4 w-4 text-accent" aria-label="ตรวจสอบแล้ว" />
+              )}
             </p>
             <h1 className="mt-1 font-display text-2xl leading-tight font-bold break-words sm:text-3xl">
               {product.cardName}
@@ -329,7 +334,9 @@ function ProductPage() {
             <div className="mt-3 flex flex-wrap gap-1.5 text-xs font-medium">
               {/* ชิปเกรด/สภาพสีเข้มเด่นสุด — แทนป้ายที่เคยทับอยู่บนรูป */}
               {gradeText && (
-                <span className="rounded-full bg-foreground px-3 py-1 font-semibold text-background">{gradeText}</span>
+                <span className="rounded-full bg-foreground px-3 py-1 font-semibold text-background">
+                  {gradeText}
+                </span>
               )}
               {product.isVerified && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-3 py-1 font-semibold text-accent">
@@ -339,7 +346,9 @@ function ProductPage() {
               {clean(product.language) && (
                 <span className="rounded-full bg-secondary px-3 py-1">ภาษา{product.language}</span>
               )}
-              {clean(product.rarity) && <span className="rounded-full bg-secondary px-3 py-1">{product.rarity}</span>}
+              {clean(product.rarity) && (
+                <span className="rounded-full bg-secondary px-3 py-1">{product.rarity}</span>
+              )}
             </div>
 
             {/* ราคา + ปุ่มซื้อ + สิ่งที่ผู้ซื้อได้รับ รวมในกล่องเดียว */}
@@ -348,7 +357,9 @@ function ProductPage() {
                 <div>
                   <p className="text-xs text-muted-foreground">ราคา</p>
                   <div className="mt-1 flex flex-wrap items-center gap-2">
-                    <p className={`font-display text-3xl leading-none font-bold tracking-tight tabular-nums sm:text-4xl ${soldOut ? "text-muted-foreground" : ""}`}>
+                    <p
+                      className={`font-display text-3xl leading-none font-bold tracking-tight tabular-nums sm:text-4xl ${soldOut ? "text-muted-foreground" : ""}`}
+                    >
                       {thb.format(product.price)}
                     </p>
                     <MarketDiffChip diff={diff} className="text-xs" />
@@ -356,12 +367,18 @@ function ProductPage() {
                 </div>
                 <div className="flex flex-col items-end gap-1 text-xs">
                   {stockLeft !== null && !notOnSale && (
-                    <span className={`font-semibold ${stockLeft > 0 && stockLeft <= 3 ? "text-primary" : stockLeft === 0 ? "text-destructive" : "text-muted-foreground"}`}>
+                    <span
+                      className={`font-semibold ${stockLeft > 0 && stockLeft <= 3 ? "text-primary" : stockLeft === 0 ? "text-destructive" : "text-muted-foreground"}`}
+                    >
                       {stockLeft > 0 ? `เหลือ ${stockLeft} ชิ้น` : "สินค้าหมด"}
                     </span>
                   )}
                   {market?.marketPrice ? (
-                    <Link to="/market/$id" params={{ id: market.id }} className="font-semibold text-primary hover:underline">
+                    <Link
+                      to="/market/$id"
+                      params={{ id: market.id }}
+                      className="font-semibold text-primary hover:underline"
+                    >
                       ราคากลาง {thb.format(market.marketPrice)}
                     </Link>
                   ) : null}
@@ -392,11 +409,17 @@ function ProductPage() {
 
             {/* ร้านค้า */}
             <div className="mt-4 flex items-center gap-3 rounded-2xl bg-card p-4 ring-1 ring-border">
-              <img src="/taletails-logo.jpg" alt="" className="h-11 w-11 rounded-full object-cover" />
+              <img
+                src="/taletails-logo.jpg"
+                alt=""
+                className="h-11 w-11 rounded-full object-cover"
+              />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold">{product.storeName}</p>
                 <p className="text-xs text-muted-foreground">
-                  {product.soldCount > 0 ? `การ์ดรุ่นนี้ขายไปแล้ว ${product.soldCount} ชิ้น` : "ร้านค้าบน Taletails"}
+                  {product.soldCount > 0
+                    ? `การ์ดรุ่นนี้ขายไปแล้ว ${product.soldCount} ชิ้น`
+                    : "ร้านค้าบน Taletails"}
                 </p>
               </div>
             </div>
@@ -420,41 +443,28 @@ function ProductPage() {
               </div>
             )}
 
-            {/* รีวิว */}
-            {product.reviews.length > 0 && (
-              <section className="surface-panel mt-4 p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="font-display text-xl font-bold">{product.rating.toFixed(1)}</span>
-                    <Stars rating={product.rating} />
-                  </div>
-                  <span className="text-xs text-muted-foreground">{product.reviews.length} รีวิว</span>
-                </div>
-                <ul className="mt-3 space-y-3">
-                  {product.reviews.map((review) => (
-                    <li key={review.id} className="border-b border-border pb-3 last:border-0 last:pb-0">
-                      <div className="flex items-center gap-2">
-                        <Stars rating={review.rating} />
-                        <span className="text-xs text-muted-foreground">{review.timeAgo}</span>
-                      </div>
-                      <p className="mt-1 text-sm">{review.comment}</p>
-                    </li>
-                  ))}
-                </ul>
-              </section>
+            {/* ผู้ขาย + รีวิวร้าน (ตาราง reviews) — แทนรีวิวตัวอย่างเดิมที่ไม่เคยมีข้อมูลจริง */}
+            {product.sellerId && (
+              <SellerReviews sellerId={product.sellerId} fallbackName={product.storeName} />
             )}
 
             <Accordion type="multiple" className="surface-panel mt-4 px-4 py-1">
               <AccordionItem value="authenticity">
-                <AccordionTrigger className="py-4 text-sm font-semibold">การตรวจสอบของแท้</AccordionTrigger>
+                <AccordionTrigger className="py-4 text-sm font-semibold">
+                  การตรวจสอบของแท้
+                </AccordionTrigger>
                 <AccordionContent className="text-sm text-muted-foreground">
                   ทุกใบผ่านการตรวจสอบโดยทีม Taletails
-                  {clean(product.gradingCompany) ? ` และยืนยันรหัสจาก ${product.gradingCompany}` : ""} ก่อนส่งถึงมือผู้ซื้อ
-                  รหัสรายการ: {product.cardIdCode}
+                  {clean(product.gradingCompany)
+                    ? ` และยืนยันรหัสจาก ${product.gradingCompany}`
+                    : ""}{" "}
+                  ก่อนส่งถึงมือผู้ซื้อ รหัสรายการ: {product.cardIdCode}
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="shipping">
-                <AccordionTrigger className="py-4 text-sm font-semibold">การจัดส่งและการคืนสินค้า</AccordionTrigger>
+                <AccordionTrigger className="py-4 text-sm font-semibold">
+                  การจัดส่งและการคืนสินค้า
+                </AccordionTrigger>
                 <AccordionContent className="text-sm text-muted-foreground">
                   จัดส่งภายใน 1–2 วันทำการ พร้อมกล่องกันกระแทกและประกันการขนส่งเต็มมูลค่า
                   คืนสินค้าได้ภายใน 7 วันหากสภาพไม่ตรงตามที่ระบุ
@@ -468,7 +478,10 @@ function ProductPage() {
           <section className="mt-12">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="font-display text-lg font-bold">สินค้าที่คุณอาจจะชอบ</h2>
-              <Link to="/marketplace" className="flex items-center gap-1 text-sm font-semibold text-primary">
+              <Link
+                to="/marketplace"
+                className="flex items-center gap-1 text-sm font-semibold text-primary"
+              >
                 ดูทั้งหมด <ChevronRight className="h-4 w-4" />
               </Link>
             </div>
@@ -485,7 +498,9 @@ function ProductPage() {
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur lg:hidden">
         <div className="mx-auto flex max-w-xl items-center gap-2.5">
           <div className="mr-1 min-w-0">
-            <p className="truncate font-display text-xl leading-tight font-bold tabular-nums">{thb.format(product.price)}</p>
+            <p className="truncate font-display text-xl leading-tight font-bold tabular-nums">
+              {thb.format(product.price)}
+            </p>
             {stockLeft !== null && stockLeft > 0 && !notOnSale && (
               <p className="text-[11px] font-semibold text-primary">เหลือ {stockLeft} ชิ้น</p>
             )}

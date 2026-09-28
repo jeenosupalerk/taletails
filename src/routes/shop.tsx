@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { LogoLoader } from "@/components/ui/logo-loader";
-import { Store } from "lucide-react";
+import { Star, Store } from "lucide-react";
 import { useState } from "react";
 
 import { PageShell } from "@/components/site/PageShell";
@@ -8,7 +8,9 @@ import { CardListingManager } from "@/components/shop/CardListingManager";
 import { ListingHistory } from "@/components/shop/ListingHistory";
 import { Button } from "@/components/ui/button";
 import { UserAvatar } from "@/components/site/UserAvatar";
+import { ShopOrdersTab, ShopReviewsTab, ShopSettingsTab } from "@/components/shop/ShopTabs";
 import { useIsSeller } from "@/hooks/useAdmin";
+import { useSellerOrders, useShopProfile, useShopReviews, useShopSummary } from "@/hooks/useShop";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
@@ -69,7 +71,7 @@ function ShopPage() {
             </p>
           </div>
         ) : (
-          <SellerHub />
+          <SellerHub userId={userId} />
         )}
       </section>
     </PageShell>
@@ -78,31 +80,53 @@ function ShopPage() {
 
 const TABS = [
   { key: "items", label: "สินค้า" },
-  { key: "history", label: "ประวัติการลงขาย" },
+  { key: "orders", label: "คำสั่งซื้อ" },
+  { key: "reviews", label: "รีวิว" },
+  { key: "settings", label: "ตั้งค่าร้าน" },
+  { key: "history", label: "ประวัติ" },
 ] as const;
+type TabKey = (typeof TABS)[number]["key"];
 
-/**
- * หน้าร้านผู้ขาย — หัวร้าน + แท็บ
- * เตรียมไว้สำหรับรอบถัดไป: แท็บคำสั่งซื้อ / รีวิว / ตั้งค่าร้าน (ต้องมีตารางใน Supabase ก่อน)
- */
-function SellerHub() {
+/** หน้าร้านผู้ขาย: หัวร้าน (ชื่อ + คะแนน + ยอดขาย) → แท็บ สินค้า / คำสั่งซื้อ / รีวิว / ตั้งค่าร้าน / ประวัติ */
+function SellerHub({ userId }: { userId: string }) {
   const { user } = useAuth();
-  const [tab, setTab] = useState<(typeof TABS)[number]["key"]>("items");
-  const shopName = user?.name || "ร้านของฉัน";
-
-  const header = (
-    <div className="flex min-w-0 items-center gap-3">
-      <UserAvatar name={shopName} src={user?.avatarUrl} className="h-14 w-14" />
-      <div className="min-w-0">
-        <h2 className="truncate font-display text-xl font-semibold">{shopName}</h2>
-        <p className="text-sm text-muted-foreground">ร้านค้าบน Taletails</p>
-      </div>
-    </div>
-  );
+  const [tab, setTab] = useState<TabKey>("items");
+  const profile = useShopProfile(userId);
+  const summary = useShopSummary(userId);
+  const orders = useSellerOrders(userId);
+  const fallbackName = user?.name || "ร้านของฉัน";
+  const shopName = profile.data?.shop_name || fallbackName;
+  const s = summary.data;
+  const toShip = (orders.data ?? []).filter((o) => o.status === "paid").length;
+  const reviews = useShopReviews(userId);
+  const unreplied = (reviews.data ?? []).filter((r) => !r.seller_reply).length;
 
   return (
     <div className="space-y-6">
-      <div role="tablist" aria-label="ส่วนของร้าน" className="flex gap-1 border-b border-border">
+      <div className="flex min-w-0 items-center gap-4">
+        <UserAvatar name={shopName} src={user?.avatarUrl} className="h-16 w-16" />
+        <div className="min-w-0">
+          <h2 className="truncate font-display text-2xl font-semibold">{shopName}</h2>
+          <p className="flex flex-wrap items-center gap-x-3 text-sm text-muted-foreground">
+            {s && s.review_count > 0 ? (
+              <span className="inline-flex items-center gap-1">
+                <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
+                <b className="text-foreground">{s.avg_rating?.toFixed(1)}</b> ({s.review_count}{" "}
+                รีวิว)
+              </span>
+            ) : (
+              <span>ยังไม่มีรีวิว</span>
+            )}
+            {s && <span>ขายแล้ว {s.sold_count} ชิ้น</span>}
+          </p>
+        </div>
+      </div>
+
+      <div
+        role="tablist"
+        aria-label="ส่วนของร้าน"
+        className="-mx-4 flex gap-1 overflow-x-auto border-b border-border px-4 sm:mx-0 sm:px-0"
+      >
         {TABS.map((t) => (
           <button
             key={t.key}
@@ -111,17 +135,32 @@ function SellerHub() {
             aria-selected={tab === t.key}
             onClick={() => setTab(t.key)}
             className={cn(
-              "-mb-px min-h-11 border-b-2 px-4 text-sm font-semibold transition-colors",
+              "-mb-px inline-flex min-h-11 shrink-0 items-center gap-1.5 border-b-2 px-4 text-sm font-semibold transition-colors",
               tab === t.key
                 ? "border-primary text-foreground"
                 : "border-transparent text-muted-foreground hover:text-foreground",
             )}
           >
             {t.label}
+            {t.key === "orders" && toShip > 0 && (
+              <span className="rounded-full bg-emerald-500/15 px-2 text-[11px] text-emerald-700 dark:text-emerald-400">
+                {toShip}
+              </span>
+            )}
+            {t.key === "reviews" && unreplied > 0 && (
+              <span className="rounded-full bg-primary/15 px-2 text-[11px] text-primary">
+                {unreplied}
+              </span>
+            )}
           </button>
         ))}
       </div>
-      {tab === "items" ? <CardListingManager scope="shop" header={header} /> : <ListingHistory />}
+
+      {tab === "items" && <CardListingManager scope="shop" />}
+      {tab === "orders" && <ShopOrdersTab sellerId={userId} />}
+      {tab === "reviews" && <ShopReviewsTab sellerId={userId} />}
+      {tab === "settings" && <ShopSettingsTab userId={userId} fallbackName={fallbackName} />}
+      {tab === "history" && <ListingHistory />}
     </div>
   );
 }

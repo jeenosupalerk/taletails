@@ -50,6 +50,8 @@ export interface Product {
   createdAt?: string | undefined;
   /** หมวดเกม (null = ยังไม่ระบุ) */
   categoryId?: string | null | undefined;
+  /** ผู้ขาย (ใช้ดึงคะแนน/รีวิวร้าน) */
+  sellerId?: string | null | undefined;
 }
 
 const baseReviews: ProductReview[] = [

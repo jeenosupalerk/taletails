@@ -76,6 +76,7 @@ export function cardRowToProduct(row: CardRow, sellerName = "Taletails Store"): 
     isPublished: row.is_published ?? true,
     ...(row.created_at ? { createdAt: row.created_at } : {}),
     categoryId: row.category_id ?? null,
+    sellerId: row.seller_id ?? null,
   };
 }
 

@@ -2,12 +2,20 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { LogoLoader } from "@/components/ui/logo-loader";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, ChevronRight, Loader2, PackageCheck, ShoppingBag, Truck } from "lucide-react";
+import {
+  CheckCircle2,
+  ChevronRight,
+  Loader2,
+  PackageCheck,
+  ShoppingBag,
+  Truck,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { PageShell } from "@/components/site/PageShell";
 import { Button } from "@/components/ui/button";
 import { SmartImage } from "@/components/ui/smart-image";
+import { OrderReviewButton } from "@/components/reviews/ReviewBits";
 import { supabase } from "@/integrations/supabase/client";
 import { thb } from "@/lib/cart";
 import { flushPendingPush } from "@/lib/push.functions";
@@ -61,12 +69,15 @@ export interface PurchaseOrder {
 export const PURCHASE_SELECT =
   "id, total_amount, status, slip_url, tracking_number, payment_method, shipping_name, shipping_phone, shipping_address, paid_at, shipped_at, received_at, created_at, auction_id, cards:card_id ( id, name, set_name, grade, images )";
 
-export const STATUS_META: Record<
-  PurchaseOrder["status"],
-  { label: string; cls: string }
-> = {
-  pending: { label: "รอชำระ / รอตรวจสอบ", cls: "bg-amber-500/15 text-amber-600 dark:text-amber-400" },
-  paid: { label: "อนุมัติแล้ว กำลังเตรียมจัดส่ง", cls: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" },
+export const STATUS_META: Record<PurchaseOrder["status"], { label: string; cls: string }> = {
+  pending: {
+    label: "รอชำระ / รอตรวจสอบ",
+    cls: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+  },
+  paid: {
+    label: "อนุมัติแล้ว กำลังเตรียมจัดส่ง",
+    cls: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+  },
   shipped: { label: "จัดส่งแล้ว", cls: "bg-sky-500/15 text-sky-600 dark:text-sky-400" },
   completed: { label: "สำเร็จ", cls: "bg-primary/15 text-primary" },
   cancelled: { label: "ยกเลิก", cls: "bg-destructive/15 text-destructive" },
@@ -94,7 +105,11 @@ function PurchasesPage() {
   const userId = useAuthUserId();
   const flushPush = useServerFn(flushPendingPush);
 
-  const { data: orders, isLoading, refetch } = useQuery({
+  const {
+    data: orders,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["purchases", userId],
     enabled: !!userId,
     queryFn: async () => {
@@ -141,7 +156,10 @@ function PurchasesPage() {
         {!userId && (
           <div className="surface-panel p-8 text-center">
             <p className="text-sm font-medium">กรุณาเข้าสู่ระบบเพื่อดูสถานะการซื้อ</p>
-            <Button asChild className="mt-4 min-h-11 rounded-xl bg-gradient-ember font-semibold text-primary-foreground">
+            <Button
+              asChild
+              className="mt-4 min-h-11 rounded-xl bg-gradient-ember font-semibold text-primary-foreground"
+            >
               <Link to="/auth">เข้าสู่ระบบ</Link>
             </Button>
           </div>
@@ -157,7 +175,10 @@ function PurchasesPage() {
           <div className="surface-panel p-8 text-center">
             <PackageCheck className="mx-auto h-9 w-9 text-muted-foreground" />
             <p className="mt-3 text-sm font-medium">ยังไม่มีรายการที่ชำระเงินแล้ว</p>
-            <Button asChild className="mt-5 min-h-11 rounded-xl bg-gradient-ember font-semibold text-primary-foreground">
+            <Button
+              asChild
+              className="mt-5 min-h-11 rounded-xl bg-gradient-ember font-semibold text-primary-foreground"
+            >
               <Link to="/marketplace">
                 <ShoppingBag className="mr-1.5 h-4 w-4" />
                 เลือกดูสินค้า
@@ -213,6 +234,15 @@ function PurchasesPage() {
                   </div>
                   <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
                 </Link>
+                {o.status === "completed" && userId && (
+                  <OrderReviewButton
+                    orderId={o.id}
+                    cardName={o.cards?.name ?? "การ์ด"}
+                    cardImage={o.cards?.images?.[0]}
+                    userId={userId}
+                    className="mt-2"
+                  />
+                )}
               </li>
             ))}
           </ul>
