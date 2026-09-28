@@ -28,6 +28,8 @@ async function run(request: Request) {
   const closed = await supabaseAdmin.rpc("close_expired_auctions");
   const expired = await supabaseAdmin.rpc("expire_unpaid_orders");
   const autoCompleted = await supabaseAdmin.rpc("auto_complete_shipped_orders");
+  // รอบที่ตั้งเวลาเริ่มไว้ → ถึงเวลาแล้วค่อยแจ้ง "เปิดประมูลใหม่แล้ว" (ถ้ายังไม่ apply SQL จะแค่ error เงียบ ๆ)
+  const opened = await supabaseAdmin.rpc("notify_due_auction_openings" as never);
 
   let pushed = 0;
   try {
@@ -45,6 +47,7 @@ async function run(request: Request) {
     auctionsClosed: closed.error ? closed.error.message : closed.data,
     ordersExpired: expired.error ? expired.error.message : expired.data,
     ordersAutoCompleted: autoCompleted.error ? autoCompleted.error.message : autoCompleted.data,
+    auctionsOpened: opened.error ? opened.error.message : opened.data,
     pushDelivered: pushed,
     emailsSent: emails,
   });
