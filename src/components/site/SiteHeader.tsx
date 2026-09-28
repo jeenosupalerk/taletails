@@ -18,7 +18,7 @@ export const navItems = [
   { label: "ตลาดซื้อขาย", to: "/marketplace" },
   { label: "สถิติ/ตลาด", to: "/market" },
   // ประเมินการ์ดสะสม (/vault) ปิดไว้ก่อน — ยังไม่เปิดให้บริการ (28 ก.ย. 2026)
-  { label: "ข่าวสาร", to: "/news" },
+  // ข่าวสาร (/news) ปิดไว้ก่อน — ยังไม่ใช้ (28 ก.ย. 2026)
 ] as const;
 
 export function SiteHeader() {

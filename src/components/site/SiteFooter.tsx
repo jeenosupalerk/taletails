@@ -81,11 +81,6 @@ export function SiteFooter() {
           <h4 className="text-sm font-semibold">Taletails</h4>
           <ul className="mt-4 space-y-2.5">
             <li>
-              <Link to="/news" className={linkCls}>
-                ข่าวสาร
-              </Link>
-            </li>
-            <li>
               <Link to="/points" className={linkCls}>
                 แต้มสะสม TT Points
               </Link>

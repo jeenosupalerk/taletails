@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { ArticlesSection } from "@/components/sections/ArticlesSection";
 import { FeaturedMarketplace } from "@/components/sections/FeaturedMarketplace";
 import { HeroCarousel } from "@/components/sections/HeroCarousel";
 import { LiveAuctionSlider } from "@/components/sections/LiveAuctionSlider";
@@ -54,7 +53,7 @@ function Index() {
         <HeroCarousel />
         <LiveAuctionSlider />
         <FeaturedMarketplace />
-        <ArticlesSection />
+        {/* ข่าวสารปิดไว้ก่อน (28 ก.ย. 2026): <ArticlesSection /> */}
         <section className="mx-auto w-full max-w-2xl px-4 pb-6">
           <InstallAppCard />
         </section>

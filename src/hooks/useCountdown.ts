@@ -43,3 +43,14 @@ export function useCountdown(endTime: string): Countdown | null {
 }
 
 export const pad = (n: number) => String(n).padStart(2, "0");
+
+/**
+ * นับถอยหลังแบบอ่านง่าย: "1 วัน 02 ชม. 15 นา. 30 วิ." / "2 ชม. 05 นา. 09 วิ." / "4 นา. 09 วิ."
+ * เดิมหน้าชำระเงินรวมทุกอย่างเป็นนาที (24 ชม. ขึ้นว่า 1439:59) ซึ่งอ่านไม่ออก
+ */
+export function formatCountdownTh(c: Countdown | null): string {
+  if (!c) return "--";
+  if (c.days > 0) return `${c.days} วัน ${pad(c.hours)} ชม. ${pad(c.minutes)} นา. ${pad(c.seconds)} วิ.`;
+  if (c.hours > 0) return `${c.hours} ชม. ${pad(c.minutes)} นา. ${pad(c.seconds)} วิ.`;
+  return `${c.minutes} นา. ${pad(c.seconds)} วิ.`;
+}

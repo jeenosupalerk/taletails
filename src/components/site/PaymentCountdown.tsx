@@ -1,9 +1,9 @@
 import { AlarmClock } from "lucide-react";
 
-import { pad, useCountdown } from "@/hooks/useCountdown";
+import { formatCountdownTh, useCountdown } from "@/hooks/useCountdown";
 import { cn } from "@/lib/utils";
 
-/** นับถอยหลังเวลาที่เหลือสำหรับชำระเงิน (นาที:วินาที) */
+/** นับถอยหลังเวลาที่เหลือสำหรับชำระเงิน (วัน ชม. นา. วิ.) */
 export function PaymentCountdown({
   dueAt,
   className,
@@ -13,8 +13,7 @@ export function PaymentCountdown({
 }) {
   const c = useCountdown(dueAt);
 
-  const minutes = c ? c.days * 1440 + c.hours * 60 + c.minutes : 0;
-  const label = !c ? "--:--" : c.isFinished ? "หมดเวลาชำระเงิน" : `${pad(minutes)}:${pad(c.seconds)}`;
+  const label = !c ? "--" : c.isFinished ? "หมดเวลาชำระเงิน" : formatCountdownTh(c);
   const urgent = !!c && !c.isFinished && c.totalMs < 5 * 60 * 1000;
 
   return (

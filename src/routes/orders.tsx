@@ -13,7 +13,7 @@ import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/site/PageShell";
 import { Button } from "@/components/ui/button";
 import { SmartImage } from "@/components/ui/smart-image";
-import { pad, useCountdown } from "@/hooks/useCountdown";
+import { formatCountdownTh, pad, useCountdown } from "@/hooks/useCountdown";
 import { supabase } from "@/integrations/supabase/client";
 import { thb } from "@/lib/cart";
 import { cn } from "@/lib/utils";
@@ -156,7 +156,6 @@ function OrdersPage() {
 
 function OrderCard({ order }: { order: PendingOrder }) {
   const c = useCountdown(order.payment_due_at);
-  const minutes = c ? c.days * 1440 + c.hours * 60 + c.minutes : 0;
   const expired = !!c?.isFinished;
   const total = Number(order.total_amount ?? 0);
 
@@ -199,7 +198,7 @@ function OrderCard({ order }: { order: PendingOrder }) {
           <span className="font-medium">หมดเวลาชำระแล้ว</span>
         ) : (
           <span className="font-medium tabular-nums">
-            รอชำระภายใน {pad(minutes)}:{pad(c?.seconds ?? 0)}
+            รอชำระภายใน {formatCountdownTh(c)}
           </span>
         )}
       </div>

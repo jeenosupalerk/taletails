@@ -4,7 +4,6 @@ import {
   Coins,
   CreditCard,
   Hammer,
-  Headphones,
   Heart,
   LogOut,
   MapPin,
@@ -175,14 +174,7 @@ function ProfilePage() {
               <ThemeRow />
             </MenuGroup>
 
-            {/* Help & Logout */}
-            <MenuGroup title="ช่วยเหลือ">
-              <MenuItem
-                to="/news"
-                icon={<Headphones className="h-5 w-5" />}
-                label="ศูนย์ช่วยเหลือ / ติดต่อเรา"
-              />
-            </MenuGroup>
+            {/* "ศูนย์ช่วยเหลือ / ติดต่อเรา" เคยลิงก์ไปหน้าข่าวสาร (ไม่มีข้อมูลติดต่อ) — ซ่อนไว้จนมีช่องทางติดต่อจริง */}
 
             <ConfirmDialog
               title="ออกจากระบบ"

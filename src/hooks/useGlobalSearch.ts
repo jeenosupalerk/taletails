@@ -119,7 +119,7 @@ export const MENU_ITEMS: (SearchResult & { adminOnly?: boolean; guestOnly?: bool
   { id: "m-stats", group: "menu", title: "สถิติ/ตลาด", subtitle: "ราคาและเทรนด์การ์ด", icon: "chart", href: "/market", keywords: "stats price ราคา กราฟ เทรนด์" },
   { id: "m-stats-sqc", group: "menu", title: "ราคากลางเกรดไทย (SQC)", subtitle: "สถิติราคาการ์ดเกรด SQC", icon: "chart", href: "/market?grade=sqc", keywords: "sqc เกรดไทย ราคากลาง thai grade" },
   // m-vault (ประเมินการ์ดสะสม) ปิดไว้ก่อน — ยังไม่เปิดให้บริการ
-  { id: "m-news", group: "menu", title: "ข่าวสาร", subtitle: "ข่าวและคู่มือการ์ดสะสม", icon: "news", href: "/news", keywords: "news บทความ คู่มือ" },
+  // m-news (ข่าวสาร) ปิดไว้ก่อน — ยังไม่ใช้
   { id: "m-cart", group: "menu", title: "ตะกร้าสินค้า", subtitle: "รายการที่รอชำระเงิน", icon: "bag", href: "/checkout", keywords: "cart checkout ชำระเงิน จ่ายเงิน" },
   { id: "m-orders", group: "menu", title: "คำสั่งซื้อของฉัน", subtitle: "ติดตามสถานะและการชำระเงิน", icon: "receipt", href: "/orders", keywords: "orders ออเดอร์ สถานะ" },
   { id: "m-purchases", group: "menu", title: "สถานะการซื้อสินค้า", subtitle: "การจัดส่งและยืนยันรับสินค้า", icon: "truck", href: "/purchases", keywords: "purchases จัดส่ง พัสดุ tracking" },
@@ -191,7 +191,8 @@ export function useGlobalSearch(
 
   const newsQuery = useQuery({
     queryKey: ["global-search", "news", serverTerm],
-    enabled: active,
+    // ข่าวสารปิดไว้ก่อน (28 ก.ย. 2026) — ไม่ค้นบทความ เปิดกลับ: enabled: active
+    enabled: false,
     staleTime: 60_000,
     placeholderData: (prev) => prev,
     queryFn: async () => {

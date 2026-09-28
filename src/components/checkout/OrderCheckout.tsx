@@ -31,7 +31,7 @@ import {
   type SavedAddress,
 } from "@/hooks/useAddresses";
 import { useAuthUserId, useCancelOrder, useOrder, useSubmitPayment } from "@/hooks/useCardDetail";
-import { pad, useCountdown } from "@/hooks/useCountdown";
+import { formatCountdownTh, pad, useCountdown } from "@/hooks/useCountdown";
 import { useMyRedemptions, usePointsBalance, useRedeemPoints, useTtSettings } from "@/hooks/usePoints";
 import { thb } from "@/lib/cart";
 import { startPromptPayPayment } from "@/lib/payments.functions";
@@ -64,7 +64,6 @@ const emptyShipping: Shipping = {
 /** แถบนับถอยหลังเวลาที่สินค้าถูกล็อกไว้ */
 function ReservationBanner({ dueAt }: { dueAt: string | null }) {
   const c = useCountdown(dueAt ?? new Date(Date.now() + 30 * 60_000).toISOString());
-  const minutes = c ? c.days * 1440 + c.hours * 60 + c.minutes : 30;
   const expired = !!c?.isFinished;
 
   return (
@@ -95,7 +94,7 @@ function ReservationBanner({ dueAt }: { dueAt: string | null }) {
       </p>
       {!expired && (
         <span className="animate-pulse font-display text-lg font-semibold tabular-nums text-primary">
-          {c ? `${pad(minutes)}:${pad(c.seconds)}` : "--:--"}
+          {formatCountdownTh(c)}
         </span>
       )}
     </div>

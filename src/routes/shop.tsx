@@ -63,9 +63,6 @@ function ShopPage() {
               การลงสินค้าและเปิดประมูลสงวนไว้สำหรับบัญชีที่แอดมินอนุญาตแล้วเท่านั้น
               กรุณาติดต่อทีมงานเพื่อขอสิทธิ์ผู้ขาย
             </p>
-            <Button asChild variant="secondary" className="mt-5 min-h-11 rounded-xl">
-              <Link to="/news">ติดต่อทีมงาน</Link>
-            </Button>
           </div>
         ) : (
           <div className="space-y-10">
