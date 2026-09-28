@@ -18,7 +18,8 @@ export function LiveAuctionSlider() {
   const live = useLiveAuctions();
   // เฉพาะรอบที่ "กำลังประมูล" เรียงตามเวลาปิดที่ใกล้ที่สุด → ใบแรกคือใบที่โชว์ก่อน
   const items: Auction[] = (live.data ?? [])
-    .filter((a) => a.outcome.outcome === "live")
+    // รอบที่ตั้งเวลาเริ่มไว้ล่วงหน้ายังบิดไม่ได้ — ไม่โชว์ในสไลด์ "กำลังประมูล"
+    .filter((a) => a.outcome.outcome === "live" && new Date(a.startTime ?? 0).getTime() <= Date.now())
     .sort((a, b) => new Date(a.endTime).getTime() - new Date(b.endTime).getTime());
 
   // รายการเปลี่ยน (โหลดเสร็จ / ปิดประมูล) → กลับไปโชว์ใบแรกเสมอ

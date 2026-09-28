@@ -234,6 +234,8 @@ export interface NewCardInput {
   startingPrice: string;
   bidIncrement: string;
   endTime: string;
+  /** เวลาเริ่มประมูล (ว่าง = เริ่มทันที) — อนาคต = "กำลังจะเปิดประมูล" */
+  startTime?: string | undefined;
   /** จำนวนสต็อก (เฉพาะขายราคาปกติ) */
   stockQuantity: string;
   files: File[];
@@ -350,6 +352,7 @@ export function useCreateCard() {
           current_price: startPrice,
           bid_increment: Number(input.bidIncrement || 50),
           end_time: new Date(input.endTime).toISOString(),
+          ...(input.startTime ? { start_time: new Date(input.startTime).toISOString() } : {}),
           status: "active",
         });
         if (aErr) throw new Error(aErr.message);

@@ -32,8 +32,9 @@ import {
   useMyPendingOrder,
   usePlaceBid,
 } from "@/hooks/useCardDetail";
-import { useCountdown } from "@/hooks/useCountdown";
+import { formatCountdownTh, useCountdown } from "@/hooks/useCountdown";
 import { FlipCountdown } from "@/components/site/FlipCountdown";
+import { NotifyWhenOpenButton, UpcomingCountdown } from "@/components/site/UpcomingCountdown";
 import { AUCTION_OUTCOME_TONE_CLASS, getAuctionOutcome } from "@/lib/auction-status";
 import { thb } from "@/lib/cart";
 import { cn } from "@/lib/utils";
@@ -42,6 +43,7 @@ import { cn } from "@/lib/utils";
 const SITE_URL = "https://taletails-test.lovable.app";
 /** Stable placeholder so the countdown hook is not re-armed on every render. */
 const FAR_FUTURE = "2999-01-01T00:00:00.000Z";
+const PAST = "1970-01-01T00:00:00.000Z";
 const title = "รายละเอียดการ์ด — Taletails";
 const description =
   "ดูรายละเอียดการ์ดสะสม เกรด ใบรับรอง ราคาประมูลแบบเรียลไทม์ และซื้อขาดได้ทันทีบน Taletails";
@@ -97,6 +99,11 @@ function CardDetailPage() {
   const countdown = useCountdown(auction?.end_time ?? FAR_FUTURE);
   const closed =
     !!auction && (auction.status !== "active" || (!!countdown && countdown.isFinished));
+  // ตั้งเวลาเริ่มไว้ล่วงหน้า (start_time อนาคต) = "กำลังจะเปิดประมูล": ยังบิดไม่ได้ แสดงนับถอยหลังแทน
+  // ครบเวลา useCountdown จะ isFinished → หน้ากลายเป็นห้องประมูลเองโดยไม่ต้องรีเฟรช
+  const startCountdown = useCountdown(auction?.start_time ?? PAST);
+  const upcoming =
+    !!auction && auction.status === "active" && !!startCountdown && !startCountdown.isFinished;
 
   // Anti-sniping: ฐานข้อมูลจะยืดเวลาปิดประมูลอัตโนมัติเมื่อมีการเคาะราคาในช่วงวินาทีสุดท้าย
   // (ดู trg_bids_apply ใน Supabase) — ฝั่งนี้แค่คอยเทียบเวลาที่เปลี่ยนแล้วแจ้งเตือนผู้ดูสด
@@ -245,7 +252,7 @@ function CardDetailPage() {
             alt={`${card.name} ${card.grade ?? ""}`}
             // ผู้ที่ยังไม่ล็อกอินอ่านได้เฉพาะรอบที่ status = active (RLS) — อ่านรอบไม่ได้ = รอบปิดไปแล้ว
             // ห้ามขึ้นป้าย "กำลังประมูล" ในกรณีนั้น
-            liveAuction={isAuction && Boolean(auction) && !closed}
+            liveAuction={isAuction && Boolean(auction) && !closed && !upcoming}
             status={card.status}
           />
 
@@ -292,13 +299,23 @@ function CardDetailPage() {
             {/* Price block */}
             <div className="mt-8 rounded-[24px] border border-border/70 bg-card p-6 shadow-[0_18px_50px_-38px_hsl(var(--foreground)/0.5)]">
               <p className="text-[12px] tracking-wide text-muted-foreground">
-                {isAuction ? "ราคาประมูลปัจจุบัน" : "ราคาขาย"}
+                {upcoming ? "ราคาเริ่มต้น" : isAuction ? "ราคาประมูลปัจจุบัน" : "ราคาขาย"}
               </p>
               <p className="mt-1 font-display text-4xl font-semibold tracking-tight">
                 {thb.format(price)}
               </p>
 
-              {isAuction && auction && (
+              {isAuction && auction && upcoming && (
+                <div className="mt-5 space-y-4 border-t border-dashed border-border pt-5">
+                  <UpcomingCountdown startTime={auction.start_time} />
+                  <p className="text-xs text-muted-foreground">
+                    บิดขั้นละ {thb.format(Number(auction.bid_increment))} · ช่องเสนอราคาจะเปิดเมื่อถึงเวลา
+                  </p>
+                  <NotifyWhenOpenButton />
+                </div>
+              )}
+
+              {isAuction && auction && !upcoming && (
                 <>
                   <div className="mt-5 border-t border-dashed border-border pt-5">
                     <FlipCountdown
@@ -536,10 +553,16 @@ function CardDetailPage() {
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur lg:hidden">
           <div className="mx-auto flex max-w-xl items-center gap-3">
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] text-muted-foreground">{isAuction ? "ราคาปัจจุบัน" : "ราคาขาย"}</p>
-              <p className="truncate font-display text-xl leading-tight font-bold tabular-nums">{thb.format(price)}</p>
+              <p className="text-[11px] text-muted-foreground">
+                {upcoming ? "เปิดประมูลใน" : isAuction ? "ราคาปัจจุบัน" : "ราคาขาย"}
+              </p>
+              <p className="truncate font-display text-xl leading-tight font-bold tabular-nums">
+                {upcoming ? formatCountdownTh(startCountdown) : thb.format(price)}
+              </p>
             </div>
-            {isAuction ? (
+            {upcoming ? (
+              <NotifyWhenOpenButton compact />
+            ) : isAuction ? (
               <Button
                 className="min-h-12 flex-1 rounded-xl font-semibold hover:bg-primary hover:brightness-95 active:brightness-90"
                 onClick={() => {

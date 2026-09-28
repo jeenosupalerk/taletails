@@ -14,6 +14,8 @@ export interface LiveAuction extends Auction {
   /** รหัสรอบประมูลจริงในฐานข้อมูล (ใช้สำหรับเคาะราคา) */
   auctionId: string;
   cardId: string;
+  /** เวลาเริ่มประมูล — อนาคต = ตั้งเวลาไว้ ยังไม่เปิด */
+  startTime: string;
   bidIncrement: number;
   auctionStatus: AuctionDbStatus;
   cardStatus: CardDbStatus;
@@ -28,6 +30,7 @@ interface AuctionJoinRow {
   current_price: number;
   bid_increment: number;
   bid_count: number;
+  start_time: string;
   end_time: string;
   status: string;
   cards: {
@@ -49,7 +52,7 @@ interface AuctionJoinRow {
 }
 
 const SELECT =
-  "id, card_id, starting_price, current_price, bid_increment, bid_count, end_time, status, cards:card_id (id, name, set_name, images, grade, card_no, language, rarity, year, grading_company, certification_no, condition, details, status)";
+  "id, card_id, starting_price, current_price, bid_increment, bid_count, start_time, end_time, status, cards:card_id (id, name, set_name, images, grade, card_no, language, rarity, year, grading_company, certification_no, condition, details, status)";
 
 /** ลำดับการแสดง: กำลังประมูล → รอชำระ → ไม่เป็นผล → เสร็จสมบูรณ์ (ท้ายสุด) */
 const OUTCOME_RANK: Record<AuctionOutcomeInfo["outcome"], number> = {
@@ -83,6 +86,7 @@ function toLiveAuction(row: AuctionJoinRow): LiveAuction | null {
     startingPrice: Number(row.starting_price ?? 0),
     currentBid: Number(row.current_price ?? row.starting_price ?? 0),
     bidCount: Number(row.bid_count ?? 0),
+    startTime: row.start_time,
     endTime: row.end_time,
     status: endsIn <= 0 ? "ended" : endsIn < 3 * 60 * 60 * 1000 ? "ending-soon" : "live",
     cardNo: card.card_no ?? "-",

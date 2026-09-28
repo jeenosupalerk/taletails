@@ -76,6 +76,7 @@ const EMPTY: NewCardInput = {
   startingPrice: "",
   bidIncrement: "50",
   endTime: "",
+  startTime: "",
   stockQuantity: "1",
   files: [],
   publish: true,
@@ -175,6 +176,10 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
     }
     if (publish && form.saleType === "auction" && !form.endTime) {
       toast.error("กรุณาระบุวันเวลาปิดประมูล");
+      return;
+    }
+    if (form.saleType === "auction" && form.startTime && form.endTime && new Date(form.startTime) >= new Date(form.endTime)) {
+      toast.error("เวลาเริ่มประมูลต้องก่อนเวลาปิดประมูล");
       return;
     }
 
@@ -374,6 +379,14 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                     className="min-h-11 rounded-xl"
                     value={form.bidIncrement}
                     onChange={(e) => set("bidIncrement", e.target.value)}
+                  />
+                </Field>
+                <Field label="เริ่มประมูล (เว้นว่าง = เริ่มทันที)">
+                  <Input
+                    type="datetime-local"
+                    className="min-h-11 rounded-xl"
+                    value={form.startTime ?? ""}
+                    onChange={(e) => set("startTime", e.target.value)}
                   />
                 </Field>
                 <Field label="วันเวลาปิดประมูล * (ไม่ต้องใส่ถ้าบันทึกฉบับร่าง)">

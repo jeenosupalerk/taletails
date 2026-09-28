@@ -8,6 +8,7 @@ import { BackButton } from "@/components/site/BackButton";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { type Auction } from "@/data/auctions";
 import { NoLiveAuction } from "@/components/sections/NoLiveAuction";
+import { MiniUpcoming } from "@/components/site/UpcomingCountdown";
 import { ProductGridCard } from "@/components/sections/FeaturedMarketplace";
 import { LogoLoader } from "@/components/ui/logo-loader";
 import { useMarketplaceCards } from "@/hooks/useSupabaseCatalog";
@@ -98,7 +99,15 @@ function AuctionsPage() {
   const { isAuthenticated } = useAuth();
   const { data: marketCards } = useMarketplaceCards();
   // ข้อมูลจริงเท่านั้น — เดิมถ้าอ่านไม่ได้ (ยังไม่ล็อกอิน/ไม่มีรอบเปิด) จะเอาการ์ดตัวอย่างมาโชว์เป็นประมูลสด
-  const allAuctions: AuctionWithOutcome[] = withOutcome(live.data ?? []);
+  const now = Date.now();
+  // รอบที่ตั้งเวลาเริ่มไว้ล่วงหน้า แยกไปแสดงใน "เร็ว ๆ นี้" — ยังบิดไม่ได้ ห้ามขึ้นเป็นห้องประมูล
+  const isUpcoming = (a: AuctionWithOutcome) =>
+    a.outcome.outcome === "live" && new Date((a as LiveAuction).startTime ?? 0).getTime() > now;
+  const withOutcomes = withOutcome(live.data ?? []);
+  const upcomingAuctions = withOutcomes
+    .filter(isUpcoming)
+    .sort((a, b) => new Date((a as LiveAuction).startTime).getTime() - new Date((b as LiveAuction).startTime).getTime());
+  const allAuctions: AuctionWithOutcome[] = withOutcomes.filter((a) => !isUpcoming(a));
   const hasLive = allAuctions.some((a) => a.outcome.outcome === "live");
   const { id, status } = Route.useSearch();
   // แสดงเฉพาะแท็บที่มีรายการจริง (ไม่มีรอบเปิด = ไม่มีแท็บ "กำลังเปิดประมูล")
@@ -160,6 +169,39 @@ function AuctionsPage() {
           )
         ) : (
           <NoLiveAuction member={isAuthenticated} />
+        )}
+
+        {!live.isLoading && upcomingAuctions.length > 0 && (
+          <section className="mx-auto max-w-7xl px-4 pt-12 sm:px-6 lg:px-8">
+            <h2 className="font-display text-2xl font-bold">เร็ว ๆ นี้</h2>
+            <p className="mt-1 text-sm text-muted-foreground">รอบที่ตั้งเวลาเปิดไว้แล้ว กดดูรายละเอียดและเปิดแจ้งเตือนได้</p>
+            <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {upcomingAuctions.map((a) => {
+                const la = a as LiveAuction;
+                return (
+                  <Link
+                    key={a.id}
+                    to="/card/$id"
+                    params={{ id: la.cardId }}
+                    className="group flex flex-col rounded-[18px] bg-card p-2 ring-1 ring-border/70 transition-shadow hover:shadow-card"
+                  >
+                    <div className="relative aspect-[5/7] overflow-hidden rounded-xl bg-tile">
+                      <SmartImage src={a.imageUrl} alt={a.cardName} transformWidth={500} className="object-cover" />
+                      <MiniUpcoming startTime={la.startTime} />
+                    </div>
+                    <div className="px-1.5 pt-2.5 pb-1">
+                      <h3 className="truncate text-[15px] font-semibold group-hover:text-primary">{a.cardName}</h3>
+                      <p className="mt-0.5 text-[11px] text-muted-foreground">
+                        เปิด{" "}
+                        {new Date(la.startTime).toLocaleString("th-TH", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}{" "}
+                        · เริ่ม {thb.format(la.startingPrice)}
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
         )}
 
         {!live.isLoading && allAuctions.length > 0 && (
