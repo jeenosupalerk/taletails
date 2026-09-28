@@ -26,6 +26,7 @@ import { useWatchlist } from "@/lib/watchlist";
 import { SmartImage } from "@/components/ui/smart-image";
 import { GradeBadge, MarketDiffChip } from "@/components/card/CardBits";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useCategories } from "@/hooks/useSiteContent";
 import { useMarketPriceIndex } from "@/hooks/useMarketStats";
 import { diffVsMarket } from "@/lib/market-price";
 
@@ -208,6 +209,10 @@ export function FeaturedMarketplace({
   const { lookup } = useMarketPriceIndex();
   // จอใหญ่เปิดเป็นแผงด้านขวาเต็มความสูง มือถือเป็นแผ่นล่างจอ — กันแผ่นล่างล้นจอบนโน้ตบุ๊ก
   const isMobile = useIsMobile();
+  // หมวดเกม: "all" = ทั้งหมด, "none" = การ์ดที่ยังไม่ระบุหมวด (อื่น ๆ), นอกนั้นคือ id หมวด
+  const { data: categoryRows } = useCategories();
+  const categories = (categoryRows ?? []).filter((c) => c.is_active);
+  const [category, setCategory] = useState("all");
   const [quick, setQuick] = useState<Set<QuickKey>>(new Set());
   const [status, setStatus] = useState("all");
   const [companies, setCompanies] = useState<Set<string>>(new Set());
@@ -248,6 +253,8 @@ export function FeaturedMarketplace({
   let items = [...all];
   if (showFilter) {
     items = items.filter((p) => {
+      if (category === "none" && p.categoryId) return false;
+      if (category !== "all" && category !== "none" && p.categoryId !== category) return false;
       const company = companyOf(p);
       const grade = norm(p.grade).replace(/[^0-9.]/g, "");
       if (quick.has("sqc") && company !== "SQC") return false;
@@ -300,6 +307,32 @@ export function FeaturedMarketplace({
           />
         )}
         {!showHeading && <h2 className="sr-only">การ์ดที่วางขายในตลาด</h2>}
+        {showFilter && categories.length > 0 && (
+          <nav
+            aria-label="หมวดเกม"
+            className="-mx-4 mb-4 flex gap-1 overflow-x-auto border-b border-border px-4 sm:mx-0 sm:px-0"
+          >
+            {[
+              { id: "all", name: "ทั้งหมด" },
+              ...categories.map((c) => ({ id: c.id, name: c.name })),
+              { id: "none", name: "อื่น ๆ" },
+            ].map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => setCategory(c.id)}
+                aria-pressed={category === c.id}
+                className={`-mb-px min-h-11 shrink-0 border-b-2 px-4 text-sm font-semibold transition-colors ${
+                  category === c.id
+                    ? "border-primary text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {c.name}
+              </button>
+            ))}
+          </nav>
+        )}
         {showFilter && (
           <div className="mb-5">
             <div className="-mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">

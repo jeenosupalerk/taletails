@@ -63,6 +63,8 @@ export function useIsSeller() {
 
 export interface AdminCardRow {
   id: string;
+  /** หมวดเกม (null = ยังไม่ระบุ) */
+  category_id?: string | null;
   name: string;
   set_name: string | null;
   grade: string | null;
@@ -88,7 +90,7 @@ export interface AdminCardRow {
 }
 
 const CARD_SELECT =
-  "id, name, set_name, grade, condition, images, price, sale_type, status, stock_quantity, is_published, created_at, updated_at, auctions (id, end_time, current_price, status, bid_count), orders (id, status, payment_due_at)";
+  "id, name, set_name, grade, condition, images, price, sale_type, status, stock_quantity, is_published, created_at, updated_at, category_id, auctions (id, end_time, current_price, status, bid_count), orders (id, status, payment_due_at)";
 
 export function useAdminCards(enabled = true) {
   return useQuery({
@@ -236,6 +238,8 @@ export interface NewCardInput {
   endTime: string;
   /** เวลาเริ่มประมูล (ว่าง = เริ่มทันที) — อนาคต = "กำลังจะเปิดประมูล" */
   startTime?: string | undefined;
+  /** หมวดเกม (ว่าง = ไม่ระบุ) */
+  categoryId?: string | undefined;
   /** จำนวนสต็อก (เฉพาะขายราคาปกติ) */
   stockQuantity: string;
   files: File[];
@@ -338,6 +342,8 @@ export function useCreateCard() {
           status: "available",
           stock_quantity: stock,
           is_published: input.publish,
+          // category_id ยังไม่อยู่ใน types ที่ generate ไว้
+          ...((input.categoryId ? { category_id: input.categoryId } : {}) as object),
         })
         .select("id")
         .single();
@@ -397,7 +403,8 @@ export function useUpdateCardListing() {
       } = { _card_id: input.cardId };
       if (input.isPublished !== undefined) args._is_published = input.isPublished;
       if (input.stockQuantity !== undefined) args._stock_quantity = input.stockQuantity;
-      if (input.auctionEndTime) args._auction_end_time = new Date(input.auctionEndTime).toISOString();
+      if (input.auctionEndTime)
+        args._auction_end_time = new Date(input.auctionEndTime).toISOString();
       if (input.bidIncrement !== undefined) args._bid_increment = input.bidIncrement;
 
       const { data, error } = await supabase.rpc("update_card_listing", args);
@@ -413,6 +420,28 @@ export function useUpdateCardListing() {
       void queryClient.invalidateQueries({ queryKey: ["cards"] });
       void queryClient.invalidateQueries({ queryKey: ["card", input.cardId] });
       void queryClient.invalidateQueries({ queryKey: ["auctions"] });
+    },
+  });
+}
+
+/** ตั้งหมวดเกมให้การ์ดที่ลงไปแล้ว (null = ไม่ระบุหมวด) */
+export function useSetCardCategory() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { cardId: string; categoryId: string | null }) => {
+      const { data, error } = await supabase
+        .from("cards")
+        .update({ category_id: input.categoryId } as never)
+        .eq("id", input.cardId)
+        .select("id");
+      if (error) throw new Error(error.message);
+      if (!data?.length) throw new Error("ไม่มีสิทธิ์แก้ไขการ์ดใบนี้");
+      return true;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["admin", "cards"] });
+      void queryClient.invalidateQueries({ queryKey: ["shop", "cards"] });
+      void queryClient.invalidateQueries({ queryKey: ["cards"] });
     },
   });
 }
@@ -612,7 +641,9 @@ export function useMemberBids(userId?: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("bids")
-        .select("id, amount, created_at, auction_id, auctions:auction_id (card_id, status, cards:card_id (name))")
+        .select(
+          "id, amount, created_at, auction_id, auctions:auction_id (card_id, status, cards:card_id (name))",
+        )
         .eq("user_id", userId!)
         .order("created_at", { ascending: false })
         .limit(50);
@@ -626,10 +657,7 @@ export function useToggleBan() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ userId, banned }: { userId: string; banned: boolean }) => {
-      const { error } = await supabase
-        .from("users")
-        .update({ is_banned: banned })
-        .eq("id", userId);
+      const { error } = await supabase.from("users").update({ is_banned: banned }).eq("id", userId);
       if (error) throw new Error(error.message);
       return true;
     },

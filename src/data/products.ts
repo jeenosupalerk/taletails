@@ -48,6 +48,8 @@ export interface Product {
   isPublished?: boolean;
   /** เวลาลงขาย ใช้กรอง "มาใหม่ 7 วัน" */
   createdAt?: string | undefined;
+  /** หมวดเกม (null = ยังไม่ระบุ) */
+  categoryId?: string | null | undefined;
 }
 
 const baseReviews: ProductReview[] = [

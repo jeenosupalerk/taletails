@@ -67,3 +67,9 @@
 - รายละเอียด RLS ของตารางอื่นนอกจาก auctions/bids
 
 *สร้างเมื่อ 17 ก.ย. 2026 · ย้ายเข้า repo และเขียนใหม่ 23 ก.ย. 2026*
+
+## 28 ก.ย. 2026 — SQL ที่ apply เพิ่ม
+
+- `auction_start_time`: `auctions.opened_notified_at`, trigger `trg_bids_guard_start` (ห้ามบิดก่อน start_time), `notify_due_auction_openings()` ถูกเรียกจาก cron `/api/public/cron/auctions` ทุกนาที → แจ้ง "เปิดประมูลใหม่แล้ว" ตอนถึงเวลาเริ่มจริง
+- `categories_banners`: ตาราง `categories` (หมวดเกม) + `cards.category_id` (null = "อื่น ๆ"), ตาราง `banners` (หน้าแรก, RLS ให้คนทั่วไปเห็นเฉพาะที่เปิด+อยู่ในช่วงเวลา), bucket `banners` (public, แอดมินอัปโหลด/แก้ได้ ไม่มีสิทธิ์ลบ)
+- จัดการได้ที่หลังบ้าน `/admin/banners` · hooks อยู่ใน `src/hooks/useSiteContent.ts`

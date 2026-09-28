@@ -2,6 +2,7 @@ import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-r
 import { LogoLoader } from "@/components/ui/logo-loader";
 import {
   Coins,
+  GalleryHorizontal,
   LayoutGrid,
   Loader2,
   Newspaper,
@@ -40,6 +41,7 @@ const TABS: { to: string; label: string; hint: string; icon: LucideIcon }[] = [
   { to: "/admin/members", label: "สมาชิก", hint: "สิทธิ์ & ระงับบัญชี", icon: Users },
   { to: "/admin/news", label: "ข่าวสาร", hint: "บทความ & โปรโมชัน", icon: Newspaper },
   { to: "/admin/points", label: "TT Points", hint: "แต้ม & ของรางวัล", icon: Coins },
+  { to: "/admin/banners", label: "Banner & หมวด", hint: "หน้าแรก & ตลาด", icon: GalleryHorizontal },
 ];
 
 function AdminLayout() {

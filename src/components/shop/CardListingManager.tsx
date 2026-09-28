@@ -40,15 +40,12 @@ import {
   useRelistAuction,
   useUpdateAuctionEndTime,
   useUpdateCardListing,
+  useSetCardCategory,
   type AdminCardRow,
   type NewCardInput,
 } from "@/hooks/useAdmin";
 import { isSoldExpiredFromMarket, SOLD_VISIBLE_DAYS } from "@/hooks/useSupabaseCatalog";
-import {
-  getAuctionOutcome,
-  type AuctionDbStatus,
-  type CardDbStatus,
-} from "@/lib/auction-status";
+import { getAuctionOutcome, type AuctionDbStatus, type CardDbStatus } from "@/lib/auction-status";
 
 import { thb } from "@/lib/cart";
 
@@ -58,6 +55,7 @@ import { EditImagesButton } from "@/components/shop/EditImagesDialog";
 import { GradingCompanyField } from "@/components/shop/GradingCompanyField";
 import { SuggestInput } from "@/components/shop/SuggestInput";
 import { useCardSuggestions } from "@/hooks/useCardSuggestions";
+import { useCategories } from "@/hooks/useSiteContent";
 
 const EMPTY: NewCardInput = {
   name: "",
@@ -77,6 +75,7 @@ const EMPTY: NewCardInput = {
   bidIncrement: "50",
   endTime: "",
   startTime: "",
+  categoryId: "",
   stockQuantity: "1",
   files: [],
   publish: true,
@@ -101,12 +100,15 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
   const create = useCreateCard();
   // ชื่อการ์ด/ชุดที่เคยลงไว้ — ช่วยให้พิมพ์ตรงกันทุกครั้ง ราคากลางจะได้รวมเป็นรุ่นเดียวกัน
   const suggest = useCardSuggestions(open);
+  const categoryOptions = (useCategories().data ?? []).filter((c) => c.is_active);
   const nameItems = useMemo(
     () =>
       suggest.cards.map((c) => ({
         key: `${c.name}|${c.setName}|${c.cardNo}`,
         text: c.name,
-        detail: [c.setName, c.cardNo && `#${c.cardNo}`, `ลงแล้ว ${c.count} ใบ`].filter(Boolean).join(" · "),
+        detail: [c.setName, c.cardNo && `#${c.cardNo}`, `ลงแล้ว ${c.count} ใบ`]
+          .filter(Boolean)
+          .join(" · "),
         weight: c.count,
         value: c,
       })),
@@ -132,7 +134,6 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
     const id = window.setInterval(() => setNow(Date.now()), 15_000);
     return () => window.clearInterval(id);
   }, []);
-
 
   const items = cards.data ?? [];
   const total = items.length;
@@ -178,21 +179,29 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
       toast.error("กรุณาระบุวันเวลาปิดประมูล");
       return;
     }
-    if (form.saleType === "auction" && form.startTime && form.endTime && new Date(form.startTime) >= new Date(form.endTime)) {
+    if (
+      form.saleType === "auction" &&
+      form.startTime &&
+      form.endTime &&
+      new Date(form.startTime) >= new Date(form.endTime)
+    ) {
       toast.error("เวลาเริ่มประมูลต้องก่อนเวลาปิดประมูล");
       return;
     }
 
     setSubmitting(publish ? "publish" : "draft");
-    create.mutate({ ...form, publish }, {
-      onSettled: () => setSubmitting(null),
-      onSuccess: () => {
-        toast.success(publish ? "ลงการ์ดในตลาดเรียบร้อย" : "บันทึกฉบับร่างแล้ว ยังไม่แสดงในตลาด");
-        setForm(EMPTY);
-        setOpen(false);
+    create.mutate(
+      { ...form, publish },
+      {
+        onSettled: () => setSubmitting(null),
+        onSuccess: () => {
+          toast.success(publish ? "ลงการ์ดในตลาดเรียบร้อย" : "บันทึกฉบับร่างแล้ว ยังไม่แสดงในตลาด");
+          setForm(EMPTY);
+          setOpen(false);
+        },
+        onError: (e) => toast.error(e instanceof Error ? e.message : "บันทึกไม่สำเร็จ"),
       },
-      onError: (e) => toast.error(e instanceof Error ? e.message : "บันทึกไม่สำเร็จ"),
-    });
+    );
   };
 
   return (
@@ -271,6 +280,20 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                 value={form.year}
                 onChange={(e) => set("year", e.target.value)}
               />
+            </Field>
+            <Field label="หมวดเกม">
+              <select
+                className="min-h-11 w-full rounded-xl border border-input bg-background px-3 text-sm"
+                value={form.categoryId ?? ""}
+                onChange={(e) => set("categoryId", e.target.value)}
+              >
+                <option value="">ไม่ระบุ (อื่น ๆ)</option>
+                {categoryOptions.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
             </Field>
             <Field label="สภาพ">
               <Input
@@ -472,244 +495,258 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
         </section>
       ) : (
         <>
-        <p className="text-xs text-muted-foreground">
-          เลือกการ์ดด้วยปุ่ม Tab แล้วกด <kbd className="rounded bg-secondary px-1.5 py-0.5">V</kbd> เพื่อดูหน้าขาย หรือ{" "}
-          <kbd className="rounded bg-secondary px-1.5 py-0.5">Delete</kbd> เพื่อลบ
-        </p>
-        <ul className="space-y-3">
-          {pageItems.map((c) => {
-            const auction = c.auctions?.[0];
-            const outcome = auction
-              ? getAuctionOutcome(
-                  auction.status as AuctionDbStatus,
-                  c.status as CardDbStatus,
-                  auction.end_time,
-                  Number(auction.bid_count ?? 0),
-                )
-              : null;
+          <p className="text-xs text-muted-foreground">
+            เลือกการ์ดด้วยปุ่ม Tab แล้วกด{" "}
+            <kbd className="rounded bg-secondary px-1.5 py-0.5">V</kbd> เพื่อดูหน้าขาย หรือ{" "}
+            <kbd className="rounded bg-secondary px-1.5 py-0.5">Delete</kbd> เพื่อลบ
+          </p>
+          <ul className="space-y-3">
+            {pageItems.map((c) => {
+              const auction = c.auctions?.[0];
+              const outcome = auction
+                ? getAuctionOutcome(
+                    auction.status as AuctionDbStatus,
+                    c.status as CardDbStatus,
+                    auction.end_time,
+                    Number(auction.bid_count ?? 0),
+                  )
+                : null;
 
-            // ผู้ชนะไม่ชำระเงินภายในเวลาที่กำหนด -> เปิดให้แอดมินเปิดประมูลใหม่ได้
-            const overdueOrder = (c.orders ?? []).some(
-              (o) => o.status === "pending" && new Date(o.payment_due_at).getTime() <= now,
-            );
-            // ลูกค้ากำลังดำเนินการชำระเงิน -> ห้ามลบในช่วงนี้
-            const paymentInProgress = (c.orders ?? []).some(
-              (o) => o.status === "pending" && new Date(o.payment_due_at).getTime() > now,
-            );
-            const paymentOverdue =
-              c.status !== "sold" &&
-              outcome?.outcome === "waiting_payment" &&
-              (overdueOrder ||
-                (c.orders ?? []).every((o) => o.status === "cancelled"));
+              // ผู้ชนะไม่ชำระเงินภายในเวลาที่กำหนด -> เปิดให้แอดมินเปิดประมูลใหม่ได้
+              const overdueOrder = (c.orders ?? []).some(
+                (o) => o.status === "pending" && new Date(o.payment_due_at).getTime() <= now,
+              );
+              // ลูกค้ากำลังดำเนินการชำระเงิน -> ห้ามลบในช่วงนี้
+              const paymentInProgress = (c.orders ?? []).some(
+                (o) => o.status === "pending" && new Date(o.payment_due_at).getTime() > now,
+              );
+              const paymentOverdue =
+                c.status !== "sold" &&
+                outcome?.outcome === "waiting_payment" &&
+                (overdueOrder || (c.orders ?? []).every((o) => o.status === "cancelled"));
 
-            // ล็อกการจัดการเมื่อรอผู้ชนะชำระเงิน หรือประมูลสำเร็จแล้ว
-            const managementLocked =
-              c.status === "sold" ||
-              (!paymentOverdue &&
-                ((outcome
-                  ? outcome.outcome === "waiting_payment" || outcome.outcome === "completed"
-                  : false) ||
-                  (!!auction && c.status === "locked")));
-            const lockedNote =
-              c.sale_type === "fixed_price"
-                ? "ขายหมดแล้ว • เติมสต็อกเพื่อเปิดขายต่อได้เลย ไม่ต้องลงใหม่"
-                : c.status === "sold" || outcome?.outcome === "completed"
-                  ? "ประมูลสำเร็จแล้ว ไม่สามารถแก้ไขหรือเปิดประมูลใหม่ได้"
-                  : "อยู่ระหว่างรอผู้ชนะชำระเงิน ไม่สามารถแก้ไขหรือเปิดประมูลใหม่ได้";
-            const isDraftAuction = c.sale_type === "auction" && !auction && !c.is_published;
-            const expiredFromMarket =
-              c.sale_type === "fixed_price" &&
-              c.is_published &&
-              isSoldExpiredFromMarket(c.status, c.updated_at);
+              // ล็อกการจัดการเมื่อรอผู้ชนะชำระเงิน หรือประมูลสำเร็จแล้ว
+              const managementLocked =
+                c.status === "sold" ||
+                (!paymentOverdue &&
+                  ((outcome
+                    ? outcome.outcome === "waiting_payment" || outcome.outcome === "completed"
+                    : false) ||
+                    (!!auction && c.status === "locked")));
+              const lockedNote =
+                c.sale_type === "fixed_price"
+                  ? "ขายหมดแล้ว • เติมสต็อกเพื่อเปิดขายต่อได้เลย ไม่ต้องลงใหม่"
+                  : c.status === "sold" || outcome?.outcome === "completed"
+                    ? "ประมูลสำเร็จแล้ว ไม่สามารถแก้ไขหรือเปิดประมูลใหม่ได้"
+                    : "อยู่ระหว่างรอผู้ชนะชำระเงิน ไม่สามารถแก้ไขหรือเปิดประมูลใหม่ได้";
+              const isDraftAuction = c.sale_type === "auction" && !auction && !c.is_published;
+              const expiredFromMarket =
+                c.sale_type === "fixed_price" &&
+                c.is_published &&
+                isSoldExpiredFromMarket(c.status, c.updated_at);
 
-            return (
-              <li
-                key={c.id}
-                tabIndex={0}
-                onKeyDown={onRowKeyDown}
-                className="rounded-2xl border border-border bg-card p-3 outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:p-4"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-secondary">
-                    {c.images?.[0] && (
-                      <SmartImage src={c.images[0]} alt={c.name} transformWidth={160} className="object-cover" />
+              return (
+                <li
+                  key={c.id}
+                  tabIndex={0}
+                  onKeyDown={onRowKeyDown}
+                  className="rounded-2xl border border-border bg-card p-3 outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:p-4"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-secondary">
+                      {c.images?.[0] && (
+                        <SmartImage
+                          src={c.images[0]}
+                          alt={c.name}
+                          transformWidth={160}
+                          className="object-cover"
+                        />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-display text-sm font-semibold">{c.name}</p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {[c.set_name, c.grade, c.condition].filter(Boolean).join(" • ") || "—"}
+                      </p>
+                      <p className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5">
+                          {c.sale_type === "auction" ? (
+                            <Gavel className="h-3 w-3" />
+                          ) : (
+                            <Tag className="h-3 w-3" />
+                          )}
+                          {c.sale_type === "auction" ? "ประมูล" : "ราคาปกติ"}
+                        </span>
+                        <span className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-muted-foreground">
+                          {STATUS_LABEL[c.status]}
+                        </span>
+                        {c.sale_type === "fixed_price" && c.stock_quantity !== null && (
+                          <span
+                            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 ${
+                              c.stock_quantity > 0
+                                ? "bg-secondary text-muted-foreground"
+                                : "bg-destructive/10 text-destructive"
+                            }`}
+                          >
+                            <Package className="h-3 w-3" />
+                            สต็อก {c.stock_quantity}
+                          </span>
+                        )}
+                        {!c.is_published && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 font-medium text-amber-600 dark:text-amber-400">
+                            <EyeOff className="h-3 w-3" />
+                            {isDraftAuction
+                              ? "ฉบับร่าง • ยังไม่เปิดประมูล"
+                              : "ฉบับร่าง / ไม่แสดงในตลาด"}
+                          </span>
+                        )}
+                        {expiredFromMarket && (
+                          <span
+                            className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-muted-foreground"
+                            title={`ขายหมดและไม่มีการอัปเดตเกิน ${SOLD_VISIBLE_DAYS} วัน จึงไม่แสดงในหน้าตลาดแล้ว (ยังอยู่ในร้านของคุณ) — เติมสต็อกเพื่อกลับขึ้นตลาด`}
+                          >
+                            <EyeOff className="h-3 w-3" />
+                            ขายหมดเกิน {SOLD_VISIBLE_DAYS} วัน • หายจากตลาดแล้ว
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                    <p className="shrink-0 font-display text-sm font-semibold">
+                      {thb.format(auction?.current_price ?? c.price)}
+                    </p>
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-dashed border-border pt-3">
+                    {auction && !managementLocked && (
+                      <Input
+                        type="datetime-local"
+                        aria-label="แก้เวลาปิดประมูล"
+                        defaultValue={new Date(auction.end_time).toISOString().slice(0, 16)}
+                        onBlur={(e) =>
+                          e.target.value &&
+                          setEnd.mutate(
+                            { auctionId: auction.id, endTime: e.target.value },
+                            {
+                              onSuccess: () => toast.success("อัปเดตเวลาปิดประมูลแล้ว"),
+                              onError: (err) =>
+                                toast.error(err instanceof Error ? err.message : "ไม่สำเร็จ"),
+                            },
+                          )
+                        }
+                        className="min-h-10 w-full rounded-xl text-xs sm:w-auto sm:flex-1"
+                      />
+                    )}
+
+                    {c.sale_type === "fixed_price" && <StockControl card={c} />}
+                    {c.sale_type === "fixed_price" && <PublishToggle card={c} />}
+                    {isDraftAuction && <PublishAuctionDraft cardId={c.id} />}
+
+                    <Button
+                      asChild
+                      variant="secondary"
+                      className="min-h-10 flex-1 rounded-xl px-3 text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:flex-none"
+                    >
+                      {/* เปิดหน้าเดียวกับที่ลูกค้าเห็น: ขายราคาตายตัว = /product, ประมูล = /card */}
+                      <Link
+                        to={c.sale_type === "fixed_price" ? "/product/$id" : "/card/$id"}
+                        params={{ id: c.id }}
+                        data-action="view"
+                        title="ดูหน้าขาย (V)"
+                      >
+                        ดูหน้าขาย
+                      </Link>
+                    </Button>
+                    {/* การ์ดที่ขายหมดเกิน 14 วัน: แก้รูปแล้ว updated_at จะเปลี่ยน ทำให้กลับขึ้นตลาด → ซ่อนปุ่ม */}
+                    {!expiredFromMarket && (
+                      <EditImagesButton cardId={c.id} cardName={c.name} images={c.images ?? []} />
+                    )}
+                    {!expiredFromMarket && (
+                      <CardCategorySelect cardId={c.id} value={c.category_id ?? null} />
+                    )}
+                    {paymentOverdue && (
+                      <span className="inline-flex min-h-10 w-full items-center gap-1.5 rounded-xl bg-destructive/10 px-3 text-xs font-medium text-destructive sm:w-auto">
+                        <AlarmClock className="h-3.5 w-3.5" />
+                        ผู้ชนะไม่ชำระเงินตามเวลา • เปิดประมูลใหม่ได้
+                      </span>
+                    )}
+                    {scope === "admin" &&
+                      auction &&
+                      !managementLocked &&
+                      auction.status !== "active" && (
+                        <RelistAuctionControl auctionId={auction.id} />
+                      )}
+                    {paymentInProgress ? (
+                      <span className="inline-flex min-h-10 w-full items-center gap-1.5 rounded-xl bg-secondary px-3 text-xs text-muted-foreground sm:w-auto">
+                        <Lock className="h-3.5 w-3.5" />
+                        ลูกค้ากำลังชำระเงิน • ยังลบไม่ได้
+                      </span>
+                    ) : (
+                      <ConfirmDialog
+                        title="ยืนยันการลบการ์ด"
+                        description={`ต้องการลบ "${c.name}" ออกจากร้านหรือไม่? รายการจะยังคงอยู่ในประวัติการลงขายพร้อมสถานะล่าสุด`}
+                        confirmLabel="ลบการ์ด"
+                        tone="destructive"
+                        onConfirm={() =>
+                          del.mutate(c.id, {
+                            onSuccess: () => toast.success("ลบการ์ดแล้ว"),
+                            onError: (e) =>
+                              toast.error(e instanceof Error ? e.message : "ลบไม่สำเร็จ"),
+                          })
+                        }
+                        trigger={
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            aria-label="ลบการ์ด"
+                            title="ลบการ์ด (Delete)"
+                            data-action="delete"
+                            className="min-h-10 w-10 shrink-0 rounded-xl text-destructive focus-visible:ring-2 focus-visible:ring-destructive focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        }
+                      />
+                    )}
+                    {managementLocked && (
+                      <span className="inline-flex min-h-10 items-center gap-1.5 rounded-xl bg-secondary px-3 text-xs text-muted-foreground">
+                        <Lock className="h-3.5 w-3.5" />
+                        {lockedNote}
+                      </span>
                     )}
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-display text-sm font-semibold">{c.name}</p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {[c.set_name, c.grade, c.condition].filter(Boolean).join(" • ") || "—"}
-                    </p>
-                    <p className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5">
-                        {c.sale_type === "auction" ? (
-                          <Gavel className="h-3 w-3" />
-                        ) : (
-                          <Tag className="h-3 w-3" />
-                        )}
-                        {c.sale_type === "auction" ? "ประมูล" : "ราคาปกติ"}
-                      </span>
-                      <span className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-muted-foreground">
-                        {STATUS_LABEL[c.status]}
-                      </span>
-                      {c.sale_type === "fixed_price" && c.stock_quantity !== null && (
-                        <span
-                          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 ${
-                            c.stock_quantity > 0
-                              ? "bg-secondary text-muted-foreground"
-                              : "bg-destructive/10 text-destructive"
-                          }`}
-                        >
-                          <Package className="h-3 w-3" />
-                          สต็อก {c.stock_quantity}
-                        </span>
-                      )}
-                      {!c.is_published && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 font-medium text-amber-600 dark:text-amber-400">
-                          <EyeOff className="h-3 w-3" />
-                          {isDraftAuction ? "ฉบับร่าง • ยังไม่เปิดประมูล" : "ฉบับร่าง / ไม่แสดงในตลาด"}
-                        </span>
-                      )}
-                      {expiredFromMarket && (
-                        <span
-                          className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-muted-foreground"
-                          title={`ขายหมดและไม่มีการอัปเดตเกิน ${SOLD_VISIBLE_DAYS} วัน จึงไม่แสดงในหน้าตลาดแล้ว (ยังอยู่ในร้านของคุณ) — เติมสต็อกเพื่อกลับขึ้นตลาด`}
-                        >
-                          <EyeOff className="h-3 w-3" />
-                          ขายหมดเกิน {SOLD_VISIBLE_DAYS} วัน • หายจากตลาดแล้ว
-                        </span>
-                      )}
-                    </p>
-                  </div>
-                  <p className="shrink-0 font-display text-sm font-semibold">
-                    {thb.format(auction?.current_price ?? c.price)}
-                  </p>
-                </div>
+                </li>
+              );
+            })}
+          </ul>
 
-                <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-dashed border-border pt-3">
-                  {auction && !managementLocked && (
-                    <Input
-                      type="datetime-local"
-                      aria-label="แก้เวลาปิดประมูล"
-                      defaultValue={new Date(auction.end_time).toISOString().slice(0, 16)}
-                      onBlur={(e) =>
-                        e.target.value &&
-                        setEnd.mutate(
-                          { auctionId: auction.id, endTime: e.target.value },
-                          {
-                            onSuccess: () => toast.success("อัปเดตเวลาปิดประมูลแล้ว"),
-                            onError: (err) =>
-                              toast.error(err instanceof Error ? err.message : "ไม่สำเร็จ"),
-                          },
-                        )
-                      }
-                      className="min-h-10 w-full rounded-xl text-xs sm:w-auto sm:flex-1"
-                    />
-                  )}
-
-                  {c.sale_type === "fixed_price" && <StockControl card={c} />}
-                  {c.sale_type === "fixed_price" && <PublishToggle card={c} />}
-                  {isDraftAuction && <PublishAuctionDraft cardId={c.id} />}
-
-                  <Button
-                    asChild
-                    variant="secondary"
-                    className="min-h-10 flex-1 rounded-xl px-3 text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:flex-none"
-                  >
-                    {/* เปิดหน้าเดียวกับที่ลูกค้าเห็น: ขายราคาตายตัว = /product, ประมูล = /card */}
-                    <Link
-                      to={c.sale_type === "fixed_price" ? "/product/$id" : "/card/$id"}
-                      params={{ id: c.id }}
-                      data-action="view"
-                      title="ดูหน้าขาย (V)"
-                    >
-                      ดูหน้าขาย
-                    </Link>
-                  </Button>
-                  {/* การ์ดที่ขายหมดเกิน 14 วัน: แก้รูปแล้ว updated_at จะเปลี่ยน ทำให้กลับขึ้นตลาด → ซ่อนปุ่ม */}
-                  {!expiredFromMarket && (
-                    <EditImagesButton cardId={c.id} cardName={c.name} images={c.images ?? []} />
-                  )}
-                  {paymentOverdue && (
-                    <span className="inline-flex min-h-10 w-full items-center gap-1.5 rounded-xl bg-destructive/10 px-3 text-xs font-medium text-destructive sm:w-auto">
-                      <AlarmClock className="h-3.5 w-3.5" />
-                      ผู้ชนะไม่ชำระเงินตามเวลา • เปิดประมูลใหม่ได้
-                    </span>
-                  )}
-                  {scope === "admin" &&
-                    auction &&
-                    !managementLocked &&
-                    auction.status !== "active" && <RelistAuctionControl auctionId={auction.id} />}
-                  {paymentInProgress ? (
-                    <span className="inline-flex min-h-10 w-full items-center gap-1.5 rounded-xl bg-secondary px-3 text-xs text-muted-foreground sm:w-auto">
-                      <Lock className="h-3.5 w-3.5" />
-                      ลูกค้ากำลังชำระเงิน • ยังลบไม่ได้
-                    </span>
-                  ) : (
-                    <ConfirmDialog
-                      title="ยืนยันการลบการ์ด"
-                      description={`ต้องการลบ "${c.name}" ออกจากร้านหรือไม่? รายการจะยังคงอยู่ในประวัติการลงขายพร้อมสถานะล่าสุด`}
-                      confirmLabel="ลบการ์ด"
-                      tone="destructive"
-                      onConfirm={() =>
-                        del.mutate(c.id, {
-                          onSuccess: () => toast.success("ลบการ์ดแล้ว"),
-                          onError: (e) =>
-                            toast.error(e instanceof Error ? e.message : "ลบไม่สำเร็จ"),
-                        })
-                      }
-                      trigger={
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          aria-label="ลบการ์ด"
-                          title="ลบการ์ด (Delete)"
-                          data-action="delete"
-                          className="min-h-10 w-10 shrink-0 rounded-xl text-destructive focus-visible:ring-2 focus-visible:ring-destructive focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      }
-                    />
-                  )}
-                  {managementLocked && (
-                    <span className="inline-flex min-h-10 items-center gap-1.5 rounded-xl bg-secondary px-3 text-xs text-muted-foreground">
-                      <Lock className="h-3.5 w-3.5" />
-                      {lockedNote}
-                    </span>
-                  )}
-
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-
-        {pageCount > 1 && (
-          <nav className="flex items-center justify-between gap-2" aria-label="แบ่งหน้ารายการสินค้า">
-            <Button
-              variant="secondary"
-              className="min-h-10 rounded-xl px-3 text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              disabled={safePage === 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
+          {pageCount > 1 && (
+            <nav
+              className="flex items-center justify-between gap-2"
+              aria-label="แบ่งหน้ารายการสินค้า"
             >
-              <ChevronLeft className="h-4 w-4" />
-              ก่อนหน้า
-            </Button>
-            <span className="text-xs text-muted-foreground">
-              หน้า {safePage} / {pageCount} • ทั้งหมด {total} รายการ
-            </span>
-            <Button
-              variant="secondary"
-              className="min-h-10 rounded-xl px-3 text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              disabled={safePage === pageCount}
-              onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
-            >
-              ถัดไป
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </nav>
-        )}
+              <Button
+                variant="secondary"
+                className="min-h-10 rounded-xl px-3 text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                disabled={safePage === 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                ก่อนหน้า
+              </Button>
+              <span className="text-xs text-muted-foreground">
+                หน้า {safePage} / {pageCount} • ทั้งหมด {total} รายการ
+              </span>
+              <Button
+                variant="secondary"
+                className="min-h-10 rounded-xl px-3 text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                disabled={safePage === pageCount}
+                onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
+              >
+                ถัดไป
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </nav>
+          )}
         </>
       )}
     </div>
@@ -760,7 +797,11 @@ function RelistAuctionControl({ auctionId }: { auctionId: string }) {
           );
         }}
       >
-        {relist.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Gavel className="h-4 w-4" />}
+        {relist.isPending ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <Gavel className="h-4 w-4" />
+        )}
         เปิดประมูลใหม่
       </Button>
     </div>
@@ -770,7 +811,9 @@ function RelistAuctionControl({ auctionId }: { auctionId: string }) {
 /** แก้จำนวนสต็อก — การ์ดชิ้นเดียวแบบเดิม (ยังไม่มีสต็อก) ก็ตั้งเพื่อเติมของได้ */
 function StockControl({ card }: { card: AdminCardRow }) {
   const update = useUpdateCardListing();
-  const [value, setValue] = useState(card.stock_quantity === null ? "" : String(card.stock_quantity));
+  const [value, setValue] = useState(
+    card.stock_quantity === null ? "" : String(card.stock_quantity),
+  );
 
   useEffect(() => {
     setValue(card.stock_quantity === null ? "" : String(card.stock_quantity));
@@ -789,7 +832,9 @@ function StockControl({ card }: { card: AdminCardRow }) {
       { cardId: card.id, stockQuantity: n },
       {
         onSuccess: () =>
-          toast.success(n > 0 ? `อัปเดตสต็อกเป็น ${n} ชิ้นแล้ว` : "ตั้งสต็อกเป็น 0 — ปิดการซื้อแล้ว"),
+          toast.success(
+            n > 0 ? `อัปเดตสต็อกเป็น ${n} ชิ้นแล้ว` : "ตั้งสต็อกเป็น 0 — ปิดการซื้อแล้ว",
+          ),
         onError: (e) => toast.error(e instanceof Error ? e.message : "อัปเดตสต็อกไม่สำเร็จ"),
       },
     );
@@ -818,7 +863,11 @@ function StockControl({ card }: { card: AdminCardRow }) {
         onClick={save}
         className="min-h-10 rounded-xl px-3 text-xs"
       >
-        {update.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Package className="h-4 w-4" />}
+        {update.isPending ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <Package className="h-4 w-4" />
+        )}
         {card.stock_quantity === null || card.stock_quantity === 0 ? "เติมสต็อก" : "บันทึกสต็อก"}
       </Button>
     </div>
@@ -839,7 +888,9 @@ function PublishToggle({ card }: { card: AdminCardRow }) {
           { cardId: card.id, isPublished: next },
           {
             onSuccess: () =>
-              toast.success(next ? "นำสินค้าขึ้นตลาดแล้ว" : "ซ่อนสินค้าจากตลาดแล้ว (ยังอยู่ในร้านของคุณ)"),
+              toast.success(
+                next ? "นำสินค้าขึ้นตลาดแล้ว" : "ซ่อนสินค้าจากตลาดแล้ว (ยังอยู่ในร้านของคุณ)",
+              ),
             onError: (e) => toast.error(e instanceof Error ? e.message : "ไม่สำเร็จ"),
           },
         )
@@ -904,9 +955,45 @@ function PublishAuctionDraft({ cardId }: { cardId: string }) {
           );
         }}
       >
-        {update.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Gavel className="h-4 w-4" />}
+        {update.isPending ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <Gavel className="h-4 w-4" />
+        )}
         เปิดประมูล
       </Button>
     </div>
+  );
+}
+
+/** เปลี่ยนหมวดเกมของการ์ดที่ลงไปแล้ว — เลือกแล้วบันทึกทันที */
+function CardCategorySelect({ cardId, value }: { cardId: string; value: string | null }) {
+  const { data } = useCategories();
+  const setCategory = useSetCardCategory();
+  const options = (data ?? []).filter((c) => c.is_active || c.id === value);
+  if (options.length === 0) return null;
+  return (
+    <select
+      aria-label="หมวดเกม"
+      disabled={setCategory.isPending}
+      value={value ?? ""}
+      onChange={(e) =>
+        setCategory.mutate(
+          { cardId, categoryId: e.target.value || null },
+          {
+            onSuccess: () => toast.success("เปลี่ยนหมวดแล้ว"),
+            onError: (err) => toast.error(err.message),
+          },
+        )
+      }
+      className="min-h-10 rounded-xl border border-border bg-card px-3 text-xs font-semibold"
+    >
+      <option value="">หมวด: ไม่ระบุ</option>
+      {options.map((c) => (
+        <option key={c.id} value={c.id}>
+          หมวด: {c.name}
+        </option>
+      ))}
+    </select>
   );
 }
