@@ -27,7 +27,7 @@ export function HeroCarousel() {
   return (
     <section className="relative mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
       <div className="relative overflow-hidden rounded-3xl border border-border shadow-card">
-        <div className="relative min-h-[28rem] sm:aspect-[16/7] sm:min-h-0">
+        <div className="relative min-h-[20rem] sm:aspect-[16/5] sm:min-h-[18rem]">
           {slides.map((slide, i) => (
             <div
               key={slide.id}
@@ -47,7 +47,7 @@ export function HeroCarousel() {
               />
               <div className="absolute inset-0 bg-gradient-fade" />
               <div className="absolute inset-0 flex items-end overflow-hidden">
-                <div className="w-full p-6 sm:p-10 lg:p-14">
+                <div className="w-full p-5 sm:p-8 lg:p-10">
                   <div className="flex items-center gap-2">
                     <img
                       src={taletailsLogo}
@@ -60,13 +60,13 @@ export function HeroCarousel() {
                       Taletails Originals
                     </span>
                   </div>
-                  <h2 className="mt-3 max-w-2xl text-3xl leading-tight font-bold text-white sm:text-4xl lg:text-5xl">
+                  <h2 className="mt-3 max-w-2xl text-2xl leading-tight font-bold text-white sm:text-3xl lg:text-4xl">
                     {slide.title}
                   </h2>
-                  <p className="mt-3 max-w-xl text-sm text-white/80 sm:text-base">
+                  <p className="mt-2 line-clamp-2 max-w-xl text-sm text-white/80 sm:text-base">
                     {slide.subtitle}
                   </p>
-                  <div className="mt-6 flex flex-wrap gap-3">
+                  <div className="mt-4 flex flex-wrap gap-3">
                     <Button
                       asChild
                       size="lg"
@@ -84,34 +84,38 @@ export function HeroCarousel() {
           ))}
         </div>
 
-        <button
-          onClick={() => go(-1)}
-          aria-label="สไลด์ก่อนหน้า"
-          className="absolute top-1/2 left-3 hidden min-h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/70 backdrop-blur transition-colors hover:bg-secondary sm:flex"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-        <button
-          onClick={() => go(1)}
-          aria-label="สไลด์ถัดไป"
-          className="absolute top-1/2 right-3 hidden min-h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/70 backdrop-blur transition-colors hover:bg-secondary sm:flex"
-        >
-          <ChevronRight className="h-5 w-5" />
-        </button>
-
-        <div className="absolute right-6 bottom-5 flex gap-2">
-          {slides.map((slide, i) => (
+        {slides.length > 1 && (
+          <>
             <button
-              key={slide.id}
-              aria-label={`ไปสไลด์ที่ ${i + 1}`}
-              onClick={() => setIndex(i)}
-              className={cn(
-                "h-1.5 rounded-full transition-all",
-                i === index ? "w-7 bg-primary" : "w-3 bg-white/50",
-              )}
-            />
-          ))}
-        </div>
+              onClick={() => go(-1)}
+              aria-label="สไลด์ก่อนหน้า"
+              className="absolute top-1/2 left-3 hidden min-h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/70 backdrop-blur transition-colors hover:bg-secondary sm:flex"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <button
+              onClick={() => go(1)}
+              aria-label="สไลด์ถัดไป"
+              className="absolute top-1/2 right-3 hidden min-h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/70 backdrop-blur transition-colors hover:bg-secondary sm:flex"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+
+            <div className="absolute right-6 bottom-5 flex gap-2">
+              {slides.map((slide, i) => (
+                <button
+                  key={slide.id}
+                  aria-label={`ไปสไลด์ที่ ${i + 1}`}
+                  onClick={() => setIndex(i)}
+                  className={cn(
+                    "h-1.5 rounded-full transition-all",
+                    i === index ? "w-7 bg-primary" : "w-3 bg-white/50",
+                  )}
+                />
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </section>
   );

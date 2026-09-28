@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { FeaturedMarketplace } from "@/components/sections/FeaturedMarketplace";
 import { HeroCarousel } from "@/components/sections/HeroCarousel";
+import { QuickActions } from "@/components/sections/QuickActions";
 import { LiveAuctionSlider } from "@/components/sections/LiveAuctionSlider";
 import { InstallAppCard } from "@/components/site/InstallAppCard";
 import { SiteFooter } from "@/components/site/SiteFooter";
@@ -51,6 +52,7 @@ function Index() {
           Taletails — ประมูลการ์ดสะสมสดและตลาดซื้อขายการ์ดที่ยืนยันแล้ว
         </h1>
         <HeroCarousel />
+        <QuickActions />
         <LiveAuctionSlider />
         <FeaturedMarketplace />
         {/* ข่าวสารปิดไว้ก่อน (28 ก.ย. 2026): <ArticlesSection /> */}
