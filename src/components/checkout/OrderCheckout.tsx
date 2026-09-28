@@ -32,7 +32,7 @@ import {
 } from "@/hooks/useAddresses";
 import { useAuthUserId, useCancelOrder, useOrder, useSubmitPayment } from "@/hooks/useCardDetail";
 import { pad, useCountdown } from "@/hooks/useCountdown";
-import { TT_VALUE_THB, usePointsBalance, useRedeemPoints } from "@/hooks/usePoints";
+import { useMyRedemptions, usePointsBalance, useRedeemPoints, useTtSettings } from "@/hooks/usePoints";
 import { thb } from "@/lib/cart";
 import { startPromptPayPayment } from "@/lib/payments.functions";
 import { cn } from "@/lib/utils";
@@ -429,6 +429,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                   pointsUsed={pointsUsed}
                   discount={discount}
                 />
+                <PendingRewardsNote userId={userId ?? null} />
                 {/* ที่อยู่จัดส่ง */}
                 <section className="space-y-3 rounded-3xl border border-border/70 bg-card p-4">
                   <h2 className="font-display text-sm tracking-[0.16em] uppercase">ที่อยู่จัดส่ง</h2>
@@ -861,6 +862,23 @@ function Field({
 }
 
 
+/** ของรางวัล TT ที่แลกไว้และรอส่ง — แจ้งลูกค้าว่าจะส่งไปพร้อมคำสั่งซื้อนี้ (แอดมินแนบตอนแพ็กของ) */
+function PendingRewardsNote({ userId }: { userId: string | null }) {
+  const { data } = useMyRedemptions(userId);
+  const waiting = (data ?? []).filter((r) => r.status === "pending");
+  if (waiting.length === 0) return null;
+  return (
+    <section className="rounded-3xl border border-dashed border-primary/40 bg-card p-4 text-sm">
+      <p className="font-semibold">ของรางวัล TT ที่จะส่งไปพร้อมคำสั่งซื้อนี้</p>
+      <ul className="mt-1.5 list-disc space-y-0.5 pl-5 text-muted-foreground">
+        {waiting.map((w) => (
+          <li key={w.id}>{w.reward_name}</li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 /** ใช้ TT Points เป็นส่วนลดกับคำสั่งซื้อนี้ */
 function PointsRedeemPanel({
   orderId,
@@ -877,13 +895,18 @@ function PointsRedeemPanel({
 }) {
   const balanceQuery = usePointsBalance(userId);
   const redeem = useRedeemPoints(orderId);
+  // อัตราและเพดานมาจากหลังบ้าน (tt_settings) — ก่อนแปลงแต้มเป็นกติกาเดิม 0.50 บาท / ไม่เกินราคาสินค้า
+  const { settings } = useTtSettings();
+  const value = settings.cash_value_per_point;
   const balance = balanceQuery.data ?? 0;
   const available = balance + pointsUsed;
-  const maxByPrice = Math.floor(total / TT_VALUE_THB);
+  const maxByPrice = value > 0 ? Math.floor((total * settings.cash_max_pct) / 100 / value) : 0;
   const maxPoints = Math.max(0, Math.min(available, maxByPrice));
   const [input, setInput] = useState("");
 
+  // หมดช่วงเปลี่ยนผ่านแล้วซ่อนส่วนนี้ (ยกเว้นคำสั่งซื้อที่ใช้แต้มค้างไว้ ให้ยกเลิกได้)
   if (!userId || (available <= 0 && pointsUsed === 0)) return null;
+  if (!settings.cash_redeem_active && pointsUsed === 0) return null;
 
   const apply = (points: number) => {
     redeem.mutate(points, {
@@ -946,12 +969,16 @@ function PointsRedeemPanel({
             disabled={redeem.isPending || maxPoints <= 0}
             className="min-h-10 text-xs font-semibold text-primary underline underline-offset-4 disabled:opacity-50"
           >
-            ใช้แต้มสูงสุด {maxPoints} TT (ส่วนลด {thb.format(maxPoints * TT_VALUE_THB)})
+            ใช้แต้มสูงสุด {maxPoints} TT (ส่วนลด {thb.format(maxPoints * value)})
           </button>
         </>
       )}
       <p className="text-[11px] text-muted-foreground">
-        1 TT = {thb.format(TT_VALUE_THB)} • ส่วนลดไม่เกินราคาสินค้า
+        1 TT = {thb.format(value)} •{" "}
+        {settings.cash_max_pct >= 100 ? "ส่วนลดไม่เกินราคาสินค้า" : `ใช้ได้ไม่เกิน ${settings.cash_max_pct}% ของยอด`}
+        {settings.v2_active && settings.cash_redeem_until
+          ? ` • ใช้ลดราคาได้ถึง ${new Date(settings.cash_redeem_until).toLocaleDateString("th-TH", { dateStyle: "medium" })} หลังจากนั้นแลกของรางวัลแทน`
+          : ""}
       </p>
     </section>
   );

@@ -1,6 +1,7 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { LogoLoader } from "@/components/ui/logo-loader";
 import {
+  Coins,
   LayoutGrid,
   Loader2,
   Newspaper,
@@ -38,6 +39,7 @@ const TABS: { to: string; label: string; hint: string; icon: LucideIcon }[] = [
   { to: "/admin/orders", label: "คำสั่งซื้อ", hint: "สลิป & จัดส่ง", icon: Receipt },
   { to: "/admin/members", label: "สมาชิก", hint: "สิทธิ์ & ระงับบัญชี", icon: Users },
   { to: "/admin/news", label: "ข่าวสาร", hint: "บทความ & โปรโมชัน", icon: Newspaper },
+  { to: "/admin/points", label: "TT Points", hint: "แต้ม & ของรางวัล", icon: Coins },
 ];
 
 function AdminLayout() {
