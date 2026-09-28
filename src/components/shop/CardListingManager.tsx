@@ -520,6 +520,18 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
               const paymentInProgress = (c.orders ?? []).some(
                 (o) => o.status === "pending" && new Date(o.payment_due_at).getTime() > now,
               );
+              // กติกาเดียวกับ admin_delete_card: มีคำสั่งซื้อที่ไม่ถูกยกเลิก / ประมูลเปิดอยู่และมีคนบิด → ห้ามลบ
+              const hasLiveOrder = (c.orders ?? []).some((o) => o.status !== "cancelled");
+              const activeWithBids = (c.auctions ?? []).some(
+                (a) => a.status === "active" && Number(a.bid_count ?? 0) > 0,
+              );
+              const deleteBlockedNote = paymentInProgress
+                ? "ลูกค้ากำลังชำระเงิน • ยังลบไม่ได้"
+                : hasLiveOrder
+                  ? "มีคำสั่งซื้อแล้ว • ลบไม่ได้ ใช้ซ่อนจากร้านแทน"
+                  : activeWithBids
+                    ? "มีคนเสนอราคาแล้ว • ลบไม่ได้"
+                    : null;
               const paymentOverdue =
                 c.status !== "sold" &&
                 outcome?.outcome === "waiting_payment" &&
@@ -675,10 +687,15 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                       auction.status !== "active" && (
                         <RelistAuctionControl auctionId={auction.id} />
                       )}
-                    {paymentInProgress ? (
+                    {c.sale_type === "auction" &&
+                      !isDraftAuction &&
+                      !(c.auctions ?? []).some((a) => a.status === "active") && (
+                        <PublishToggle card={c} />
+                      )}
+                    {deleteBlockedNote ? (
                       <span className="inline-flex min-h-10 w-full items-center gap-1.5 rounded-xl bg-secondary px-3 text-xs text-muted-foreground sm:w-auto">
                         <Lock className="h-3.5 w-3.5" />
-                        ลูกค้ากำลังชำระเงิน • ยังลบไม่ได้
+                        {deleteBlockedNote}
                       </span>
                     ) : (
                       <ConfirmDialog
@@ -904,7 +921,13 @@ function PublishToggle({ card }: { card: AdminCardRow }) {
       ) : (
         <Eye className="h-4 w-4" />
       )}
-      {card.is_published ? "เอาลงจากตลาด" : "ลงตลาด"}
+      {card.is_published
+        ? card.sale_type === "auction"
+          ? "ซ่อนจากร้าน"
+          : "เอาลงจากตลาด"
+        : card.sale_type === "auction"
+          ? "แสดงในร้าน"
+          : "ลงตลาด"}
     </Button>
   );
 }
