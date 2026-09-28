@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, History } from "lucide-react";
 
-import { AuctionCard, auctionKind } from "@/components/card/AuctionCard";
+import { AuctionCard, AuctionStrip, auctionKind } from "@/components/card/AuctionCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLiveAuctions } from "@/hooks/useLiveAuctions";
 
@@ -10,7 +10,7 @@ const MAX_ITEMS = 8;
 /**
  * หน้าแรก "ประมูลสด" — แถวการ์ด (เดิมเป็นสไลด์ใบใหญ่ 1 รายการต่อจอ)
  * จอใหญ่เป็นตาราง 5 คอลัมน์ · มือถือเลื่อนแนวนอนเห็น ~1.6 ใบให้รู้ว่ามีต่อ
- * เรียง: กำลังประมูล (ใกล้ปิดก่อน) → เร็ว ๆ นี้ (เปิดก่อน) · ช่องที่เหลือเป็นลิงก์ผลประมูลที่ผ่านมา
+ * เรียง: กำลังประมูล (ใกล้ปิดก่อน) → เร็ว ๆ นี้ (เปิดก่อน) · มี 1-2 รายการใช้แถบแนวนอนแทน ไม่ให้แถวโหรง
  */
 export function LiveAuctionSlider() {
   const live = useLiveAuctions();
@@ -24,26 +24,38 @@ export function LiveAuctionSlider() {
     .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
   const items = [...running, ...upcoming].slice(0, MAX_ITEMS);
 
+  // ตัวเลข "เปิดอยู่ N" มีในกล่องทางลัดด้านบนแล้ว — หัวข้อบอกเฉพาะตอนไม่มีรอบเปิด
   const summary =
     running.length > 0
-      ? `เปิดอยู่ ${running.length} รายการ${upcoming.length ? ` · เร็ว ๆ นี้ ${upcoming.length}` : ""}`
+      ? ""
       : upcoming.length > 0
         ? `เร็ว ๆ นี้ ${upcoming.length} รายการ`
         : "ยังไม่มีรอบที่เปิดอยู่";
+  // มี 1-2 รายการ → แถบแนวนอนเต็มแถว (แถวการ์ดจะโหรงครึ่งจอ) · 3 ขึ้นไป → แถวการ์ด
+  const asStrips = items.length > 0 && items.length <= 2;
 
   return (
     <section id="auctions" className="mx-auto max-w-7xl px-4 pt-10 pb-12 sm:px-6 lg:px-8">
       <div className="flex items-baseline justify-between gap-3">
         <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-0.5">
           <h2 className="font-display text-2xl font-bold sm:text-[26px]">ประมูลสด</h2>
-          <p className="text-sm text-muted-foreground">{live.isLoading ? " " : summary}</p>
+          {summary && !live.isLoading && <p className="text-sm text-muted-foreground">{summary}</p>}
         </div>
-        <Link
-          to="/auctions"
-          className="inline-flex min-h-11 shrink-0 items-center gap-1 text-sm font-semibold text-primary hover:underline"
-        >
-          ดูทั้งหมด <ArrowRight className="h-4 w-4" />
-        </Link>
+        <div className="flex shrink-0 items-center gap-4">
+          <Link
+            to="/auctions"
+            search={{ status: "past" }}
+            className="hidden min-h-11 items-center gap-1 text-sm text-muted-foreground hover:text-foreground sm:inline-flex"
+          >
+            <History className="h-4 w-4" /> ผลที่ผ่านมา
+          </Link>
+          <Link
+            to="/auctions"
+            className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-primary hover:underline"
+          >
+            ดูทั้งหมด <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
       </div>
 
       {live.isLoading ? (
@@ -67,6 +79,22 @@ export function LiveAuctionSlider() {
             <History className="h-4 w-4" /> ดูผลประมูลที่ผ่านมา
           </Link>
         </div>
+      ) : asStrips ? (
+        <div className={`mt-4 grid gap-4 ${items.length === 2 ? "lg:grid-cols-2" : ""}`}>
+          {items.map((a, i) => (
+            <AuctionStrip
+              key={a.id}
+              auction={a}
+              label={
+                auctionKind(a, now) === "upcoming"
+                  ? "เปิดเร็ว ๆ นี้"
+                  : i === 0
+                    ? "ใกล้ปิดที่สุด"
+                    : "กำลังประมูล"
+              }
+            />
+          ))}
+        </div>
       ) : (
         <div className="no-scrollbar -mx-4 mt-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pt-1 pb-3 sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible sm:px-0 lg:grid-cols-5">
           {items.map((a) => (
@@ -76,18 +104,6 @@ export function LiveAuctionSlider() {
               className="w-[205px] shrink-0 snap-start sm:w-auto"
             />
           ))}
-          {/* มีน้อยกว่าที่แถวรับได้ → ช่องที่เหลือเป็นลิงก์ผลประมูล ไม่ยืดการ์ดให้ใหญ่ */}
-          {items.length < 5 && (
-            <Link
-              to="/auctions"
-              search={{ status: "past" }}
-              className="flex w-[205px] shrink-0 snap-start flex-col items-center justify-center gap-2 rounded-[18px] border-[1.5px] border-dashed border-border p-4 text-center text-sm text-muted-foreground transition-colors hover:bg-secondary/50 sm:w-auto"
-            >
-              <History className="h-6 w-6" />
-              <span className="font-semibold text-foreground">ดูผลประมูลที่ผ่านมา</span>
-              <span className="text-xs">ราคาที่ปิดจริงของแต่ละรอบ</span>
-            </Link>
-          )}
         </div>
       )}
     </section>

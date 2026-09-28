@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { Gavel } from "lucide-react";
 
 import { GradeBadge } from "@/components/card/CardBits";
 import { SmartImage } from "@/components/ui/smart-image";
@@ -142,6 +143,70 @@ export function AuctionCard({
           </p>
         </div>
       </div>
+    </Link>
+  );
+}
+
+/** แถบแนวนอน 1 รายการ (ใกล้ปิดที่สุดใน /auctions, หน้าแรกตอนมี 1-2 รายการ) — ปุ่มเสนอราคาพาไปหน้าการ์ด */
+export function AuctionStrip({
+  auction: a,
+  label,
+  className,
+}: {
+  auction: LiveAuction;
+  label: string;
+  className?: string | undefined;
+}) {
+  const c = useCountdown(a.endTime);
+  const urgent = !!c && !c.isFinished && c.totalMs < 60 * 60 * 1000;
+  const left = c
+    ? c.days > 0
+      ? `${c.days} วัน ${pad(c.hours)}:${pad(c.minutes)}:${pad(c.seconds)}`
+      : `${c.hours > 0 ? `${pad(c.hours)}:` : ""}${pad(c.minutes)}:${pad(c.seconds)}`
+    : "";
+  return (
+    <Link
+      to="/card/$id"
+      params={{ id: a.cardId }}
+      data-urgent={urgent}
+      className={cn(
+        "live-frame group flex items-center gap-3 rounded-[18px] bg-card p-3 sm:gap-5 sm:p-4",
+        className,
+      )}
+    >
+      <div className="relative aspect-[5/7] w-[74px] shrink-0 overflow-hidden rounded-xl bg-tile sm:w-[96px]">
+        <SmartImage
+          src={a.imageUrl}
+          alt={a.cardName}
+          transformWidth={240}
+          className="object-cover"
+        />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="flex items-center gap-1.5 text-xs font-semibold text-[var(--cd-fg)] sm:text-sm">
+          <span className="live-dot text-[oklch(0.62_0.22_30)]" aria-hidden />
+          {label} <span className="font-display tabular-nums">{left}</span>
+        </p>
+        <p className="mt-0.5 line-clamp-2 font-semibold break-words group-hover:text-primary sm:text-lg">
+          {a.cardName}
+        </p>
+        <p className="mt-1 flex flex-wrap items-baseline gap-x-2 text-xs text-muted-foreground">
+          <span>ราคาปัจจุบัน</span>
+          <span className="font-display text-lg font-bold text-foreground sm:text-xl">
+            {thb.format(a.currentBid)}
+          </span>
+          <span>{a.bidCount > 0 ? `${a.bidCount} บิด` : "ยังไม่มีบิด"}</span>
+        </p>
+      </div>
+      <span
+        className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-ember text-primary-foreground sm:hidden"
+        aria-hidden
+      >
+        <Gavel className="h-4 w-4" />
+      </span>
+      <span className="hidden min-h-11 shrink-0 items-center gap-1.5 rounded-xl bg-gradient-ember px-5 text-sm font-semibold text-primary-foreground sm:inline-flex">
+        <Gavel className="h-4 w-4" /> เสนอราคา
+      </span>
     </Link>
   );
 }

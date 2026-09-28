@@ -1,19 +1,16 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowDownWideNarrow, ChevronDown, Gavel, History } from "lucide-react";
+import { ArrowDownWideNarrow, ChevronDown, History } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { AuctionCard, auctionKind } from "@/components/card/AuctionCard";
+import { AuctionCard, AuctionStrip, auctionKind } from "@/components/card/AuctionCard";
 import { NoLiveAuction } from "@/components/sections/NoLiveAuction";
 import { BackButton } from "@/components/site/BackButton";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SmartImage } from "@/components/ui/smart-image";
-import { pad, useCountdown } from "@/hooks/useCountdown";
 import { useLiveAuctions, type LiveAuction } from "@/hooks/useLiveAuctions";
 import { useAuth } from "@/lib/auth";
-import { thb } from "@/lib/cart";
 import { cn } from "@/lib/utils";
 
 const SITE_URL = "https://taletails-test.lovable.app";
@@ -211,7 +208,9 @@ function AuctionsPage() {
             </div>
           ) : (
             <>
-              {featured && <EndingSoonStrip auction={featured} />}
+              {featured && (
+                <AuctionStrip auction={featured} label="ใกล้ปิดที่สุด" className="mt-5" />
+              )}
               {gridRunning.length > 0 && <Grid items={gridRunning} />}
             </>
           )
@@ -270,58 +269,5 @@ function Empty({ title, body, action }: { title: string; body: string; action?: 
       <p className="max-w-sm text-sm text-muted-foreground">{body}</p>
       {action && <div className="mt-2">{action}</div>}
     </div>
-  );
-}
-
-/** แถบ "ใกล้ปิดที่สุด" 1 แถว แทนห้องประมูลเต็มจอเดิม — ปุ่มเสนอราคาพาไปหน้าการ์ด */
-function EndingSoonStrip({ auction: a }: { auction: LiveAuction }) {
-  const c = useCountdown(a.endTime);
-  const urgent = !!c && !c.isFinished && c.totalMs < 60 * 60 * 1000;
-  const left = c
-    ? c.days > 0
-      ? `${c.days} วัน ${pad(c.hours)}:${pad(c.minutes)}:${pad(c.seconds)}`
-      : `${c.hours > 0 ? `${pad(c.hours)}:` : ""}${pad(c.minutes)}:${pad(c.seconds)}`
-    : "";
-  return (
-    <Link
-      to="/card/$id"
-      params={{ id: a.cardId }}
-      data-urgent={urgent}
-      className="live-frame group mt-5 flex items-center gap-3 rounded-[18px] bg-card p-3 sm:gap-5 sm:p-4"
-    >
-      <div className="relative aspect-[5/7] w-[74px] shrink-0 overflow-hidden rounded-xl bg-tile sm:w-[96px]">
-        <SmartImage
-          src={a.imageUrl}
-          alt={a.cardName}
-          transformWidth={240}
-          className="object-cover"
-        />
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="flex items-center gap-1.5 text-xs font-semibold text-[var(--cd-fg)] sm:text-sm">
-          <span className="live-dot text-[oklch(0.62_0.22_30)]" aria-hidden />
-          ใกล้ปิดที่สุด <span className="font-display tabular-nums">{left}</span>
-        </p>
-        <p className="mt-0.5 line-clamp-2 font-semibold break-words group-hover:text-primary sm:text-lg">
-          {a.cardName}
-        </p>
-        <p className="mt-1 flex flex-wrap items-baseline gap-x-2 text-xs text-muted-foreground">
-          <span>ราคาปัจจุบัน</span>
-          <span className="font-display text-lg font-bold text-foreground sm:text-xl">
-            {thb.format(a.currentBid)}
-          </span>
-          <span>{a.bidCount > 0 ? `${a.bidCount} บิด` : "ยังไม่มีบิด"}</span>
-        </p>
-      </div>
-      <span
-        className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-ember text-primary-foreground sm:hidden"
-        aria-hidden
-      >
-        <Gavel className="h-4 w-4" />
-      </span>
-      <span className="hidden min-h-11 shrink-0 items-center gap-1.5 rounded-xl bg-gradient-ember px-5 text-sm font-semibold text-primary-foreground sm:inline-flex">
-        <Gavel className="h-4 w-4" /> เสนอราคา
-      </span>
-    </Link>
   );
 }
