@@ -33,18 +33,29 @@ function rotatedSize(width: number, height: number, rotation: number) {
   };
 }
 
+export interface CropOutput {
+  /** ความกว้างผลลัพธ์ที่ต้องการ (ย่อลงเท่านั้น ไม่ขยายรูปเล็กให้แตก) */
+  maxWidth?: number | undefined;
+  /** ชนิดไฟล์ — webp เล็กกว่า jpeg ที่คุณภาพเท่ากัน (เบราว์เซอร์เก่าที่ไม่รองรับจะได้ jpeg แทน) */
+  type?: "image/jpeg" | "image/webp" | undefined;
+  quality?: number | undefined;
+}
+
 export async function cropImageToFile(
   src: string,
   pixelCrop: PixelCrop,
   rotation: number,
   fileName: string,
+  output: CropOutput = {},
 ): Promise<File> {
   const image = await loadImage(src);
   const bBox = rotatedSize(image.naturalWidth, image.naturalHeight, rotation);
 
   // วาดตรงลง canvas ผลลัพธ์ (ย่อไม่เกิน MAX_EDGE) — ไม่สร้าง canvas เต็มขนาดรูป
   // เพราะ iOS Safari จำกัดขนาด canvas ~16.7 ล้านพิกเซล รูป 24MP จะได้ภาพว่าง
-  const scale = Math.min(1, MAX_EDGE / Math.max(pixelCrop.width, pixelCrop.height));
+  const scale = output.maxWidth
+    ? Math.min(1, output.maxWidth / pixelCrop.width)
+    : Math.min(1, MAX_EDGE / Math.max(pixelCrop.width, pixelCrop.height));
   const out = document.createElement("canvas");
   out.width = Math.max(1, Math.round(pixelCrop.width * scale));
   out.height = Math.max(1, Math.round(pixelCrop.height * scale));
@@ -60,10 +71,17 @@ export async function cropImageToFile(
   octx.rotate(rad(rotation));
   octx.drawImage(image, -image.naturalWidth / 2, -image.naturalHeight / 2);
 
-  const blob = await new Promise<Blob | null>((resolve) => out.toBlob(resolve, "image/jpeg", 0.9));
+  const type = output.type ?? "image/jpeg";
+  const quality = output.quality ?? 0.9;
+  let blob = await new Promise<Blob | null>((resolve) => out.toBlob(resolve, type, quality));
+  // Safari เก่าไม่รองรับ webp → toBlob คืน png (ไฟล์ใหญ่) แทน → ทำเป็น jpeg
+  if (blob && blob.type !== type) {
+    blob = await new Promise<Blob | null>((resolve) => out.toBlob(resolve, "image/jpeg", quality));
+  }
   if (!blob) throw new Error("บันทึกรูปที่ครอบไม่สำเร็จ");
-  const name = fileName.replace(/\.[^.]+$/, "") + "-crop.jpg";
-  return new File([blob], name, { type: "image/jpeg" });
+  const ext = blob.type === "image/webp" ? "webp" : "jpg";
+  const name = fileName.replace(/\.[^.]+$/, "") + `-crop.${ext}`;
+  return new File([blob], name, { type: blob.type });
 }
 
 /** อ่านสัดส่วนรูปต้นฉบับ (กว้าง/สูง) */

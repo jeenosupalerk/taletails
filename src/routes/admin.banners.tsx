@@ -1,9 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ImagePlus, Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
-import { useRef, useState } from "react";
+import { Crop, ImagePlus, Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import banner1 from "@/assets/banner-1.jpg";
+import {
+  BANNER_SPECS,
+  BannerCropDialog,
+  prepareBannerSource,
+  type BannerCropResult,
+} from "@/components/admin/BannerCropDialog";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
@@ -197,11 +203,60 @@ function BannerEditor({ initial, onClose }: { initial: BannerInput; onClose: () 
   const set = <K extends keyof BannerInput>(k: K, v: BannerInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
+  // รูปต้นฉบับอยู่แค่ในเบราว์เซอร์ (ไม่อัปโหลด) — ใช้ครอบใหม่ได้จนกว่าจะปิดฟอร์ม
+  const [source, setSource] = useState<string | null>(null);
+  const [cropOpen, setCropOpen] = useState(false);
+  const [cropStates, setCropStates] = useState<BannerCropResult["states"] | undefined>(undefined);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [sizes, setSizes] = useState<{ desktop: number; mobile: number; original: number } | null>(
+    null,
+  );
+  const [originalSize, setOriginalSize] = useState(0);
+
+  useEffect(
+    () => () => {
+      if (source) URL.revokeObjectURL(source);
+    },
+    [source],
+  );
+
   const pickImage = async (file: File | undefined) => {
     if (!file) return;
+    setNotice(null);
     setUploading(true);
     try {
-      set("image_url", await uploadBannerImage(file));
+      const prepared = await prepareBannerSource(file);
+      if (prepared.width < BANNER_SPECS.desktop.outWidth) {
+        setNotice(
+          `รูปกว้าง ${prepared.width} px เล็กกว่าที่แนะนำ (2400 px) ใช้ต่อได้ แต่ภาพอาจไม่คมบนจอใหญ่`,
+        );
+      }
+      setOriginalSize(file.size);
+      setSource(prepared.url);
+      setCropStates(undefined);
+      setCropOpen(true);
+    } catch (e) {
+      setNotice(e instanceof Error ? e.message : "เปิดรูปไม่สำเร็จ");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const applyCrop = async (result: BannerCropResult) => {
+    setCropOpen(false);
+    setCropStates(result.states);
+    setUploading(true);
+    try {
+      const [desktopUrl, mobileUrl] = await Promise.all([
+        uploadBannerImage(result.desktop, true),
+        uploadBannerImage(result.mobile, true),
+      ]);
+      setForm((f) => ({ ...f, image_url: desktopUrl, image_url_mobile: mobileUrl }));
+      setSizes({
+        desktop: result.desktop.size,
+        mobile: result.mobile.size,
+        original: originalSize,
+      });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "อัปโหลดรูปไม่สำเร็จ");
     } finally {
@@ -255,28 +310,38 @@ function BannerEditor({ initial, onClose }: { initial: BannerInput; onClose: () 
         </Button>
       </div>
 
-      {/* ตัวอย่างใกล้เคียงหน้าแรกจริง */}
-      <div className="relative overflow-hidden rounded-2xl">
-        <img
-          src={form.image_url || banner1}
-          alt=""
-          className="aspect-[16/5] min-h-40 w-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-fade" />
-        <div className="absolute inset-x-0 bottom-0 p-4">
-          <p className="line-clamp-1 text-lg font-bold text-white sm:text-2xl">
-            {form.title || "หัวข้อ banner"}
-          </p>
-          {form.subtitle && (
-            <p className="line-clamp-2 text-xs text-white/80 sm:text-sm">{form.subtitle}</p>
-          )}
-        </div>
+      {/* ตัวอย่าง 2 ขนาดตามที่แสดงจริง: จอคอม 16:5 + มือถือ 1:1 */}
+      {notice && (
+        <p className="rounded-xl bg-amber-500/10 px-3 py-2.5 text-sm text-amber-800 dark:text-amber-300">
+          {notice}
+        </p>
+      )}
+      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_10rem] sm:items-end">
+        <figure className="space-y-1.5">
+          <figcaption className="text-xs font-semibold text-muted-foreground">
+            จอคอม 16:5{sizes && ` · ${kb(sizes.desktop)}`}
+          </figcaption>
+          <BannerPreview src={form.image_url || banner1} ratio="aspect-[16/5]" title={form.title} />
+        </figure>
+        <figure className="w-40 space-y-1.5 sm:w-auto">
+          <figcaption className="text-xs font-semibold text-muted-foreground">
+            มือถือ 1:1{sizes && ` · ${kb(sizes.mobile)}`}
+          </figcaption>
+          <BannerPreview
+            src={form.image_url_mobile || form.image_url || banner1}
+            ratio="aspect-square"
+            title={form.title}
+            small
+          />
+        </figure>
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
         <Button
           type="button"
           variant="secondary"
           disabled={uploading}
           onClick={() => fileRef.current?.click()}
-          className="absolute top-3 right-3 min-h-11 rounded-xl"
+          className="min-h-11 rounded-xl"
         >
           {uploading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -285,10 +350,26 @@ function BannerEditor({ initial, onClose }: { initial: BannerInput; onClose: () 
           )}
           {form.image_url ? "เปลี่ยนรูป" : "อัปโหลดรูป"}
         </Button>
+        {source && (
+          <Button
+            type="button"
+            variant="outline"
+            disabled={uploading}
+            onClick={() => setCropOpen(true)}
+            className="min-h-11 rounded-xl"
+          >
+            <Crop className="h-4 w-4" /> แก้การครอบ
+          </Button>
+        )}
+        <span className="text-xs text-muted-foreground">
+          {sizes
+            ? `รวม ${kb(sizes.desktop + sizes.mobile)} · ต้นฉบับ ${kb(sizes.original)} ไม่ถูกเก็บ`
+            : "JPG / PNG / WebP ไม่เกิน 25 MB แนะนำกว้าง 2400 px ขึ้นไป"}
+        </span>
         <input
           ref={fileRef}
           type="file"
-          accept="image/*"
+          accept="image/jpeg,image/png,image/webp"
           className="hidden"
           onChange={(e) => {
             void pickImage(e.target.files?.[0]);
@@ -296,6 +377,14 @@ function BannerEditor({ initial, onClose }: { initial: BannerInput; onClose: () 
           }}
         />
       </div>
+      <BannerCropDialog
+        open={cropOpen}
+        source={source}
+        initialStates={cropStates}
+        preview={{ title: form.title, subtitle: form.subtitle ?? "", cta: form.cta_text ?? "" }}
+        onCancel={() => setCropOpen(false)}
+        onDone={(r) => void applyCrop(r)}
+      />
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5 sm:col-span-2">
@@ -548,5 +637,37 @@ function CategoriesSection() {
         </div>
       )}
     </section>
+  );
+}
+
+const kb = (bytes: number) =>
+  bytes >= 1024 * 1024
+    ? `${(bytes / 1024 / 1024).toFixed(1)} MB`
+    : `${Math.round(bytes / 1024)} KB`;
+
+function BannerPreview({
+  src,
+  ratio,
+  title,
+  small = false,
+}: {
+  src: string;
+  ratio: string;
+  title: string;
+  small?: boolean;
+}) {
+  return (
+    <div className={cn("relative overflow-hidden rounded-xl", ratio)}>
+      <img src={src} alt="" className="absolute inset-0 h-full w-full object-cover" />
+      <div className="absolute inset-0 bg-gradient-fade" />
+      <p
+        className={cn(
+          "absolute inset-x-0 bottom-0 line-clamp-2 p-3 leading-tight font-bold text-white",
+          small ? "text-xs" : "text-base sm:text-xl",
+        )}
+      >
+        {title || "หัวข้อ banner"}
+      </p>
+    </div>
   );
 }

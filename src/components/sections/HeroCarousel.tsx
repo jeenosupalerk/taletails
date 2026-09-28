@@ -22,6 +22,7 @@ export function HeroCarousel() {
           title: b.title,
           subtitle: b.subtitle ?? "",
           imageUrl: b.image_url || banner1,
+          ...(b.image_url_mobile ? { imageUrlMobile: b.image_url_mobile } : {}),
           ctaText: b.cta_text ?? "",
           ctaLink: b.cta_link ?? "",
           isActive: true,
@@ -42,7 +43,8 @@ export function HeroCarousel() {
   return (
     <section className="relative mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
       <div className="relative overflow-hidden rounded-3xl border border-border shadow-card">
-        <div className="relative min-h-[20rem] sm:aspect-[16/5] sm:min-h-[18rem]">
+        {/* มือถือ 1:1 ตรงกับรูปที่ครอบในหลังบ้าน · จอใหญ่ 16:5 */}
+        <div className="relative aspect-square sm:aspect-[16/5] sm:min-h-[18rem]">
           {slides.map((slide, i) => (
             <div
               key={slide.id}
@@ -52,14 +54,20 @@ export function HeroCarousel() {
               )}
               aria-hidden={i !== current}
             >
-              <img
-                src={slide.imageUrl}
-                alt={slide.title}
-                width={1600}
-                height={912}
-                loading={i === 0 ? "eager" : "lazy"}
-                className="h-full w-full object-cover"
-              />
+              {/* มือถือโหลดรูป 1:1 ที่ครอบไว้ จอใหญ่โหลดรูป 16:5 — ไม่โหลดทั้งสองรูป */}
+              <picture>
+                {slide.imageUrlMobile && (
+                  <source media="(max-width: 639px)" srcSet={slide.imageUrlMobile} />
+                )}
+                <img
+                  src={slide.imageUrl}
+                  alt={slide.title}
+                  width={2400}
+                  height={750}
+                  loading={i === 0 ? "eager" : "lazy"}
+                  className="h-full w-full object-cover"
+                />
+              </picture>
               <div className="absolute inset-0 bg-gradient-fade" />
               <div className="absolute inset-0 flex items-end overflow-hidden">
                 <div className="w-full p-5 sm:p-8 lg:p-10">

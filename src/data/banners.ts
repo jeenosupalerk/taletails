@@ -7,6 +7,8 @@ export interface Banner {
   title: string;
   subtitle: string;
   imageUrl: string;
+  /** รูป 1:1 สำหรับมือถือ (ไม่มี = ใช้ imageUrl) */
+  imageUrlMobile?: string | undefined;
   ctaText: string;
   ctaLink: string;
   isActive: boolean;

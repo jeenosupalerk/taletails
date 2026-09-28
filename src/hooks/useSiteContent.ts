@@ -22,6 +22,8 @@ export interface SiteBanner {
   title: string;
   subtitle: string | null;
   image_url: string | null;
+  /** รูปที่ครอบ 1:1 สำหรับมือถือ (null/ไม่มีคอลัมน์ = ใช้รูปจอคอม) */
+  image_url_mobile?: string | null | undefined;
   cta_text: string | null;
   cta_link: string | null;
   sort_order: number;
@@ -31,8 +33,8 @@ export interface SiteBanner {
 }
 
 const CATEGORY_COLUMNS = "id, slug, name, sort_order, is_active";
-const BANNER_COLUMNS =
-  "id, title, subtitle, image_url, cta_text, cta_link, sort_order, is_active, starts_at, ends_at";
+// ใช้ * เพื่อให้อ่านได้ทั้งก่อน/หลัง patch ที่เพิ่ม image_url_mobile (เลือกคอลัมน์ที่ยังไม่มีจะ error ทั้งหน้าแรก)
+const BANNER_COLUMNS = "*";
 
 /** หมวดทั้งหมด (หน้าเว็บกรองเฉพาะที่เปิดเอง) */
 export function useCategories() {
@@ -92,7 +94,13 @@ export function useSaveBanner() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, ...row }: BannerInput) => {
-      const payload = { ...row, updated_at: new Date().toISOString() };
+      // ไม่ได้ครอบรูปมือถือใหม่ → ไม่ส่งช่องนี้ (กันพังถ้ายังไม่ได้ apply patch เพิ่มคอลัมน์)
+      const { image_url_mobile, ...rest } = row;
+      const payload = {
+        ...rest,
+        ...(image_url_mobile !== undefined ? { image_url_mobile } : {}),
+        updated_at: new Date().toISOString(),
+      };
       const { error } = id
         ? await supabase
             .from("banners" as never)
@@ -122,9 +130,12 @@ export function useDeleteBanner() {
   });
 }
 
-/** อัปโหลดรูป banner (ย่อก่อนกัน iOS ถอดรหัสรูปใหญ่ไม่ไหว) → คืน public URL */
-export async function uploadBannerImage(file: File): Promise<string> {
-  const small = await compressImageFile(file, 2400);
+/**
+ * อัปโหลดรูป banner → คืน public URL
+ * รูปที่ครอบจาก BannerCropDialog ย่อ/แปลงเป็น WebP มาแล้ว (alreadySized) ไม่ต้องบีบซ้ำ
+ */
+export async function uploadBannerImage(file: File, alreadySized = false): Promise<string> {
+  const small = alreadySized ? file : await compressImageFile(file, 2400);
   const ext = small.type === "image/png" ? "png" : small.type === "image/webp" ? "webp" : "jpg";
   const path = `${new Date().getFullYear()}/${uid()}.${ext}`;
   const { error } = await supabase.storage
