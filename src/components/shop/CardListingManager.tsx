@@ -3,38 +3,58 @@ import {
   AlarmClock,
   ChevronLeft,
   ChevronRight,
+  Clock,
   Eye,
   EyeOff,
+  FolderTree,
   Gavel,
-  ImagePlus,
+  Images,
   Loader2,
   Lock,
+  MoreHorizontal,
   Package,
   PackageOpen,
   Plus,
-  Save,
-  Tag,
+  Search,
   Trash2,
+  Truck,
+  X,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Textarea } from "@/components/ui/textarea";
+import { EditImagesButton } from "@/components/shop/EditImagesDialog";
+import { NewListingSheet } from "@/components/shop/NewListingSheet";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  BUCKETS,
+  listingState,
+  type BadgeTone,
+  type ListingBucket,
+  type ListingState,
+} from "@/components/shop/listing-state";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { SmartImage } from "@/components/ui/smart-image";
 import {
   useAdminCards,
-  useCreateCard,
   useDeleteCard,
   useMyCards,
   useRelistAuction,
@@ -42,442 +62,229 @@ import {
   useUpdateCardListing,
   useSetCardCategory,
   type AdminCardRow,
-  type NewCardInput,
 } from "@/hooks/useAdmin";
-import { isSoldExpiredFromMarket, SOLD_VISIBLE_DAYS } from "@/hooks/useSupabaseCatalog";
-import { getAuctionOutcome, type AuctionDbStatus, type CardDbStatus } from "@/lib/auction-status";
-
-import { thb } from "@/lib/cart";
-
-import { SmartImage } from "@/components/ui/smart-image";
-import { ImagePicker, MAX_IMAGES } from "@/components/shop/ImagePicker";
-import { EditImagesButton } from "@/components/shop/EditImagesDialog";
-import { GradingCompanyField } from "@/components/shop/GradingCompanyField";
-import { SuggestInput } from "@/components/shop/SuggestInput";
-import { useCardSuggestions } from "@/hooks/useCardSuggestions";
 import { useCategories } from "@/hooks/useSiteContent";
+import { thb } from "@/lib/cart";
+import { cn } from "@/lib/utils";
 
-const EMPTY: NewCardInput = {
-  name: "",
-  setName: "",
-  cardNo: "",
-  language: "",
-  rarity: "",
-  year: "",
-  condition: "",
-  grade: "",
-  gradingCompany: "",
-  certificationNo: "",
-  details: "",
-  saleType: "fixed_price",
-  price: "",
-  startingPrice: "",
-  bidIncrement: "50",
-  endTime: "",
-  startTime: "",
-  categoryId: "",
-  stockQuantity: "1",
-  files: [],
-  publish: true,
+const PAGE_SIZE = 10;
+
+type Filter = ListingBucket | "all" | "ship" | "low";
+type Panel = "stock" | "end" | "relist" | "draft" | "category" | null;
+
+const TONE: Record<BadgeTone, string> = {
+  live: "bg-primary/12 text-primary",
+  wait: "bg-amber-500/15 text-amber-700 dark:text-amber-400",
+  ok: "bg-emerald-500/12 text-emerald-700 dark:text-emerald-400",
+  muted: "bg-secondary text-muted-foreground",
+  danger: "bg-destructive/10 text-destructive",
 };
 
-const PAGE_SIZE = 8;
-
-const STATUS_LABEL: Record<string, string> = {
-  available: "พร้อมขาย",
-  locked: "ถูกจอง",
-  sold: "ขายแล้ว",
-};
-
-export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "shop" }) {
-  const [form, setForm] = useState<NewCardInput>(EMPTY);
-  const [submitting, setSubmitting] = useState<"publish" | "draft" | null>(null);
+/**
+ * รายการสินค้าของร้าน (ใช้ทั้ง /shop และหลังบ้าน /admin)
+ * โครง: ต้องทำตอนนี้ → ตัวกรองสถานะ + ค้นหา → แถวสินค้า (ปุ่มหลัก 1 ปุ่ม + เมนู ⋯)
+ */
+export function CardListingManager({
+  scope = "admin",
+  header,
+}: {
+  scope?: "admin" | "shop";
+  /** ส่วนหัวร้าน (รูป + ชื่อร้าน) วางซ้ายของปุ่ม "ลงการ์ดใหม่" */
+  header?: ReactNode;
+}) {
   const [open, setOpen] = useState(false);
+  const [filter, setFilter] = useState<Filter>("all");
+  const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const adminCards = useAdminCards(scope === "admin");
   const myCards = useMyCards(scope === "shop");
   const cards = scope === "shop" ? myCards : adminCards;
-  const create = useCreateCard();
-  // ชื่อการ์ด/ชุดที่เคยลงไว้ — ช่วยให้พิมพ์ตรงกันทุกครั้ง ราคากลางจะได้รวมเป็นรุ่นเดียวกัน
-  const suggest = useCardSuggestions(open);
-  const categoryOptions = (useCategories().data ?? []).filter((c) => c.is_active);
-  const nameItems = useMemo(
-    () =>
-      suggest.cards.map((c) => ({
-        key: `${c.name}|${c.setName}|${c.cardNo}`,
-        text: c.name,
-        detail: [c.setName, c.cardNo && `#${c.cardNo}`, `ลงแล้ว ${c.count} ใบ`]
-          .filter(Boolean)
-          .join(" · "),
-        weight: c.count,
-        value: c,
-      })),
-    [suggest.cards],
-  );
-  const setItems = useMemo(
-    () =>
-      suggest.sets.map((x) => ({
-        key: x.setName,
-        text: x.setName,
-        detail: `ลงแล้ว ${x.count} ใบ`,
-        weight: x.count,
-        value: x.setName,
-      })),
-    [suggest.sets],
-  );
-  const del = useDeleteCard();
-  const setEnd = useUpdateAuctionEndTime();
 
-  // นับเวลาเพื่อให้ปุ่ม "เปิดประมูลใหม่" โผล่ทันทีเมื่อเลยกำหนดชำระเงิน
+  // นับเวลาเพื่อให้สถานะ (รอชำระ → เลยเวลา) เปลี่ยนเองโดยไม่ต้องรีเฟรช
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const id = window.setInterval(() => setNow(Date.now()), 15_000);
     return () => window.clearInterval(id);
   }, []);
 
-  const items = cards.data ?? [];
-  const total = items.length;
-  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const rows = useMemo(
+    () => (cards.data ?? []).map((c) => ({ c, s: listingState(c, now) })),
+    [cards.data, now],
+  );
+
+  const counts = useMemo(() => {
+    const byBucket: Record<ListingBucket | "all", number> = {
+      all: rows.length,
+      selling: 0,
+      auction: 0,
+      payment: 0,
+      sold: 0,
+      draft: 0,
+    };
+    let ship = 0;
+    let low = 0;
+    let live = 0;
+    for (const { s } of rows) {
+      byBucket[s.bucket] += 1;
+      ship += s.toShip;
+      if (s.lowStock) low += 1;
+      if (s.activeAuction) live += 1;
+    }
+    return { byBucket, ship, low, live };
+  }, [rows]);
+
+  const q = query.trim().toLowerCase();
+  const filtered = rows.filter(({ c, s }) => {
+    if (filter === "ship" && s.toShip === 0) return false;
+    if (filter === "low" && !s.lowStock) return false;
+    if (filter !== "all" && filter !== "ship" && filter !== "low" && s.bucket !== filter)
+      return false;
+    if (q && !`${c.name} ${c.set_name ?? ""}`.toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(page, pageCount);
-  const pageItems = items.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
-
-  const onRowKeyDown = (e: React.KeyboardEvent<HTMLLIElement>) => {
-    // ไม่รับคีย์ลัดที่ bubble มาจาก dialog (portal) เช่น หน้าแก้ไขรูป/ครอบรูป
-    if (!e.currentTarget.contains(e.target as Node)) return;
-    const target = e.target as HTMLElement;
-    if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
-    const key = e.key.toLowerCase();
-    if (key === "v") {
-      e.currentTarget.querySelector<HTMLElement>('[data-action="view"]')?.click();
-    } else if (e.key === "Delete" || e.key === "Backspace") {
-      e.preventDefault();
-      e.currentTarget.querySelector<HTMLElement>('[data-action="delete"]')?.click();
-    }
+  const pageItems = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  const pick = (f: Filter) => {
+    setFilter((cur) => (cur === f && f !== "all" ? "all" : f));
+    setPage(1);
   };
 
-  const set = <K extends keyof NewCardInput>(key: K, value: NewCardInput[K]) =>
-    setForm((f) => ({ ...f, [key]: value }));
-
-  /** publish = true ลงตลาดทันที / false บันทึกเป็นฉบับร่าง (ยังไม่แสดงในตลาด) */
-  const submit = (publish: boolean) => {
-    if (!form.name.trim()) {
-      toast.error("กรุณากรอกชื่อการ์ด");
-      return;
-    }
-    if (form.saleType === "fixed_price" && !Number(form.price)) {
-      toast.error("กรุณากรอกราคาขาย");
-      return;
-    }
-    if (form.saleType === "fixed_price") {
-      const stock = Number(form.stockQuantity);
-      if (!Number.isInteger(stock) || stock < 1 || stock > 9999) {
-        toast.error("จำนวนสต็อกต้องเป็นจำนวนเต็ม 1 – 9,999");
-        return;
-      }
-    }
-    if (publish && form.saleType === "auction" && !form.endTime) {
-      toast.error("กรุณาระบุวันเวลาปิดประมูล");
-      return;
-    }
-    if (
-      form.saleType === "auction" &&
-      form.startTime &&
-      form.endTime &&
-      new Date(form.startTime) >= new Date(form.endTime)
-    ) {
-      toast.error("เวลาเริ่มประมูลต้องก่อนเวลาปิดประมูล");
-      return;
-    }
-
-    setSubmitting(publish ? "publish" : "draft");
-    create.mutate(
-      { ...form, publish },
-      {
-        onSettled: () => setSubmitting(null),
-        onSuccess: () => {
-          toast.success(publish ? "ลงการ์ดในตลาดเรียบร้อย" : "บันทึกฉบับร่างแล้ว ยังไม่แสดงในตลาด");
-          setForm(EMPTY);
-          setOpen(false);
-        },
-        onError: (e) => toast.error(e instanceof Error ? e.message : "บันทึกไม่สำเร็จ"),
-      },
-    );
-  };
+  const todo: { key: Filter; label: string; value: number; hint: string; urgent?: boolean }[] = [
+    {
+      key: "ship",
+      label: "ต้องจัดส่ง",
+      value: counts.ship,
+      hint: counts.ship ? "ลูกค้าชำระแล้ว" : "ไม่มีค้าง",
+      urgent: counts.ship > 0,
+    },
+    { key: "payment", label: "รอชำระ", value: counts.byBucket.payment, hint: "ลูกค้ากำลังจ่าย" },
+    { key: "auction", label: "ประมูลเปิดอยู่", value: counts.live, hint: "รวมที่ตั้งเวลาไว้" },
+    { key: "low", label: "สต็อกใกล้หมด", value: counts.low, hint: "เหลือ 1-2 ชิ้น" },
+  ];
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="font-display text-lg font-semibold">
-          {scope === "shop" ? "สินค้าในร้านของฉัน" : "การ์ดในระบบ"}
-        </h2>
-        <Button className="min-h-11 rounded-xl" onClick={() => setOpen((o) => !o)}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        {header ?? (
+          <h2 className="font-display text-lg font-semibold">
+            {scope === "shop" ? "สินค้าในร้านของฉัน" : "การ์ดในระบบ"}
+          </h2>
+        )}
+        {/* จอใหญ่: ปุ่มหลักข้างหัวร้าน · มือถือ: ปุ่มลอยมุมล่าง (ด้านล่าง) */}
+        <Button className="hidden min-h-11 rounded-xl sm:inline-flex" onClick={() => setOpen(true)}>
           <Plus className="h-4 w-4" />
           ลงการ์ดใหม่
         </Button>
       </div>
 
-      {open && (
-        <section className="rounded-3xl border border-border bg-card p-5 shadow-[0_30px_70px_-60px_rgba(0,0,0,0.7)] sm:p-6">
-          <h3 className="font-display text-base font-semibold">รายละเอียดการ์ด</h3>
+      <NewListingSheet open={open} onOpenChange={setOpen} />
 
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            <Field label="ชื่อการ์ด *">
-              <SuggestInput
-                value={form.name}
-                onChange={(v) => set("name", v)}
-                placeholder="พิมพ์ชื่อการ์ด เช่น Moltres V"
-                items={nameItems}
-                similar={suggest.similarName(form.name)}
-                onPick={(it) =>
-                  // เลือกการ์ดที่เคยลง → เติมชื่อ + ชุด และช่องที่ยังว่าง (เลขการ์ด/ความหายาก/ภาษา/ปี)
-                  setForm((f) => ({
-                    ...f,
-                    name: it.value.name,
-                    setName: it.value.setName || f.setName,
-                    cardNo: f.cardNo || it.value.cardNo,
-                    rarity: f.rarity || it.value.rarity,
-                    language: f.language || it.value.language,
-                    year: f.year || it.value.year,
-                  }))
-                }
-              />
-            </Field>
-            <Field label="ชุด / เซ็ต">
-              <SuggestInput
-                value={form.setName}
-                onChange={(v) => set("setName", v)}
-                placeholder="พิมพ์ชื่อชุด"
-                items={setItems}
-                similar={suggest.similarSet(form.setName)}
-                onPick={(it) => set("setName", it.value)}
-              />
-            </Field>
-            <Field label="เลขการ์ด">
-              <Input
-                className="min-h-11 rounded-xl"
-                value={form.cardNo}
-                onChange={(e) => set("cardNo", e.target.value)}
-              />
-            </Field>
-            <Field label="ภาษา">
-              <Input
-                className="min-h-11 rounded-xl"
-                value={form.language}
-                onChange={(e) => set("language", e.target.value)}
-              />
-            </Field>
-            <Field label="ความหายาก">
-              <Input
-                className="min-h-11 rounded-xl"
-                value={form.rarity}
-                onChange={(e) => set("rarity", e.target.value)}
-              />
-            </Field>
-            <Field label="ปี">
-              <Input
-                type="number"
-                className="min-h-11 rounded-xl"
-                value={form.year}
-                onChange={(e) => set("year", e.target.value)}
-              />
-            </Field>
-            <Field label="หมวดเกม">
-              <select
-                className="min-h-11 w-full rounded-xl border border-input bg-background px-3 text-sm"
-                value={form.categoryId ?? ""}
-                onChange={(e) => set("categoryId", e.target.value)}
-              >
-                <option value="">ไม่ระบุ (อื่น ๆ)</option>
-                {categoryOptions.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label="สภาพ">
-              <Input
-                className="min-h-11 rounded-xl"
-                placeholder="Near Mint"
-                value={form.condition}
-                onChange={(e) => set("condition", e.target.value)}
-              />
-            </Field>
-            <Field label="บริษัทเกรด">
-              <GradingCompanyField
-                key={open ? "open" : "closed"}
-                value={form.gradingCompany}
-                onChange={(v) => set("gradingCompany", v)}
-              />
-            </Field>
-            <Field label="เกรด">
-              <Input
-                className="min-h-11 rounded-xl"
-                placeholder={form.gradingCompany ? "เช่น 10 หรือ 9.5" : "ไม่เกรด — เว้นว่างได้"}
-                value={form.grade}
-                onChange={(e) => set("grade", e.target.value)}
-              />
-            </Field>
-            <Field label="เลขใบรับรอง">
-              <Input
-                className="min-h-11 rounded-xl"
-                value={form.certificationNo}
-                onChange={(e) => set("certificationNo", e.target.value)}
-              />
-            </Field>
-          </div>
-
-          <div className="mt-4">
-            <Field label="รายละเอียดเพิ่มเติม">
-              <Textarea
-                rows={3}
-                className="rounded-xl"
-                value={form.details}
-                onChange={(e) => set("details", e.target.value)}
-              />
-            </Field>
-          </div>
-
-          <div className="mt-4">
-            <Label className="text-xs font-medium text-muted-foreground">
-              รูปการ์ด (สูงสุด {MAX_IMAGES} รูป · รูปแรกคือรูปปก)
-            </Label>
-            <ImagePicker files={form.files} onChange={(files) => set("files", files)} />
-          </div>
-
-          <div className="mt-5 grid gap-4 sm:grid-cols-2">
-            <Field label="รูปแบบการขาย">
-              <Select
-                value={form.saleType}
-                onValueChange={(v) => set("saleType", v as "auction" | "fixed_price")}
-              >
-                <SelectTrigger className="min-h-11 rounded-xl">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="fixed_price">ขายราคาปกติ</SelectItem>
-                  <SelectItem value="auction">เปิดประมูล</SelectItem>
-                </SelectContent>
-              </Select>
-            </Field>
-
-            {form.saleType === "fixed_price" ? (
-              <>
-                <Field label="ราคาขาย (บาท) *">
-                  <Input
-                    type="number"
-                    className="min-h-11 rounded-xl"
-                    value={form.price}
-                    onChange={(e) => set("price", e.target.value)}
-                  />
-                </Field>
-                <Field label="จำนวนสต็อก (ชิ้น) *">
-                  <Input
-                    type="number"
-                    min={1}
-                    max={9999}
-                    step={1}
-                    className="min-h-11 rounded-xl"
-                    value={form.stockQuantity}
-                    onChange={(e) => set("stockQuantity", e.target.value)}
-                  />
-                  <p className="mt-1 text-[11px] text-muted-foreground">
-                    ระบบตัดสต็อกให้อัตโนมัติเมื่อมีคนซื้อ พอเหลือ 0 ปุ่มซื้อจะปิดเอง
-                  </p>
-                </Field>
-              </>
-            ) : (
-              <>
-                <Field label="ราคาเริ่มต้น (บาท)">
-                  <Input
-                    type="number"
-                    className="min-h-11 rounded-xl"
-                    value={form.startingPrice}
-                    onChange={(e) => set("startingPrice", e.target.value)}
-                  />
-                </Field>
-                <Field label="ขั้นต่ำการเคาะ (บาท)">
-                  <Input
-                    type="number"
-                    className="min-h-11 rounded-xl"
-                    value={form.bidIncrement}
-                    onChange={(e) => set("bidIncrement", e.target.value)}
-                  />
-                </Field>
-                <Field label="เริ่มประมูล (เว้นว่าง = เริ่มทันที)">
-                  <Input
-                    type="datetime-local"
-                    className="min-h-11 rounded-xl"
-                    value={form.startTime ?? ""}
-                    onChange={(e) => set("startTime", e.target.value)}
-                  />
-                </Field>
-                <Field label="วันเวลาปิดประมูล * (ไม่ต้องใส่ถ้าบันทึกฉบับร่าง)">
-                  <Input
-                    type="datetime-local"
-                    className="min-h-11 rounded-xl"
-                    value={form.endTime}
-                    onChange={(e) => set("endTime", e.target.value)}
-                  />
-                </Field>
-              </>
-            )}
-          </div>
-
-          <div className="mt-6 flex flex-wrap gap-2">
-            <Button
-              className="min-h-11 rounded-xl"
-              disabled={create.isPending}
-              onClick={() => submit(true)}
-            >
-              {submitting === "publish" && <Loader2 className="h-4 w-4 animate-spin" />}
-              {form.saleType === "auction" ? "ลงการ์ดและเปิดประมูล" : "ลงขายในตลาด"}
-            </Button>
-            <Button
-              variant="secondary"
-              className="min-h-11 rounded-xl"
-              disabled={create.isPending}
-              onClick={() => submit(false)}
-              title="เก็บไว้ในร้านก่อน ยังไม่แสดงในตลาด"
-            >
-              {submitting === "draft" ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Save className="h-4 w-4" />
+      {/* ต้องทำตอนนี้ — กดแล้วกรองรายการให้ กดซ้ำเพื่อยกเลิก */}
+      <section aria-label="ต้องทำตอนนี้" className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+        <div className="grid min-w-[36rem] grid-cols-4 gap-3 sm:min-w-0">
+          {todo.map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              onClick={() => pick(t.key)}
+              aria-pressed={filter === t.key}
+              className={cn(
+                "rounded-2xl border bg-card p-3.5 text-left transition-colors hover:bg-secondary/50 sm:p-4",
+                filter === t.key ? "border-primary ring-1 ring-primary" : "border-border",
+                t.urgent && filter !== t.key && "border-emerald-500/50",
               )}
-              บันทึกฉบับร่าง
-            </Button>
-            <Button variant="ghost" className="min-h-11 rounded-xl" onClick={() => setOpen(false)}>
-              ยกเลิก
-            </Button>
+            >
+              <span className="block text-xs text-muted-foreground">{t.label}</span>
+              <span
+                className={cn(
+                  "block font-display text-2xl leading-tight font-bold tabular-nums",
+                  t.urgent && "text-emerald-700 dark:text-emerald-400",
+                )}
+              >
+                {cards.isLoading ? "-" : t.value}
+              </span>
+              <span className="block truncate text-[11px] text-muted-foreground">{t.hint}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <div className="space-y-3">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+          <div
+            className="-mx-4 flex gap-2 overflow-x-auto px-4 lg:mx-0 lg:flex-wrap lg:px-0"
+            role="tablist"
+            aria-label="กรองตามสถานะ"
+          >
+            {BUCKETS.map((b) => {
+              const active = filter === b.key;
+              return (
+                <button
+                  key={b.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => pick(b.key)}
+                  className={cn(
+                    "inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-4 text-xs font-semibold transition-colors",
+                    active
+                      ? "border-foreground bg-foreground text-background"
+                      : "border-border bg-card text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {b.label}
+                  <span className="tabular-nums opacity-70">{counts.byBucket[b.key]}</span>
+                </button>
+              );
+            })}
           </div>
-        </section>
-      )}
+          <label className="relative lg:ml-auto lg:w-64">
+            <span className="sr-only">ค้นหาสินค้า</span>
+            <Search className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setPage(1);
+              }}
+              placeholder="ค้นหาชื่อการ์ด, ชุด"
+              className="min-h-11 rounded-xl pl-10"
+            />
+          </label>
+        </div>
+        {(filter === "ship" || filter === "low") && (
+          <p className="flex items-center gap-2 text-sm text-muted-foreground">
+            กำลังแสดง: {filter === "ship" ? "ต้องจัดส่ง" : "สต็อกใกล้หมด"}
+            <button
+              type="button"
+              onClick={() => pick("all")}
+              className="inline-flex items-center gap-1 font-semibold text-primary"
+            >
+              <X className="h-3.5 w-3.5" /> ล้าง
+            </button>
+          </p>
+        )}
+      </div>
 
       {cards.isLoading ? (
-        <ul className="space-y-3" aria-busy="true" aria-label="กำลังโหลดรายการสินค้า">
-          {Array.from({ length: PAGE_SIZE }).map((_, i) => (
-            <li key={i} className="rounded-2xl border border-border bg-card p-3 sm:p-4">
-              <div className="flex items-start gap-3">
-                <Skeleton className="h-16 w-16 shrink-0 rounded-xl" />
-                <div className="min-w-0 flex-1 space-y-2">
-                  <Skeleton className="h-4 w-1/2" />
-                  <Skeleton className="h-3 w-2/3" />
-                  <div className="flex gap-1.5 pt-1">
-                    <Skeleton className="h-5 w-20 rounded-full" />
-                    <Skeleton className="h-5 w-16 rounded-full" />
-                  </div>
-                </div>
-                <Skeleton className="h-4 w-16 shrink-0" />
+        <ul className="space-y-2" aria-busy="true" aria-label="กำลังโหลดรายการสินค้า">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <li
+              key={i}
+              className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3"
+            >
+              <Skeleton className="h-[70px] w-[50px] shrink-0 rounded-lg" />
+              <div className="min-w-0 flex-1 space-y-2">
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-3 w-1/3" />
               </div>
-              <div className="mt-3 flex flex-wrap gap-2 border-t border-dashed border-border pt-3">
-                <Skeleton className="min-h-10 flex-1 rounded-xl" />
-                <Skeleton className="min-h-10 w-10 rounded-xl" />
-              </div>
+              <Skeleton className="hidden h-10 w-28 rounded-xl sm:block" />
             </li>
           ))}
         </ul>
-      ) : total === 0 ? (
+      ) : rows.length === 0 ? (
         <section className="flex flex-col items-center gap-3 rounded-3xl border border-dashed border-border px-6 py-14 text-center">
           <span className="grid h-14 w-14 place-items-center rounded-2xl bg-secondary text-muted-foreground">
             <PackageOpen className="h-6 w-6" />
@@ -486,254 +293,23 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
             {scope === "shop" ? "ยังไม่มีสินค้าในร้านของคุณ" : "ยังไม่มีการ์ดในระบบ"}
           </h3>
           <p className="max-w-sm text-sm text-muted-foreground">
-            เริ่มต้นด้วยการลงการ์ดใบแรก เลือกได้ว่าจะขายราคาปกติหรือเปิดประมูล
+            เริ่มจากลงการ์ดใบแรก เลือกได้ว่าจะขายราคาปกติหรือเปิดประมูล
           </p>
           <Button className="min-h-11 rounded-xl" onClick={() => setOpen(true)}>
             <Plus className="h-4 w-4" />
-            สร้างรายการใหม่
+            ลงการ์ดใบแรก
           </Button>
         </section>
+      ) : filtered.length === 0 ? (
+        <p className="rounded-2xl border border-border bg-card p-6 text-center text-sm text-muted-foreground">
+          ไม่มีสินค้าที่ตรงกับตัวกรองนี้
+        </p>
       ) : (
         <>
-          <p className="text-xs text-muted-foreground">
-            เลือกการ์ดด้วยปุ่ม Tab แล้วกด{" "}
-            <kbd className="rounded bg-secondary px-1.5 py-0.5">V</kbd> เพื่อดูหน้าขาย หรือ{" "}
-            <kbd className="rounded bg-secondary px-1.5 py-0.5">Delete</kbd> เพื่อลบ
-          </p>
-          <ul className="space-y-3">
-            {pageItems.map((c) => {
-              const auction = c.auctions?.[0];
-              const outcome = auction
-                ? getAuctionOutcome(
-                    auction.status as AuctionDbStatus,
-                    c.status as CardDbStatus,
-                    auction.end_time,
-                    Number(auction.bid_count ?? 0),
-                  )
-                : null;
-
-              // ผู้ชนะไม่ชำระเงินภายในเวลาที่กำหนด -> เปิดให้แอดมินเปิดประมูลใหม่ได้
-              const overdueOrder = (c.orders ?? []).some(
-                (o) => o.status === "pending" && new Date(o.payment_due_at).getTime() <= now,
-              );
-              // ลูกค้ากำลังดำเนินการชำระเงิน -> ห้ามลบในช่วงนี้
-              const paymentInProgress = (c.orders ?? []).some(
-                (o) => o.status === "pending" && new Date(o.payment_due_at).getTime() > now,
-              );
-              // กติกาเดียวกับ admin_delete_card: มีคำสั่งซื้อที่ไม่ถูกยกเลิก / ประมูลเปิดอยู่และมีคนบิด → ห้ามลบ
-              const hasLiveOrder = (c.orders ?? []).some((o) => o.status !== "cancelled");
-              const activeWithBids = (c.auctions ?? []).some(
-                (a) => a.status === "active" && Number(a.bid_count ?? 0) > 0,
-              );
-              const deleteBlockedNote = paymentInProgress
-                ? "ลูกค้ากำลังชำระเงิน • ยังลบไม่ได้"
-                : hasLiveOrder
-                  ? "มีคำสั่งซื้อแล้ว • ลบไม่ได้ ใช้ซ่อนจากร้านแทน"
-                  : activeWithBids
-                    ? "มีคนเสนอราคาแล้ว • ลบไม่ได้"
-                    : null;
-              const paymentOverdue =
-                c.status !== "sold" &&
-                outcome?.outcome === "waiting_payment" &&
-                (overdueOrder || (c.orders ?? []).every((o) => o.status === "cancelled"));
-
-              // ล็อกการจัดการเมื่อรอผู้ชนะชำระเงิน หรือประมูลสำเร็จแล้ว
-              const managementLocked =
-                c.status === "sold" ||
-                (!paymentOverdue &&
-                  ((outcome
-                    ? outcome.outcome === "waiting_payment" || outcome.outcome === "completed"
-                    : false) ||
-                    (!!auction && c.status === "locked")));
-              const lockedNote =
-                c.sale_type === "fixed_price"
-                  ? "ขายหมดแล้ว • เติมสต็อกเพื่อเปิดขายต่อได้เลย ไม่ต้องลงใหม่"
-                  : c.status === "sold" || outcome?.outcome === "completed"
-                    ? "ประมูลสำเร็จแล้ว ไม่สามารถแก้ไขหรือเปิดประมูลใหม่ได้"
-                    : "อยู่ระหว่างรอผู้ชนะชำระเงิน ไม่สามารถแก้ไขหรือเปิดประมูลใหม่ได้";
-              const isDraftAuction = c.sale_type === "auction" && !auction && !c.is_published;
-              const expiredFromMarket =
-                c.sale_type === "fixed_price" &&
-                c.is_published &&
-                isSoldExpiredFromMarket(c.status, c.updated_at);
-
-              return (
-                <li
-                  key={c.id}
-                  tabIndex={0}
-                  onKeyDown={onRowKeyDown}
-                  className="rounded-2xl border border-border bg-card p-3 outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:p-4"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-secondary">
-                      {c.images?.[0] && (
-                        <SmartImage
-                          src={c.images[0]}
-                          alt={c.name}
-                          transformWidth={160}
-                          className="object-cover"
-                        />
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-display text-sm font-semibold">{c.name}</p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {[c.set_name, c.grade, c.condition].filter(Boolean).join(" • ") || "—"}
-                      </p>
-                      <p className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs">
-                        <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5">
-                          {c.sale_type === "auction" ? (
-                            <Gavel className="h-3 w-3" />
-                          ) : (
-                            <Tag className="h-3 w-3" />
-                          )}
-                          {c.sale_type === "auction" ? "ประมูล" : "ราคาปกติ"}
-                        </span>
-                        <span className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-muted-foreground">
-                          {STATUS_LABEL[c.status]}
-                        </span>
-                        {c.sale_type === "fixed_price" && c.stock_quantity !== null && (
-                          <span
-                            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 ${
-                              c.stock_quantity > 0
-                                ? "bg-secondary text-muted-foreground"
-                                : "bg-destructive/10 text-destructive"
-                            }`}
-                          >
-                            <Package className="h-3 w-3" />
-                            สต็อก {c.stock_quantity}
-                          </span>
-                        )}
-                        {!c.is_published && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 font-medium text-amber-600 dark:text-amber-400">
-                            <EyeOff className="h-3 w-3" />
-                            {isDraftAuction
-                              ? "ฉบับร่าง • ยังไม่เปิดประมูล"
-                              : "ฉบับร่าง / ไม่แสดงในตลาด"}
-                          </span>
-                        )}
-                        {expiredFromMarket && (
-                          <span
-                            className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-muted-foreground"
-                            title={`ขายหมดและไม่มีการอัปเดตเกิน ${SOLD_VISIBLE_DAYS} วัน จึงไม่แสดงในหน้าตลาดแล้ว (ยังอยู่ในร้านของคุณ) — เติมสต็อกเพื่อกลับขึ้นตลาด`}
-                          >
-                            <EyeOff className="h-3 w-3" />
-                            ขายหมดเกิน {SOLD_VISIBLE_DAYS} วัน • หายจากตลาดแล้ว
-                          </span>
-                        )}
-                      </p>
-                    </div>
-                    <p className="shrink-0 font-display text-sm font-semibold">
-                      {thb.format(auction?.current_price ?? c.price)}
-                    </p>
-                  </div>
-
-                  <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-dashed border-border pt-3">
-                    {auction && !managementLocked && (
-                      <Input
-                        type="datetime-local"
-                        aria-label="แก้เวลาปิดประมูล"
-                        defaultValue={new Date(auction.end_time).toISOString().slice(0, 16)}
-                        onBlur={(e) =>
-                          e.target.value &&
-                          setEnd.mutate(
-                            { auctionId: auction.id, endTime: e.target.value },
-                            {
-                              onSuccess: () => toast.success("อัปเดตเวลาปิดประมูลแล้ว"),
-                              onError: (err) =>
-                                toast.error(err instanceof Error ? err.message : "ไม่สำเร็จ"),
-                            },
-                          )
-                        }
-                        className="min-h-10 w-full rounded-xl text-xs sm:w-auto sm:flex-1"
-                      />
-                    )}
-
-                    {c.sale_type === "fixed_price" && <StockControl card={c} />}
-                    {c.sale_type === "fixed_price" && <PublishToggle card={c} />}
-                    {isDraftAuction && <PublishAuctionDraft cardId={c.id} />}
-
-                    <Button
-                      asChild
-                      variant="secondary"
-                      className="min-h-10 flex-1 rounded-xl px-3 text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:flex-none"
-                    >
-                      {/* เปิดหน้าเดียวกับที่ลูกค้าเห็น: ขายราคาตายตัว = /product, ประมูล = /card */}
-                      <Link
-                        to={c.sale_type === "fixed_price" ? "/product/$id" : "/card/$id"}
-                        params={{ id: c.id }}
-                        data-action="view"
-                        title="ดูหน้าขาย (V)"
-                      >
-                        ดูหน้าขาย
-                      </Link>
-                    </Button>
-                    {/* การ์ดที่ขายหมดเกิน 14 วัน: แก้รูปแล้ว updated_at จะเปลี่ยน ทำให้กลับขึ้นตลาด → ซ่อนปุ่ม */}
-                    {!expiredFromMarket && (
-                      <EditImagesButton cardId={c.id} cardName={c.name} images={c.images ?? []} />
-                    )}
-                    {!expiredFromMarket && (
-                      <CardCategorySelect cardId={c.id} value={c.category_id ?? null} />
-                    )}
-                    {paymentOverdue && (
-                      <span className="inline-flex min-h-10 w-full items-center gap-1.5 rounded-xl bg-destructive/10 px-3 text-xs font-medium text-destructive sm:w-auto">
-                        <AlarmClock className="h-3.5 w-3.5" />
-                        ผู้ชนะไม่ชำระเงินตามเวลา • เปิดประมูลใหม่ได้
-                      </span>
-                    )}
-                    {scope === "admin" &&
-                      auction &&
-                      !managementLocked &&
-                      auction.status !== "active" && (
-                        <RelistAuctionControl auctionId={auction.id} />
-                      )}
-                    {c.sale_type === "auction" &&
-                      !isDraftAuction &&
-                      !(c.auctions ?? []).some((a) => a.status === "active") && (
-                        <PublishToggle card={c} />
-                      )}
-                    {deleteBlockedNote ? (
-                      <span className="inline-flex min-h-10 w-full items-center gap-1.5 rounded-xl bg-secondary px-3 text-xs text-muted-foreground sm:w-auto">
-                        <Lock className="h-3.5 w-3.5" />
-                        {deleteBlockedNote}
-                      </span>
-                    ) : (
-                      <ConfirmDialog
-                        title="ยืนยันการลบการ์ด"
-                        description={`ต้องการลบ "${c.name}" ออกจากร้านหรือไม่? รายการจะยังคงอยู่ในประวัติการลงขายพร้อมสถานะล่าสุด`}
-                        confirmLabel="ลบการ์ด"
-                        tone="destructive"
-                        onConfirm={() =>
-                          del.mutate(c.id, {
-                            onSuccess: () => toast.success("ลบการ์ดแล้ว"),
-                            onError: (e) =>
-                              toast.error(e instanceof Error ? e.message : "ลบไม่สำเร็จ"),
-                          })
-                        }
-                        trigger={
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            aria-label="ลบการ์ด"
-                            title="ลบการ์ด (Delete)"
-                            data-action="delete"
-                            className="min-h-10 w-10 shrink-0 rounded-xl text-destructive focus-visible:ring-2 focus-visible:ring-destructive focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        }
-                      />
-                    )}
-                    {managementLocked && (
-                      <span className="inline-flex min-h-10 items-center gap-1.5 rounded-xl bg-secondary px-3 text-xs text-muted-foreground">
-                        <Lock className="h-3.5 w-3.5" />
-                        {lockedNote}
-                      </span>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
+          <ul className="space-y-2">
+            {pageItems.map(({ c, s }) => (
+              <ListingRow key={c.id} card={c} state={s} scope={scope} />
+            ))}
           </ul>
 
           {pageCount > 1 && (
@@ -743,7 +319,7 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
             >
               <Button
                 variant="secondary"
-                className="min-h-10 rounded-xl px-3 text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="min-h-11 rounded-xl px-3 text-xs"
                 disabled={safePage === 1}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
               >
@@ -751,11 +327,11 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
                 ก่อนหน้า
               </Button>
               <span className="text-xs text-muted-foreground">
-                หน้า {safePage} / {pageCount} • ทั้งหมด {total} รายการ
+                หน้า {safePage} / {pageCount} ({filtered.length} รายการ)
               </span>
               <Button
                 variant="secondary"
-                className="min-h-10 rounded-xl px-3 text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="min-h-11 rounded-xl px-3 text-xs"
                 disabled={safePage === pageCount}
                 onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
               >
@@ -766,15 +342,352 @@ export function CardListingManager({ scope = "admin" }: { scope?: "admin" | "sho
           )}
         </>
       )}
+
+      {/* มือถือ: ปุ่มลงการ์ดลอยมุมล่าง เหนือแถบเมนูล่าง */}
+      <Button
+        onClick={() => setOpen(true)}
+        className="fixed right-4 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-30 min-h-13 rounded-full px-5 shadow-[0_12px_28px_-10px_color-mix(in_oklch,var(--primary)_70%,transparent)] sm:hidden"
+      >
+        <Plus className="h-5 w-5" />
+        ลงการ์ดใหม่
+      </Button>
     </div>
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+/** แถวสินค้า 1 ใบ: ข้อมูลหลัก + ปุ่มหลักตามสถานะ + เมนู ⋯ (ปุ่มรอง) + แผงแก้ไขที่กางลงมา */
+function ListingRow({
+  card: c,
+  state: s,
+  scope,
+}: {
+  card: AdminCardRow;
+  state: ListingState;
+  scope: "admin" | "shop";
+}) {
+  const [panel, setPanel] = useState<Panel>(null);
+  const [editImages, setEditImages] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const update = useUpdateCardListing();
+  const del = useDeleteCard();
+  const { data: categories } = useCategories();
+  const categoryName = categories?.find((x) => x.id === c.category_id)?.name;
+  const viewTo = c.sale_type === "fixed_price" ? ("/product/$id" as const) : ("/card/$id" as const);
+  const toggle = (p: Exclude<Panel, null>) => setPanel((cur) => (cur === p ? null : p));
+  const price = s.auction?.current_price ?? c.price;
+  const auctionFailed =
+    !!s.auction && !s.activeAuction && !s.managementLocked && c.status !== "sold";
+
+  const togglePublish = () =>
+    update.mutate(
+      { cardId: c.id, isPublished: !c.is_published },
+      {
+        onSuccess: () =>
+          toast.success(
+            c.is_published ? "ซ่อนจากร้านแล้ว (ยังอยู่ในรายการของคุณ)" : "แสดงในร้านแล้ว",
+          ),
+        onError: (e) => toast.error(e instanceof Error ? e.message : "ไม่สำเร็จ"),
+      },
+    );
+
+  // ---- ปุ่มหลัก: 1 ปุ่มต่อแถว ตามสิ่งที่ควรทำต่อ ----
+  const btn = "min-h-11 rounded-xl px-4 text-xs sm:text-sm";
+  let primary: ReactNode;
+  if (s.isDraftAuction) {
+    primary = (
+      <Button className={btn} onClick={() => toggle("draft")}>
+        <Gavel className="h-4 w-4" /> เปิดประมูล
+      </Button>
+    );
+  } else if (s.toShip > 0 && scope === "admin") {
+    primary = (
+      <Button asChild className={btn}>
+        <Link to="/admin/orders">
+          <Truck className="h-4 w-4" /> ไปจัดส่ง
+        </Link>
+      </Button>
+    );
+  } else if (scope === "admin" && (s.paymentOverdue || auctionFailed)) {
+    primary = (
+      <Button className={btn} onClick={() => toggle("relist")}>
+        <Gavel className="h-4 w-4" /> เปิดรอบใหม่
+      </Button>
+    );
+  } else if (c.sale_type === "fixed_price" && !c.is_published) {
+    primary = (
+      <Button className={btn} disabled={update.isPending} onClick={togglePublish}>
+        {update.isPending ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <Eye className="h-4 w-4" />
+        )}
+        ลงตลาด
+      </Button>
+    );
+  } else if (
+    c.sale_type === "fixed_price" &&
+    (s.lowStock || s.bucket === "sold") &&
+    c.status !== "locked"
+  ) {
+    primary = (
+      <Button variant="secondary" className={btn} onClick={() => toggle("stock")}>
+        <Package className="h-4 w-4" /> เติมสต็อก
+      </Button>
+    );
+  } else {
+    primary = (
+      <Button asChild variant="secondary" className={btn}>
+        <Link to={viewTo} params={{ id: c.id }}>
+          {s.activeAuction ? "ดูห้องประมูล" : "ดูหน้าขาย"}
+        </Link>
+      </Button>
+    );
+  }
+
+  const menu = renderMenu();
+  const meta = [c.set_name, c.grade ? `เกรด ${c.grade}` : null, categoryName]
+    .filter(Boolean)
+    .join(" · ");
+
   return (
-    <div>
-      <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
-      <div className="mt-1.5">{children}</div>
+    <li className="rounded-2xl border border-border bg-card">
+      <div className="flex items-start gap-3 p-3 sm:items-center sm:gap-4">
+        <Link
+          to={viewTo}
+          params={{ id: c.id }}
+          className="h-[70px] w-[50px] shrink-0 overflow-hidden rounded-lg bg-tile"
+          aria-label={`ดูหน้าขาย ${c.name}`}
+        >
+          {c.images?.[0] && (
+            <SmartImage src={c.images[0]} alt="" transformWidth={120} className="object-cover" />
+          )}
+        </Link>
+
+        <div className="min-w-0 flex-1 sm:grid sm:grid-cols-[minmax(0,1fr)_11rem_7rem] sm:items-center sm:gap-4">
+          <div className="min-w-0">
+            <p className="truncate font-semibold">{c.name}</p>
+            <p className="truncate text-xs text-muted-foreground">
+              {c.sale_type === "auction" ? "ประมูล" : "ราคาปกติ"}
+              {meta && ` · ${meta}`}
+            </p>
+          </div>
+          <div className="mt-1.5 flex flex-wrap items-center gap-1.5 sm:mt-0">
+            <span
+              className={cn(
+                "inline-flex h-6 items-center rounded-full px-2.5 text-[11px] font-semibold",
+                TONE[s.badge.tone],
+              )}
+            >
+              {s.badge.label}
+            </span>
+            {s.scheduled && s.auction?.start_time && (
+              <span className="text-[11px] text-muted-foreground">
+                เปิด{" "}
+                {new Date(s.auction.start_time).toLocaleString("th-TH", {
+                  dateStyle: "short",
+                  timeStyle: "short",
+                })}
+              </span>
+            )}
+          </div>
+          <div className="mt-1 flex items-baseline gap-2 sm:mt-0 sm:block sm:text-right">
+            <p className="font-display font-semibold tabular-nums">{thb.format(price)}</p>
+            <p
+              className={cn(
+                "text-[11px]",
+                s.lowStock ? "font-semibold text-primary" : "text-muted-foreground",
+              )}
+            >
+              {c.sale_type === "fixed_price"
+                ? c.stock_quantity === null
+                  ? "ชิ้นเดียว"
+                  : `สต็อก ${c.stock_quantity}${s.lowStock ? " ใกล้หมด" : ""}`
+                : s.auction
+                  ? `${Number(s.auction.bid_count ?? 0)} ครั้งที่เสนอ`
+                  : ""}
+            </p>
+          </div>
+        </div>
+
+        <div className="hidden shrink-0 items-center gap-2 sm:flex">
+          {primary}
+          {menu}
+        </div>
+        <div className="shrink-0 sm:hidden">{menu}</div>
+      </div>
+
+      {/* มือถือ: ปุ่มหลักเต็มความกว้างใต้ข้อมูล */}
+      <div className="px-3 pb-3 sm:hidden [&>*]:w-full">{primary}</div>
+
+      {panel && (
+        <div className="flex flex-wrap items-center gap-2 border-t border-dashed border-border px-3 py-3 sm:px-4">
+          {panel === "stock" && <StockControl card={c} />}
+          {panel === "draft" && <PublishAuctionDraft cardId={c.id} />}
+          {panel === "relist" && s.auction && <RelistAuctionControl auctionId={s.auction.id} />}
+          {panel === "category" && (
+            <CardCategorySelect cardId={c.id} value={c.category_id ?? null} />
+          )}
+          {panel === "end" && s.auction && (
+            <EndTimeControl auctionId={s.auction.id} endTime={s.auction.end_time} />
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="ml-auto min-h-11 min-w-11 rounded-xl"
+            aria-label="ปิด"
+            onClick={() => setPanel(null)}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+
+      {s.managementLocked && c.sale_type === "auction" && (
+        <p className="flex items-center gap-1.5 border-t border-dashed border-border px-3 py-2 text-[11px] text-muted-foreground sm:px-4">
+          <Lock className="h-3 w-3" /> {s.lockedNote}
+        </p>
+      )}
+      {s.paymentOverdue && scope !== "admin" && (
+        <p className="flex items-center gap-1.5 border-t border-dashed border-border px-3 py-2 text-[11px] text-destructive sm:px-4">
+          <AlarmClock className="h-3 w-3" /> ผู้ชนะไม่ชำระเงินตามเวลา ติดต่อทีมงานเพื่อเปิดรอบใหม่
+        </p>
+      )}
+
+      <EditImagesButton
+        cardId={c.id}
+        cardName={c.name}
+        images={c.images ?? []}
+        open={editImages}
+        onOpenChange={setEditImages}
+      />
+
+      <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>ลบ "{c.name}"?</AlertDialogTitle>
+            <AlertDialogDescription>
+              การ์ดจะหายจากร้านถาวร แต่ยังอยู่ในประวัติการลงขาย ถ้าแค่อยากเก็บไว้ก่อน ใช้
+              "ซ่อนจากร้าน" แทน
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="min-h-11 rounded-xl">ยกเลิก</AlertDialogCancel>
+            <AlertDialogAction
+              className="min-h-11 rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() =>
+                del.mutate(c.id, {
+                  onSuccess: () => toast.success("ลบการ์ดแล้ว"),
+                  onError: (e) => toast.error(e instanceof Error ? e.message : "ลบไม่สำเร็จ"),
+                })
+              }
+            >
+              ลบการ์ด
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </li>
+  );
+
+  function renderMenu() {
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="min-h-11 min-w-11 rounded-xl"
+            aria-label={`ตัวเลือกเพิ่มเติม ${c.name}`}
+          >
+            <MoreHorizontal className="h-5 w-5" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-60 rounded-xl p-1.5">
+          <DropdownMenuItem asChild className="min-h-10 rounded-lg">
+            <Link to={viewTo} params={{ id: c.id }}>
+              <Eye className="h-4 w-4" /> ดูหน้าขาย
+            </Link>
+          </DropdownMenuItem>
+          {c.sale_type === "fixed_price" && c.status !== "locked" && (
+            <DropdownMenuItem className="min-h-10 rounded-lg" onSelect={() => setPanel("stock")}>
+              <Package className="h-4 w-4" /> แก้จำนวนสต็อก
+            </DropdownMenuItem>
+          )}
+          {s.auction && s.activeAuction && !s.managementLocked && (
+            <DropdownMenuItem className="min-h-10 rounded-lg" onSelect={() => setPanel("end")}>
+              <Clock className="h-4 w-4" /> แก้เวลาปิดประมูล
+            </DropdownMenuItem>
+          )}
+          {/* ขายหมดเกิน 14 วัน: แก้รูปแล้ว updated_at เปลี่ยน การ์ดจะกลับขึ้นตลาด → ไม่ให้แก้ */}
+          {!s.expiredFromMarket && (
+            <DropdownMenuItem className="min-h-10 rounded-lg" onSelect={() => setEditImages(true)}>
+              <Images className="h-4 w-4" /> แก้รูป / เรียงรูป
+            </DropdownMenuItem>
+          )}
+          {!s.expiredFromMarket && (
+            <DropdownMenuItem className="min-h-10 rounded-lg" onSelect={() => setPanel("category")}>
+              <FolderTree className="h-4 w-4" /> เปลี่ยนหมวด
+            </DropdownMenuItem>
+          )}
+          {s.canTogglePublish && (
+            <DropdownMenuItem className="min-h-10 rounded-lg" onSelect={togglePublish}>
+              {c.is_published ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {c.is_published ? "ซ่อนจากร้าน" : "แสดงในร้าน"}
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuSeparator />
+          {s.deleteBlockedNote ? (
+            <DropdownMenuItem disabled className="min-h-10 items-start rounded-lg text-xs">
+              <Lock className="mt-0.5 h-4 w-4" /> {s.deleteBlockedNote}
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem
+              className="min-h-10 rounded-lg text-destructive focus:text-destructive"
+              onSelect={() => setConfirmDelete(true)}
+            >
+              <Trash2 className="h-4 w-4" /> ลบการ์ด
+            </DropdownMenuItem>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
+}
+
+/** แก้เวลาปิดของรอบประมูลที่เปิดอยู่ */
+function EndTimeControl({ auctionId, endTime }: { auctionId: string; endTime: string }) {
+  const setEnd = useUpdateAuctionEndTime();
+  const [value, setValue] = useState(() => {
+    const d = new Date(endTime);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  });
+  return (
+    <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-1">
+      <Input
+        type="datetime-local"
+        aria-label="เวลาปิดประมูล"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        className="min-h-11 w-full rounded-xl text-sm sm:w-auto sm:flex-1"
+      />
+      <Button
+        variant="secondary"
+        disabled={setEnd.isPending || !value}
+        className="min-h-11 flex-1 rounded-xl px-4 sm:flex-none"
+        onClick={() =>
+          setEnd.mutate(
+            { auctionId, endTime: value },
+            {
+              onSuccess: () => toast.success("อัปเดตเวลาปิดประมูลแล้ว"),
+              onError: (err) => toast.error(err instanceof Error ? err.message : "ไม่สำเร็จ"),
+            },
+          )
+        }
+      >
+        {setEnd.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+        บันทึกเวลาปิด
+      </Button>
     </div>
   );
 }
@@ -888,47 +801,6 @@ function StockControl({ card }: { card: AdminCardRow }) {
         {card.stock_quantity === null || card.stock_quantity === 0 ? "เติมสต็อก" : "บันทึกสต็อก"}
       </Button>
     </div>
-  );
-}
-
-/** ปุ่มเอาขึ้นตลาด / เอาลงจากตลาด (สินค้าขายราคาปกติ) */
-function PublishToggle({ card }: { card: AdminCardRow }) {
-  const update = useUpdateCardListing();
-  const next = !card.is_published;
-
-  return (
-    <Button
-      variant={card.is_published ? "ghost" : "default"}
-      disabled={update.isPending}
-      onClick={() =>
-        update.mutate(
-          { cardId: card.id, isPublished: next },
-          {
-            onSuccess: () =>
-              toast.success(
-                next ? "นำสินค้าขึ้นตลาดแล้ว" : "ซ่อนสินค้าจากตลาดแล้ว (ยังอยู่ในร้านของคุณ)",
-              ),
-            onError: (e) => toast.error(e instanceof Error ? e.message : "ไม่สำเร็จ"),
-          },
-        )
-      }
-      className="min-h-10 flex-1 rounded-xl px-3 text-xs sm:flex-none"
-    >
-      {update.isPending ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
-      ) : card.is_published ? (
-        <EyeOff className="h-4 w-4" />
-      ) : (
-        <Eye className="h-4 w-4" />
-      )}
-      {card.is_published
-        ? card.sale_type === "auction"
-          ? "ซ่อนจากร้าน"
-          : "เอาลงจากตลาด"
-        : card.sale_type === "auction"
-          ? "แสดงในร้าน"
-          : "ลงตลาด"}
-    </Button>
   );
 }
 

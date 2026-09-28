@@ -82,6 +82,8 @@ export interface AdminCardRow {
   auctions?: {
     id: string;
     end_time: string;
+    /** เวลาเริ่มรอบ (อนาคต = ตั้งเวลาไว้ ยังไม่เปิดบิด) */
+    start_time?: string | null;
     current_price: number;
     status: string;
     bid_count: number;
@@ -90,7 +92,7 @@ export interface AdminCardRow {
 }
 
 const CARD_SELECT =
-  "id, name, set_name, grade, condition, images, price, sale_type, status, stock_quantity, is_published, created_at, updated_at, category_id, auctions (id, end_time, current_price, status, bid_count), orders (id, status, payment_due_at)";
+  "id, name, set_name, grade, condition, images, price, sale_type, status, stock_quantity, is_published, created_at, updated_at, category_id, auctions (id, start_time, end_time, current_price, status, bid_count), orders (id, status, payment_due_at)";
 
 export function useAdminCards(enabled = true) {
   return useQuery({

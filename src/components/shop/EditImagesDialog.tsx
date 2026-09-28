@@ -10,8 +10,24 @@ import { useUpdateCardImages, type PickedImage } from "@/hooks/useAdmin";
 /**
  * แก้ไขรูปของการ์ดที่ลงไว้แล้ว — ครอบใหม่ / เพิ่ม / ลบ / เรียงลำดับ แล้วกดบันทึก
  */
-export function EditImagesButton({ cardId, cardName, images }: { cardId: string; cardName: string; images: string[] }) {
-  const [open, setOpen] = useState(false);
+export function EditImagesButton({
+  cardId,
+  cardName,
+  images,
+  open: openProp,
+  onOpenChange,
+}: {
+  cardId: string;
+  cardName: string;
+  images: string[];
+  /** ส่ง open มา = คุมจากภายนอก (เช่น เปิดจากเมนู ⋯) และไม่แสดงปุ่มของตัวเอง */
+  open?: boolean | undefined;
+  onOpenChange?: ((open: boolean) => void) | undefined;
+}) {
+  const [openState, setOpenState] = useState(false);
+  const controlled = openProp !== undefined;
+  const open = controlled ? openProp : openState;
+  const setOpen = (o: boolean) => (controlled ? onOpenChange?.(o) : setOpenState(o));
   const [picked, setPicked] = useState<PickedImage[] | null>(null);
   const save = useUpdateCardImages();
 
@@ -42,16 +58,21 @@ export function EditImagesButton({ cardId, cardName, images }: { cardId: string;
   };
 
   return (
-    <DialogPrimitive.Root open={open} onOpenChange={(o) => (o ? setOpen(true) : !save.isPending && close())}>
-      <DialogPrimitive.Trigger asChild>
-        <Button
-          variant="secondary"
-          className="min-h-10 flex-1 rounded-xl px-3 text-xs sm:flex-none"
-          title="แก้ไขรูป: ครอบใหม่ เพิ่ม ลบ เรียงลำดับ"
-        >
-          <Images className="h-4 w-4" /> แก้ไขรูป
-        </Button>
-      </DialogPrimitive.Trigger>
+    <DialogPrimitive.Root
+      open={open}
+      onOpenChange={(o) => (o ? setOpen(true) : !save.isPending && close())}
+    >
+      {!controlled && (
+        <DialogPrimitive.Trigger asChild>
+          <Button
+            variant="secondary"
+            className="min-h-10 flex-1 rounded-xl px-3 text-xs sm:flex-none"
+            title="แก้ไขรูป: ครอบใหม่ เพิ่ม ลบ เรียงลำดับ"
+          >
+            <Images className="h-4 w-4" /> แก้ไขรูป
+          </Button>
+        </DialogPrimitive.Trigger>
+      )}
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm data-[state=open]:animate-in data-[state=open]:fade-in-0" />
         <DialogPrimitive.Content
@@ -68,7 +89,9 @@ export function EditImagesButton({ cardId, cardName, images }: { cardId: string;
         >
           <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3 pt-[max(env(safe-area-inset-top),0.75rem)] sm:pt-3">
             <div className="min-w-0">
-              <DialogPrimitive.Title className="font-display text-base font-semibold">แก้ไขรูปสินค้า</DialogPrimitive.Title>
+              <DialogPrimitive.Title className="font-display text-base font-semibold">
+                แก้ไขรูปสินค้า
+              </DialogPrimitive.Title>
               <p className="truncate text-xs text-muted-foreground">{cardName}</p>
             </div>
             <DialogPrimitive.Close
@@ -82,13 +105,19 @@ export function EditImagesButton({ cardId, cardName, images }: { cardId: string;
 
           <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
             <p className="text-xs text-muted-foreground">
-              กดไอคอนครอบที่รูปเดิมเพื่อปรับให้พอดีกรอบการ์ด 5:7 · รูปเดิมที่ไม่ได้แก้จะไม่ถูกอัปโหลดซ้ำ
+              กดไอคอนครอบที่รูปเดิมเพื่อปรับให้พอดีกรอบการ์ด 5:7 ·
+              รูปเดิมที่ไม่ได้แก้จะไม่ถูกอัปโหลดซ้ำ
             </p>
             {open && <ImagePicker initialUrls={images} onChangeImages={setPicked} />}
           </div>
 
           <div className="flex items-center justify-end gap-2 border-t border-border px-4 py-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] sm:pb-3">
-            <Button variant="ghost" className="rounded-xl" onClick={close} disabled={save.isPending}>
+            <Button
+              variant="ghost"
+              className="rounded-xl"
+              onClick={close}
+              disabled={save.isPending}
+            >
               ยกเลิก
             </Button>
             <Button
