@@ -25,6 +25,7 @@ import { thb } from "@/lib/cart";
 import { useWatchlist } from "@/lib/watchlist";
 import { SmartImage } from "@/components/ui/smart-image";
 import { GradeBadge, MarketDiffChip } from "@/components/card/CardBits";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useMarketPriceIndex } from "@/hooks/useMarketStats";
 import { diffVsMarket } from "@/lib/market-price";
 
@@ -176,7 +177,8 @@ const QUICK_FILTERS: { key: QuickKey; label: string }[] = [
 const STATUS_RANK: Record<string, number> = { available: 0, locked: 1, sold: 2 };
 
 const norm = (v: string | undefined) => (v ?? "").trim().toUpperCase();
-const isBlank = (v: string | undefined) => !v || v.trim() === "" || v.trim() === "-" || v.trim() === "—";
+const isBlank = (v: string | undefined) =>
+  !v || v.trim() === "" || v.trim() === "-" || v.trim() === "—";
 const companyOf = (p: Product) => (isBlank(p.gradingCompany) ? "RAW" : norm(p.gradingCompany));
 const uniq = (xs: string[]) =>
   [...new Set(xs.filter((x) => !isBlank(x)))].sort((a, b) => a.localeCompare(b, "th"));
@@ -204,6 +206,8 @@ export function FeaturedMarketplace({
 }) {
   const { data: liveCards } = useMarketplaceCards();
   const { lookup } = useMarketPriceIndex();
+  // จอใหญ่เปิดเป็นแผงด้านขวาเต็มความสูง มือถือเป็นแผ่นล่างจอ — กันแผ่นล่างล้นจอบนโน้ตบุ๊ก
+  const isMobile = useIsMobile();
   const [quick, setQuick] = useState<Set<QuickKey>>(new Set());
   const [status, setStatus] = useState("all");
   const [companies, setCompanies] = useState<Set<string>>(new Set());
@@ -310,13 +314,17 @@ export function FeaturedMarketplace({
                   </button>
                 </SheetTrigger>
                 <SheetContent
-                  side="bottom"
-                  className="max-h-[85dvh] overflow-y-auto rounded-t-3xl sm:mx-auto sm:max-w-lg"
+                  side={isMobile ? "bottom" : "right"}
+                  className={
+                    isMobile
+                      ? "flex max-h-[85dvh] flex-col rounded-t-3xl"
+                      : "flex w-full flex-col sm:max-w-md"
+                  }
                 >
                   <SheetHeader>
                     <SheetTitle>ตัวกรอง</SheetTitle>
                   </SheetHeader>
-                  <div className="space-y-6 px-1 py-4">
+                  <div className="-mx-6 min-h-0 flex-1 space-y-6 overflow-y-auto px-7 py-4">
                     <fieldset>
                       <legend className="mb-2 text-sm font-semibold">สถานะ</legend>
                       <div className="flex flex-wrap gap-2">
@@ -406,7 +414,7 @@ export function FeaturedMarketplace({
                       </label>
                     )}
                   </div>
-                  <div className="sticky bottom-0 flex gap-2 bg-background pt-2">
+                  <div className="flex shrink-0 gap-2 border-t border-border pt-4">
                     <button
                       type="button"
                       onClick={clearAll}
