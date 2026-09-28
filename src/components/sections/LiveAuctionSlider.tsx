@@ -1,154 +1,95 @@
 import { Link } from "@tanstack/react-router";
-import { ChevronLeft, ChevronRight, Gavel, Radio } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ArrowRight, History } from "lucide-react";
 
-import { SectionHeading } from "@/components/site/SectionHeading";
-import { Button } from "@/components/ui/button";
-import type { Auction } from "@/data/auctions";
+import { AuctionCard, auctionKind } from "@/components/card/AuctionCard";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useLiveAuctions } from "@/hooks/useLiveAuctions";
-import { thb } from "@/lib/cart";
-import { cn } from "@/lib/utils";
-import { SmartImage } from "@/components/ui/smart-image";
-import { GradeBadge } from "@/components/card/CardBits";
-import { FlipCountdown } from "@/components/site/FlipCountdown";
 
+const MAX_ITEMS = 8;
 
+/**
+ * หน้าแรก "ประมูลสด" — แถวการ์ด (เดิมเป็นสไลด์ใบใหญ่ 1 รายการต่อจอ)
+ * จอใหญ่เป็นตาราง 5 คอลัมน์ · มือถือเลื่อนแนวนอนเห็น ~1.6 ใบให้รู้ว่ามีต่อ
+ * เรียง: กำลังประมูล (ใกล้ปิดก่อน) → เร็ว ๆ นี้ (เปิดก่อน) · ช่องที่เหลือเป็นลิงก์ผลประมูลที่ผ่านมา
+ */
 export function LiveAuctionSlider() {
-  const [index, setIndex] = useState(0);
   const live = useLiveAuctions();
-  // เฉพาะรอบที่ "กำลังประมูล" เรียงตามเวลาปิดที่ใกล้ที่สุด → ใบแรกคือใบที่โชว์ก่อน
-  const items: Auction[] = (live.data ?? [])
-    // รอบที่ตั้งเวลาเริ่มไว้ล่วงหน้ายังบิดไม่ได้ — ไม่โชว์ในสไลด์ "กำลังประมูล"
-    .filter((a) => a.outcome.outcome === "live" && new Date(a.startTime ?? 0).getTime() <= Date.now())
+  const now = Date.now();
+  const all = live.data ?? [];
+  const running = all
+    .filter((a) => auctionKind(a, now) === "live")
     .sort((a, b) => new Date(a.endTime).getTime() - new Date(b.endTime).getTime());
+  const upcoming = all
+    .filter((a) => auctionKind(a, now) === "upcoming")
+    .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+  const items = [...running, ...upcoming].slice(0, MAX_ITEMS);
 
-  // รายการเปลี่ยน (โหลดเสร็จ / ปิดประมูล) → กลับไปโชว์ใบแรกเสมอ
-  const firstId = items[0]?.id;
-  useEffect(() => {
-    setIndex(0);
-  }, [firstId, items.length]);
-
-  const go = (d: number) => setIndex((i) => (i + d + items.length) % items.length);
-  const active = items[Math.min(index, items.length - 1)];
-
-  if (!active) {
-    return (
-      <section id="auctions" className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-        <SectionHeading
-          eyebrow="กำลังประมูล"
-          title="ประมูลสด"
-          description="ยังไม่มีรอบประมูลที่เปิดอยู่ในขณะนี้"
-          actionLabel="ดูการประมูลทั้งหมด"
-          actionTo="/auctions"
-        />
-        <div className="rounded-3xl border border-border bg-card p-10 text-center text-sm text-muted-foreground shadow-card">
-          {live.isLoading ? "กำลังโหลดรอบประมูล..." : "รอเปิดรอบประมูลใหม่ เร็ว ๆ นี้"}
-        </div>
-      </section>
-    );
-  }
+  const summary =
+    running.length > 0
+      ? `เปิดอยู่ ${running.length} รายการ${upcoming.length ? ` · เร็ว ๆ นี้ ${upcoming.length}` : ""}`
+      : upcoming.length > 0
+        ? `เร็ว ๆ นี้ ${upcoming.length} รายการ`
+        : "ยังไม่มีรอบที่เปิดอยู่";
 
   return (
-    <section id="auctions" className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-      <SectionHeading
-        eyebrow={
-          <>
-            <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-destructive" />
-            กำลังประมูล
-          </>
-        }
-        title="ประมูลสด"
-        description="เลื่อนดูการ์ดที่กำลังเปิดประมูล เคาะราคาได้ทันทีแบบเรียลไทม์"
-        actionLabel="ดูการประมูลทั้งหมด"
-        actionTo="/auctions"
-      />
-
-      <div className="relative">
-        <div className="mx-auto w-full max-w-3xl overflow-hidden rounded-3xl border border-border bg-card shadow-card">
-          <div className="grid w-full min-w-0 gap-0 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
-            <div className="relative aspect-[5/7] w-full min-w-0 overflow-hidden bg-tile">
-              <SmartImage
-                key={active.id}
-                src={active.imageUrl}
-                alt={active.cardName}
-                transformWidth={800}
-                priority
-                className="object-cover"
-              />
-              <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-gradient-ember px-2.5 py-1 text-xs font-bold text-primary-foreground">
-                <Radio className="h-3.5 w-3.5" />
-                กำลังประมูล
-              </span>
-              <GradeBadge
-                grade={active.grade}
-                company={active.gradingCompany}
-                condition={active.conditionNote}
-                className="right-3 bottom-3"
-              />
-            </div>
-
-            <div className="flex min-w-0 flex-col justify-center gap-4 p-4 sm:p-6">
-              <div className="min-w-0">
-                <h3 className="truncate font-display text-xl font-bold">{active.cardName}</h3>
-                <p className="truncate text-sm text-muted-foreground">{active.setName}</p>
-              </div>
-
-              <div className="rounded-2xl bg-secondary/40 p-3 ring-1 ring-border/70">
-                <FlipCountdown endTime={active.endTime} />
-              </div>
-
-              <div className="rounded-2xl border border-border bg-secondary/50 p-3">
-                <p className="text-[11px] text-muted-foreground">ราคาปัจจุบัน</p>
-                <p className="font-display text-2xl font-extrabold text-primary">
-                  {thb.format(active.currentBid)}
-                </p>
-                <p className="mt-0.5 text-[11px] text-muted-foreground">
-                  {active.bidCount} ครั้งที่เสนอ · เริ่มที่ {thb.format(active.startingPrice)}
-                </p>
-              </div>
-
-              <Button
-                asChild
-                className="min-h-11 w-full rounded-2xl bg-gradient-ember font-semibold text-primary-foreground shadow-glow hover:opacity-90"
-              >
-                <Link to="/auctions" search={{ id: active.id }}>
-                  <Gavel className="h-4 w-4" />
-                  เสนอราคา
-                </Link>
-              </Button>
-            </div>
-          </div>
+    <section id="auctions" className="mx-auto max-w-7xl px-4 pt-10 pb-12 sm:px-6 lg:px-8">
+      <div className="flex items-baseline justify-between gap-3">
+        <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-0.5">
+          <h2 className="font-display text-2xl font-bold sm:text-[26px]">ประมูลสด</h2>
+          <p className="text-sm text-muted-foreground">{live.isLoading ? " " : summary}</p>
         </div>
-
-        <button
-          onClick={() => go(-1)}
-          aria-label="รายการก่อนหน้า"
-          className="absolute top-1/2 left-0 flex min-h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/90 shadow-card backdrop-blur transition-colors hover:bg-secondary lg:-left-4"
+        <Link
+          to="/auctions"
+          className="inline-flex min-h-11 shrink-0 items-center gap-1 text-sm font-semibold text-primary hover:underline"
         >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-        <button
-          onClick={() => go(1)}
-          aria-label="รายการถัดไป"
-          className="absolute top-1/2 right-0 flex min-h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/90 shadow-card backdrop-blur transition-colors hover:bg-secondary lg:-right-4"
-        >
-          <ChevronRight className="h-5 w-5" />
-        </button>
+          ดูทั้งหมด <ArrowRight className="h-4 w-4" />
+        </Link>
+      </div>
 
-        <div className="mt-5 flex justify-center gap-2">
-          {items.map((a, i) => (
-            <button
-              key={a.id}
-              aria-label={`ดู ${a.cardName}`}
-              onClick={() => setIndex(i)}
-              className={cn(
-                "h-1.5 rounded-full transition-all",
-                i === index ? "w-8 bg-primary" : "w-3 bg-muted-foreground/30",
-              )}
+      {live.isLoading ? (
+        <div className="-mx-4 mt-4 flex gap-3 overflow-hidden px-4 sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0 lg:grid-cols-5">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton
+              key={i}
+              className="aspect-[5/7] w-[205px] shrink-0 rounded-[18px] sm:w-auto"
             />
           ))}
         </div>
-      </div>
+      ) : items.length === 0 ? (
+        <div className="mt-4 flex flex-col items-center gap-2 rounded-3xl border border-dashed border-border px-6 py-10 text-center">
+          <p className="font-semibold">รอเปิดรอบประมูลใหม่</p>
+          <p className="text-sm text-muted-foreground">เปิดรับแจ้งเตือนไว้ จะได้ไม่พลาดรอบถัดไป</p>
+          <Link
+            to="/auctions"
+            search={{ status: "past" }}
+            className="mt-1 inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-primary"
+          >
+            <History className="h-4 w-4" /> ดูผลประมูลที่ผ่านมา
+          </Link>
+        </div>
+      ) : (
+        <div className="no-scrollbar -mx-4 mt-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pt-1 pb-3 sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible sm:px-0 lg:grid-cols-5">
+          {items.map((a) => (
+            <AuctionCard
+              key={a.id}
+              auction={a}
+              className="w-[205px] shrink-0 snap-start sm:w-auto"
+            />
+          ))}
+          {/* มีน้อยกว่าที่แถวรับได้ → ช่องที่เหลือเป็นลิงก์ผลประมูล ไม่ยืดการ์ดให้ใหญ่ */}
+          {items.length < 5 && (
+            <Link
+              to="/auctions"
+              search={{ status: "past" }}
+              className="flex w-[205px] shrink-0 snap-start flex-col items-center justify-center gap-2 rounded-[18px] border-[1.5px] border-dashed border-border p-4 text-center text-sm text-muted-foreground transition-colors hover:bg-secondary/50 sm:w-auto"
+            >
+              <History className="h-6 w-6" />
+              <span className="font-semibold text-foreground">ดูผลประมูลที่ผ่านมา</span>
+              <span className="text-xs">ราคาที่ปิดจริงของแต่ละรอบ</span>
+            </Link>
+          )}
+        </div>
+      )}
     </section>
   );
 }

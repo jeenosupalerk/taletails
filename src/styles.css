@@ -380,3 +380,71 @@
     animation: none;
   }
 }
+
+/* ---------- การ์ด "กำลังประมูล": กรอบไฟวิ่งรอบการ์ด (mockup แบบ A, 28 ก.ย. 2026) ----------
+   ใช้กับการ์ดที่กำลังประมูลเท่านั้น ถ้าใส่ทุกใบจะไม่มีใบไหนเด่น
+   เบราว์เซอร์ที่ไม่รองรับ @property (Safari ก่อน 16.4) จะได้กรอบไล่สีนิ่งแทน */
+@property --live-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+.live-frame {
+  /* วาดเฉพาะขอบ 2px: พื้นการ์ด (padding-box) ทับด้วยวงสี (border-box) ที่หมุนได้ */
+  border: 2px solid transparent;
+  background:
+    linear-gradient(var(--card), var(--card)) padding-box,
+    conic-gradient(
+        from var(--live-angle),
+        var(--live-base) 0 55%,
+        oklch(0.82 0.15 80) 68%,
+        var(--primary) 78%,
+        oklch(0.62 0.21 35) 86%,
+        var(--live-base) 96%
+      )
+      border-box;
+  animation: live-spin 3.2s linear infinite;
+  --live-base: color-mix(in oklch, var(--primary) 22%, var(--border));
+}
+.live-frame[data-urgent="true"] {
+  animation-duration: 1.6s;
+}
+@keyframes live-spin {
+  to {
+    --live-angle: 360deg;
+  }
+}
+/* จุด "สด" กระพริบ */
+.live-dot {
+  position: relative;
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: currentColor;
+}
+.live-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: currentColor;
+  animation: live-ping 1.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+@keyframes live-ping {
+  75%,
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .live-frame,
+  .live-dot::after {
+    animation: none;
+  }
+  .live-frame {
+    background:
+      linear-gradient(var(--card), var(--card)) padding-box,
+      linear-gradient(135deg, oklch(0.82 0.15 80), var(--primary), oklch(0.62 0.21 35)) border-box;
+  }
+}
