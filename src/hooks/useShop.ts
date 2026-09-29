@@ -223,6 +223,45 @@ export async function uploadReviewImage(userId: string, file: File): Promise<str
   return supabase.storage.from("review-images").getPublicUrl(path).data.publicUrl;
 }
 
+/** รีวิวทั้งหมดสำหรับแอดมิน (รวมที่ถูกซ่อน) — กฎ "Admins manage reviews" */
+export function useAdminReviews() {
+  return useQuery({
+    queryKey: ["admin", "reviews"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("reviews" as never)
+        .select(REVIEW_COLUMNS + ", seller:seller_id (username)")
+        .order("created_at" as never, { ascending: false })
+        .limit(200);
+      if (error) throw new Error(error.message);
+      return (data ?? []) as unknown as (Review & {
+        seller?: { username: string | null } | null;
+      })[];
+    },
+  });
+}
+
+/** ซ่อน/แสดงรีวิวที่ผิดกติกา (ไม่ลบ — เก็บหลักฐานไว้) */
+export function useSetReviewHidden() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ reviewId, hidden }: { reviewId: string; hidden: boolean }) => {
+      const { data, error } = await supabase
+        .from("reviews" as never)
+        .update({ is_hidden: hidden, updated_at: new Date().toISOString() } as never)
+        .eq("id" as never, reviewId as never)
+        .select("id");
+      if (error) throw new Error(error.message);
+      if (!(data as unknown[] | null)?.length) throw new Error("ไม่มีสิทธิ์แก้ไขรีวิวนี้");
+      return true;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["admin", "reviews"] });
+      void queryClient.invalidateQueries({ queryKey: ["shop"] });
+    },
+  });
+}
+
 /* ------------------------- คำสั่งซื้อของร้าน ------------------------- */
 
 export interface SellerOrder {

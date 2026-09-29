@@ -102,6 +102,19 @@ export function LiveAuctionSlider() {
           )}
         </div>
       )}
+      {/* มือถือ: แผงรอบถัดไปไม่แสดง → มีแถวเล็กนี้แทน (ปุ่มซ่อนเองถ้าเบราว์เซอร์ไม่รองรับ push) */}
+      {items.length > 0 && (
+        <div className="mt-3 flex items-center gap-3 sm:hidden">
+          <NotifyWhenOpenButton compact />
+          <Link
+            to="/auctions"
+            search={{ status: "past" }}
+            className="inline-flex min-h-11 shrink-0 items-center gap-1 text-sm font-semibold text-muted-foreground"
+          >
+            <History className="h-4 w-4" /> ผลที่ผ่านมา
+          </Link>
+        </div>
+      )}
       {items.length > MOBILE_MAX && (
         <Link
           to="/auctions"

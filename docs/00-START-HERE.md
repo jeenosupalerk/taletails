@@ -77,3 +77,13 @@
 - `shop_reviews`: ตาราง `reviews` (1 order = 1 รีวิว, รีวิวได้เมื่อ status = completed, แก้ได้ 30 วัน) + `shop_profiles` (ชื่อร้าน/คำอธิบาย) · ฟังก์ชัน `submit_review` (ครั้งแรกได้แต้ม `tt_settings.review_points` = 20, point_transactions kind='review'), `reply_review` (ตอบได้ 1 ครั้ง), `seller_ship_order` (ผู้ขายกรอกเลขพัสดุเอง), `get_shop_summary` · bucket `review-images` (public, อัปได้เฉพาะโฟลเดอร์ uid ตัวเอง, ไม่มีสิทธิ์ลบ)
   - ค่า 20 แต้มในปุ่มหน้าเว็บเขียนไว้ที่ `REVIEW_POINTS` ใน `src/components/reviews/ReviewBits.tsx` (get_tt_public_settings ยังไม่ส่งค่านี้) ถ้าแก้ในฐานข้อมูลต้องแก้ตรงนี้ด้วย
 - `banner_mobile_image`: `banners.image_url_mobile` (รูปครอบ 1:1 สำหรับมือถือ, null = ใช้รูปจอคอม) · หน้าครอบ `src/components/admin/BannerCropDialog.tsx` บันทึก WebP จอคอม 2400×750 / มือถือ 1080×1080
+
+## 29 ก.ย. 2026 — หน้าเว็บที่เปลี่ยน (ยังไม่มี SQL เพิ่มในส่วนนี้)
+
+- หน้าแรก "ประมูลสด": การ์ดประมูลใช้ `src/components/card/AuctionCard.tsx` (กรอบไฟวิ่ง `.live-frame` ใน `styles.css`, ป้าย สด/รอเปิด, แผ่นตัวเลขมีหน่วย ช่อง "วัน" โผล่เมื่อเหลือ ≥ 1 วัน) · มือถือเป็นการ์ดแนวนอน (`rowOnMobile`) แสดง 3 ใบ · จอคอมเป็นการ์ดตั้ง 5 คอลัมน์ + แผง "รอบถัดไป" (`LiveAuctionSlider.tsx`)
+- หน้า `/auctions`: 3 แท็บ กำลังประมูล / เร็ว ๆ นี้ / ผลที่ผ่านมา (`?status=` เก่าอย่าง completed ยังใช้ได้) · เสนอราคาที่ `/card/$id` ที่เดียว (ลบ `AuctionShowcase` แล้ว) · คนที่ยังไม่ล็อกอินเห็นแค่รอบที่ active (RLS) แท็บผลที่ผ่านมาจึงว่างสำหรับผู้เยี่ยมชม
+- หน้า `/card/$id` มือถือ: แถบล่าง (ราคา + เสนอราคา) ซ่อนเมื่อช่องกรอกราคา `#bid-form` อยู่บนจอ (IntersectionObserver)
+- ปุ่มแจ้งเตือนรอบใหม่ `NotifyWhenOpenButton` เป็นสวิตช์ push ตัวเดียวกับหน้าโปรไฟล์ (สถานะแยกตามอุปกรณ์) ทุกที่ใช้ข้อความ "เปิดแจ้งเตือนรอบใหม่" / "รับแจ้งเตือนอยู่"
+- banner มือถือ 4:3 (1440×1080) จอคอม 16:5 (2400×750) · ครอบใน `BannerCropDialog.tsx` · ตลาดซื้อขายหน้าแรก: หัวข้อบรรทัดเดียว มือถือ 4 ใบ + ปุ่มดูทั้งหมด
+- ร้านของฉัน: รายการสินค้ามีแท็บกรอง + ปุ่มหลัก 1 ปุ่ม/แถว + เมนู ⋯ (`CardListingManager.tsx`, `listing-state.ts`), ฟอร์มลงการ์ด 3 ขั้น (`NewListingSheet.tsx`), แผงแก้ไขปิดเองหลังบันทึก
+- หลังบ้านใหม่: `/admin/reviews` ซ่อน/แสดงรีวิวที่ผิดกติกา (`reviews.is_hidden`)

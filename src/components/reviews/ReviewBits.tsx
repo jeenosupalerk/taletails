@@ -179,9 +179,18 @@ export function ReviewSheet({
     if (room <= 0) return;
     setUploading(true);
     try {
+      const picked = Array.from(files).slice(0, room);
+      // เบราว์เซอร์แสดง HEIC ไม่ได้ → บอกให้เปลี่ยนเป็น JPG ก่อน (เหมือนหน้าอัปโหลด banner)
+      for (const f of picked) {
+        if (!["image/jpeg", "image/png", "image/webp"].includes(f.type)) {
+          throw new Error(
+            "รองรับเฉพาะไฟล์ JPG, PNG, WebP (รูป HEIC จาก iPhone ให้เปลี่ยนเป็น JPG ก่อน)",
+          );
+        }
+        if (f.size > 15 * 1024 * 1024) throw new Error("ไฟล์ใหญ่เกิน 15 MB เลือกรูปที่เล็กลง");
+      }
       const urls: string[] = [];
-      for (const f of Array.from(files).slice(0, room))
-        urls.push(await uploadReviewImage(userId, f));
+      for (const f of picked) urls.push(await uploadReviewImage(userId, f));
       setImages((cur) => [...cur, ...urls].slice(0, 3));
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "อัปโหลดรูปไม่สำเร็จ");
