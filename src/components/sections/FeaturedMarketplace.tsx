@@ -318,7 +318,7 @@ export function FeaturedMarketplace({
         {showFilter && categories.length > 0 && (
           <nav
             aria-label="หมวดเกม"
-            className="-mx-4 mb-4 flex gap-1 no-scrollbar overflow-x-auto border-b border-border px-4 sm:mx-0 sm:px-0"
+            className="-mx-4 mb-4 flex gap-1 no-scrollbar scroll-fade overflow-x-auto border-b border-border px-4 sm:mx-0 sm:px-0"
           >
             {[
               { id: "all", name: "ทั้งหมด" },
@@ -343,7 +343,7 @@ export function FeaturedMarketplace({
         )}
         {showFilter && (
           <div className="mb-5">
-            <div className="-mx-4 flex items-center gap-2 no-scrollbar overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
+            <div className="-mx-4 flex items-center gap-2 no-scrollbar scroll-fade overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:[mask-image:none] sm:overflow-visible sm:px-0">
               {/* มือถือ: ปุ่ม "ตัวกรอง" อยู่หน้าสุด / จอใหญ่: อยู่ท้ายแถว — เปิดเป็นแผ่นล่างจอ */}
               <Sheet>
                 <SheetTrigger asChild>

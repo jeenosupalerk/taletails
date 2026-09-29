@@ -1,13 +1,24 @@
-import { Link } from "@tanstack/react-router";
-import { BadgeCheck, Coins, Gavel, LineChart, ShoppingBag } from "lucide-react";
+import { Link, type LinkProps } from "@tanstack/react-router";
+import { BadgeCheck, Coins, Gavel, LineChart, ShoppingBag, type LucideIcon } from "lucide-react";
 
 import { useLiveAuctions } from "@/hooks/useLiveAuctions";
+import { cn } from "@/lib/utils";
 
-const tile =
-  "flex min-h-14 shrink-0 items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3 transition-colors hover:bg-secondary sm:shrink";
-const icon = "grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-secondary text-primary";
+type Action = {
+  to: NonNullable<LinkProps["to"]>;
+  search?: Record<string, string> | undefined;
+  icon: LucideIcon;
+  label: string;
+  /** ชื่อสั้นสำหรับมือถือ (ช่องแคบ 5 ช่องในแถวเดียว) */
+  short: string;
+  hint: string;
+  hot?: boolean | undefined;
+};
 
-/** ทางลัดใต้ banner — ให้คนเข้ามาแล้วไปหน้าที่ต้องการได้ในคลิกเดียว (มือถือเลื่อนแนวนอน) */
+/**
+ * ทางลัดใต้ banner — ให้คนเข้ามาแล้วไปหน้าที่ต้องการได้ในคลิกเดียว
+ * มือถือ: ไอคอน 5 ช่องแถวเดียว (เห็นครบ ไม่ต้องเลื่อนแนวนอน) · จอกว้าง: การ์ดมีคำอธิบาย 5 คอลัมน์
+ */
 export function QuickActions() {
   const live = useLiveAuctions();
   const now = Date.now();
@@ -15,62 +26,77 @@ export function QuickActions() {
     (a) => a.outcome.outcome === "live" && new Date(a.startTime ?? 0).getTime() <= now,
   ).length;
 
+  const actions: Action[] = [
+    {
+      to: "/auctions",
+      icon: Gavel,
+      label: "ประมูลสด",
+      short: "ประมูลสด",
+      hint: liveCount > 0 ? `เปิดอยู่ ${liveCount} รอบ` : "ยังไม่มีรอบเปิด",
+      hot: liveCount > 0,
+    },
+    {
+      to: "/marketplace",
+      icon: ShoppingBag,
+      label: "ตลาดซื้อขาย",
+      short: "ตลาด",
+      hint: "ซื้อได้ทันที",
+    },
+    {
+      to: "/market",
+      search: { grade: "sqc" },
+      icon: BadgeCheck,
+      label: "เกรดไทย SQC",
+      short: "เกรดไทย",
+      hint: "ราคากลาง",
+    },
+    {
+      to: "/market",
+      icon: LineChart,
+      label: "สถิติราคา",
+      short: "สถิติราคา",
+      hint: "ขายจริงล่าสุด",
+    },
+    { to: "/points", icon: Coins, label: "แต้ม TT", short: "แต้ม TT", hint: "แลกของรางวัล" },
+  ];
+
   return (
     <nav aria-label="ทางลัด" className="mx-auto max-w-7xl px-4 pt-4 sm:px-6 lg:px-8">
-      <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:grid sm:grid-cols-5 sm:overflow-visible sm:px-0">
-        <Link to="/auctions" className={tile}>
-          <span className={icon}>
-            <Gavel className="h-5 w-5" />
-          </span>
-          <span className="text-sm leading-tight">
-            <b className="font-semibold">ประมูลสด</b>
-            <br />
-            <span className="text-xs text-muted-foreground">
-              {liveCount > 0 ? `เปิดอยู่ ${liveCount} รอบ` : "ยังไม่มีรอบเปิด"}
-            </span>
-          </span>
-        </Link>
-        <Link to="/marketplace" className={tile}>
-          <span className={icon}>
-            <ShoppingBag className="h-5 w-5" />
-          </span>
-          <span className="text-sm leading-tight">
-            <b className="font-semibold">ตลาดซื้อขาย</b>
-            <br />
-            <span className="text-xs text-muted-foreground">ซื้อได้ทันที</span>
-          </span>
-        </Link>
-        <Link to="/market" search={{ grade: "sqc" } as never} className={tile}>
-          <span className={icon}>
-            <BadgeCheck className="h-5 w-5" />
-          </span>
-          <span className="text-sm leading-tight">
-            <b className="font-semibold">เกรดไทย SQC</b>
-            <br />
-            <span className="text-xs text-muted-foreground">ราคากลาง</span>
-          </span>
-        </Link>
-        <Link to="/market" className={tile}>
-          <span className={icon}>
-            <LineChart className="h-5 w-5" />
-          </span>
-          <span className="text-sm leading-tight">
-            <b className="font-semibold">สถิติราคา</b>
-            <br />
-            <span className="text-xs text-muted-foreground">ขายจริงล่าสุด</span>
-          </span>
-        </Link>
-        <Link to="/points" className={tile}>
-          <span className={icon}>
-            <Coins className="h-5 w-5" />
-          </span>
-          <span className="text-sm leading-tight">
-            <b className="font-semibold">แต้ม TT</b>
-            <br />
-            <span className="text-xs text-muted-foreground">แลกของรางวัล</span>
-          </span>
-        </Link>
-      </div>
+      <ul className="grid grid-cols-5 gap-1.5 sm:gap-3">
+        {actions.map((a) => (
+          <li key={a.label}>
+            <Link
+              to={a.to}
+              {...(a.search ? { search: a.search as never } : {})}
+              aria-label={`${a.label} ${a.hint}`}
+              className="group flex min-h-11 flex-col items-center gap-1.5 rounded-2xl text-center sm:min-h-14 sm:flex-row sm:gap-3 sm:border sm:border-border sm:bg-card sm:px-4 sm:py-3 sm:text-left sm:transition-colors sm:hover:bg-secondary"
+            >
+              <span
+                className={cn(
+                  "relative grid h-[54px] w-[54px] shrink-0 place-items-center rounded-[18px] transition-transform group-active:scale-95 sm:h-10 sm:w-10 sm:rounded-xl",
+                  a.hot ? "qa-tile-hot" : "qa-tile text-primary",
+                )}
+              >
+                <a.icon className="h-[22px] w-[22px] sm:h-5 sm:w-5" />
+                {/* มือถือไม่มีที่ให้คำอธิบาย: บอกจำนวนรอบประมูลที่เปิดอยู่ด้วยป้ายตัวเลขแทน */}
+                {a.hot && (
+                  <span className="absolute -top-1.5 -right-1.5 grid h-5 min-w-5 place-items-center rounded-full border-2 border-background bg-foreground px-1 text-[10px] font-bold text-background tabular-nums sm:hidden">
+                    {liveCount}
+                  </span>
+                )}
+              </span>
+              <span className="text-[11.5px] leading-tight font-semibold text-foreground sm:hidden">
+                {a.short}
+              </span>
+              <span className="hidden text-sm leading-tight sm:block">
+                <b className="font-semibold">{a.label}</b>
+                <br />
+                <span className="text-xs text-muted-foreground">{a.hint}</span>
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </nav>
   );
 }

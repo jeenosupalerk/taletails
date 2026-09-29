@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuthUserId } from "@/hooks/useCardDetail";
 import { getLatestArticles, type Article } from "@/data/articles";
 import { isPermissionError } from "@/lib/query-guards";
+import { uid } from "@/lib/utils";
 
 const TEN_YEARS = 60 * 60 * 24 * 365 * 10;
 
@@ -104,7 +105,7 @@ export interface ArticleInput {
 
 async function uploadThumbnail(userId: string, file: File) {
   const ext = file.name.split(".").pop() ?? "jpg";
-  const path = `${userId}/news-${crypto.randomUUID()}.${ext}`;
+  const path = `${userId}/news-${uid()}.${ext}`;
   const { error } = await supabase.storage
     .from("card-images")
     .upload(path, file, { contentType: file.type, upsert: false });

@@ -183,7 +183,7 @@ function AuctionsPage() {
         <div
           role="tablist"
           aria-label="สถานะการประมูล"
-          className="-mx-4 mt-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0"
+          className="no-scrollbar scroll-fade -mx-4 mt-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0"
         >
           {TABS.map((t) => (
             <button

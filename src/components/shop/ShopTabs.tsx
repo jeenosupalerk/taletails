@@ -58,7 +58,7 @@ export function ShopOrdersTab({ sellerId }: { sellerId: string }) {
   return (
     <div className="space-y-4">
       <div
-        className="-mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0"
+        className="no-scrollbar scroll-fade -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0"
         role="tablist"
         aria-label="สถานะคำสั่งซื้อ"
       >

@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import { ChartLine, Flame, Home, Store, User } from "lucide-react";
 
 import { useAuth } from "@/lib/auth";
-import { useNotifications } from "@/hooks/useNotifications";
 import { cn } from "@/lib/utils";
 
 const baseItems = [
@@ -16,7 +15,8 @@ const baseItems = [
 export function MobileBottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { isAuthenticated } = useAuth();
-  const { unread } = useNotifications();
+
+  // เลขแจ้งเตือนที่ยังไม่อ่านแสดงที่กระดิ่งด้านบนที่เดียว (เปิดอ่านได้จากตรงนั้น) ไม่ซ้ำบนแท็บบัญชี
 
   // หน้ารายละเอียดสินค้า/ประมูลมีแถบซื้อ-เสนอราคาของตัวเองด้านล่าง → ซ่อนเมนูล่าง ไม่ให้ซ้อนกัน 2 ชั้น
   if (/^\/(product|card)\//.test(pathname)) return null;
@@ -38,7 +38,6 @@ export function MobileBottomNav() {
               ? pathname === "/"
               : pathname === item.to || pathname.startsWith(`${item.to}/`);
           const Icon = item.icon;
-          const showBadge = item.to === (isAuthenticated ? "/profile" : "/auth") && unread > 0;
           return (
             <Link
               key={item.to}
@@ -50,7 +49,9 @@ export function MobileBottomNav() {
               <span
                 className={cn(
                   "relative flex min-h-[3.75rem] w-full flex-col items-center justify-center gap-1 rounded-[1.6rem] px-1 py-1.5 transition-colors duration-200",
-                  active ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+                  active
+                    ? "text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 {/* Shared morphing pill — slides between tabs via layoutId */}
@@ -79,14 +80,8 @@ export function MobileBottomNav() {
                 >
                   {item.label}
                 </span>
-                {showBadge && (
-                  <span className="absolute -top-0.5 right-0.5 z-20 grid min-w-4 place-items-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-none text-destructive-foreground shadow-sm">
-                    {unread > 9 ? "9+" : unread}
-                  </span>
-                )}
               </span>
             </Link>
-
           );
         })}
       </div>

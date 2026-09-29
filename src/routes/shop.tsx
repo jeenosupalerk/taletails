@@ -40,7 +40,7 @@ function ShopPage() {
 
   return (
     <PageShell title="ร้านของฉัน" description="จัดการสินค้า ประมูล และประวัติการขายของร้านคุณ">
-      <section className="mx-auto max-w-5xl px-4 py-6 pb-28 sm:px-6 lg:px-8">
+      <section className="mx-auto max-w-5xl px-4 py-6 pb-44 sm:pb-28 sm:px-6 lg:px-8">
         {!userId ? (
           <div className="surface-panel flex flex-col items-center gap-4 px-6 py-14 text-center">
             <Store className="min-h-10 w-10 text-primary" />
@@ -125,7 +125,7 @@ function SellerHub({ userId }: { userId: string }) {
       <div
         role="tablist"
         aria-label="ส่วนของร้าน"
-        className="-mx-4 flex gap-1 overflow-x-auto border-b border-border px-4 sm:mx-0 sm:px-0"
+        className="no-scrollbar scroll-fade -mx-4 flex gap-1 overflow-x-auto border-b border-border px-4 sm:mx-0 sm:px-0"
       >
         {TABS.map((t) => (
           <button

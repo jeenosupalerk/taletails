@@ -62,7 +62,7 @@ function AdminOrdersPage() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-display text-lg font-semibold">คำสั่งซื้อ</h2>
-        <div className="flex gap-1 overflow-x-auto rounded-2xl border border-border bg-card p-1">
+        <div className="no-scrollbar flex gap-1 overflow-x-auto rounded-2xl border border-border bg-card p-1">
           {FILTERS.map((f) => (
             <button
               key={f}
@@ -86,7 +86,9 @@ function AdminOrdersPage() {
       ) : orders.isError ? (
         <div className="rounded-2xl border border-destructive/30 bg-destructive/5 px-4 py-10 text-center">
           <p className="text-sm font-semibold text-destructive">โหลดคำสั่งซื้อไม่สำเร็จ</p>
-          <p className="mt-1 text-xs text-muted-foreground">โปรดลองอีกครั้ง หรือตรวจสอบการเชื่อมต่อ</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            โปรดลองอีกครั้ง หรือตรวจสอบการเชื่อมต่อ
+          </p>
           <Button
             variant="secondary"
             className="mt-4 min-h-10 rounded-xl px-4 text-xs"
@@ -102,7 +104,10 @@ function AdminOrdersPage() {
       ) : (
         <ul className="space-y-3">
           {rows.map((o) => (
-            <li key={o.id} className="rounded-2xl border border-border bg-card p-3.5 transition-colors hover:border-primary/30 sm:p-4">
+            <li
+              key={o.id}
+              className="rounded-2xl border border-border bg-card p-3.5 transition-colors hover:border-primary/30 sm:p-4"
+            >
               <div className="flex flex-wrap items-start gap-3 sm:gap-4">
                 <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-secondary">
                   {o.cards?.images?.[0] && (

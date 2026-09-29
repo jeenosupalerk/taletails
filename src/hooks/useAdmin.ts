@@ -6,6 +6,7 @@ import { useAuthUserId } from "@/hooks/useCardDetail";
 import { processAuctions } from "@/lib/auctions.functions";
 import { compressImageFile } from "@/lib/image-compress";
 import { flushPendingPush } from "@/lib/push.functions";
+import { uid } from "@/lib/utils";
 
 const TEN_YEARS = 60 * 60 * 24 * 365 * 10;
 
@@ -253,7 +254,7 @@ export interface NewCardInput {
 async function uploadCardImage(userId: string, original: File): Promise<string> {
   const file = await compressImageFile(original);
   const ext = file.name.split(".").pop() ?? "jpg";
-  const path = `${userId}/${crypto.randomUUID()}.${ext}`;
+  const path = `${userId}/${uid()}.${ext}`;
   const { error: upErr } = await supabase.storage
     .from("card-images")
     .upload(path, file, { contentType: file.type, upsert: false });

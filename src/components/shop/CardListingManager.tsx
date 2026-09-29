@@ -182,8 +182,9 @@ export function CardListingManager({
       <NewListingSheet open={open} onOpenChange={setOpen} />
 
       {/* ต้องทำตอนนี้ — กดแล้วกรองรายการให้ กดซ้ำเพื่อยกเลิก */}
-      <section aria-label="ต้องทำตอนนี้" className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-        <div className="grid min-w-[36rem] grid-cols-4 gap-3 sm:min-w-0">
+      <section aria-label="ต้องทำตอนนี้">
+        {/* มือถือ 2×2 เห็นครบทุกกล่อง ไม่ต้องเลื่อนหา · จอกว้าง 4 คอลัมน์ */}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {todo.map((t) => (
             <button
               key={t.key}
@@ -214,7 +215,7 @@ export function CardListingManager({
       <div className="space-y-3">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           <div
-            className="-mx-4 flex gap-2 overflow-x-auto px-4 lg:mx-0 lg:flex-wrap lg:px-0"
+            className="no-scrollbar scroll-fade -mx-4 flex gap-2 overflow-x-auto px-4 lg:mx-0 lg:flex-wrap lg:px-0 lg:[mask-image:none]"
             role="tablist"
             aria-label="กรองตามสถานะ"
           >
@@ -343,14 +344,17 @@ export function CardListingManager({
         </>
       )}
 
-      {/* มือถือ: ปุ่มลงการ์ดลอยมุมล่าง เหนือแถบเมนูล่าง */}
-      <Button
-        onClick={() => setOpen(true)}
-        className="fixed right-4 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-30 min-h-13 rounded-full px-5 shadow-[0_12px_28px_-10px_color-mix(in_oklch,var(--primary)_70%,transparent)] sm:hidden"
-      >
-        <Plus className="h-5 w-5" />
-        ลงการ์ดใหม่
-      </Button>
+      {/* มือถือ: ปุ่มลงการ์ดลอยมุมล่าง เหนือแถบเมนูล่าง
+          ซ่อนตอนยังไม่มีสินค้า/กำลังโหลด เพราะหน้าว่างมีปุ่ม "ลงการ์ดใบแรก" ของตัวเองอยู่แล้ว (ไม่ให้ปุ่มซ้อนกันและบังข้อความ) */}
+      {!cards.isLoading && rows.length > 0 && (
+        <Button
+          onClick={() => setOpen(true)}
+          className="fixed right-4 bottom-[calc(max(1.25rem,env(safe-area-inset-bottom))+5.25rem)] z-30 min-h-13 rounded-full px-5 shadow-[0_12px_28px_-10px_color-mix(in_oklch,var(--primary)_70%,transparent)] sm:hidden"
+        >
+          <Plus className="h-5 w-5" />
+          ลงการ์ดใหม่
+        </Button>
+      )}
     </div>
   );
 }
