@@ -111,7 +111,14 @@ function PurchaseDetailPage() {
     : [];
 
   return (
-    <PageShell title="รายละเอียดคำสั่งซื้อ" description="สถานะและการจัดส่ง">
+    <PageShell
+      title="รายละเอียดคำสั่งซื้อ"
+      description="สถานะและการจัดส่ง"
+      trail={[
+        { label: "หน้าแรก", to: "/" },
+        { label: "สถานะการซื้อ", to: "/purchases" },
+      ]}
+    >
       <section className="mx-auto max-w-2xl space-y-4 px-4 py-6 pb-28 sm:px-6">
         <Button asChild variant="ghost" className="min-h-10 gap-1 rounded-xl px-2 text-sm">
           <Link to="/purchases">

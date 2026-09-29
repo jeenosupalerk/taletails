@@ -52,7 +52,13 @@ function ArticlePage() {
 
   if (!article) {
     return (
-      <PageShell eyebrow="ข่าวสาร" title="บทความ" description="">
+      <PageShell
+        title="บทความ"
+        trail={[
+          { label: "หน้าแรก", to: "/" },
+          { label: "ข่าวสารและคู่มือ", to: "/news" },
+        ]}
+      >
         <div className="grid place-items-center py-24">
           {db.isLoading ? (
             <LogoLoader size={64} />
@@ -77,11 +83,17 @@ function ArticlePage() {
 
   return (
     <PageShell
-      eyebrow={article.categoryTag}
-      title={article.title}
-      description={dateFormatter.format(new Date(article.publishedDate))}
+      title="บทความ"
+      trail={[
+        { label: "หน้าแรก", to: "/" },
+        { label: "ข่าวสารและคู่มือ", to: "/news" },
+      ]}
     >
-      <article className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
+      <article className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+        <p className="text-xs font-semibold text-primary">
+          {article.categoryTag} · {dateFormatter.format(new Date(article.publishedDate))}
+        </p>
+        <h2 className="font-display mt-2 mb-6 text-2xl font-bold sm:text-3xl">{article.title}</h2>
         <img
           src={article.thumbnailUrl}
           alt={article.title}

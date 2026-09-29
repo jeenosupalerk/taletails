@@ -106,16 +106,20 @@ function MarketDetailPage() {
   }
 
   // เทียบราคาขายล่าสุดกับราคาตลาด (เฉลี่ย 3 ครั้งล่าสุด)
-  const diffVsAvg = card.marketPrice ? ((card.lastPrice - card.marketPrice) / card.marketPrice) * 100 : 0;
+  const diffVsAvg = card.marketPrice
+    ? ((card.lastPrice - card.marketPrice) / card.marketPrice) * 100
+    : 0;
   const forSale = listingsByKey.get(card.key ?? "") ?? [];
   const up = diffVsAvg >= 0;
   const hasData = card.transactions.length > 0;
 
   return (
-
     <PageShell
-      eyebrow={card.setName}
       title={card.cardName}
+      trail={[
+        { label: "หน้าแรก", to: "/" },
+        { label: "สถิติตลาด", to: "/market" },
+      ]}
       description={`สถิติราคาและประวัติการซื้อขาย • เกรด ${card.grade}`}
     >
       <section className="mx-auto max-w-5xl space-y-6 px-4 py-6 pb-28 sm:px-6 lg:px-8">
@@ -138,7 +142,8 @@ function MarketDetailPage() {
               ขายแล้ว {card.totalSold} ครั้ง
               {card.lastSoldAt ? (
                 <>
-                  {" "}· ขายล่าสุด <ClientTimeAgo ms={card.lastSoldAt} />
+                  {" "}
+                  · ขายล่าสุด <ClientTimeAgo ms={card.lastSoldAt} />
                 </>
               ) : null}
             </p>
@@ -155,7 +160,11 @@ function MarketDetailPage() {
                   up ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive",
                 )}
               >
-                {up ? <ArrowUpRight className="h-3.5 w-3.5" /> : <ArrowDownRight className="h-3.5 w-3.5" />}
+                {up ? (
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                ) : (
+                  <ArrowDownRight className="h-3.5 w-3.5" />
+                )}
                 ขายล่าสุด {formatThb(card.lastPrice)} ({up ? "+" : ""}
                 {diffVsAvg.toFixed(1)}%)
               </span>
@@ -182,11 +191,15 @@ function MarketDetailPage() {
                       className="object-cover"
                     />
                     <span className="min-w-0 flex-1">
-                      <span className="block font-display text-base font-bold tabular-nums">{formatThb(l.price)}</span>
+                      <span className="block font-display text-base font-bold tabular-nums">
+                        {formatThb(l.price)}
+                      </span>
                       <span
                         className={cn(
                           "block truncate text-[11px]",
-                          l.kind === "fixed" && d !== null && d <= -1 ? "font-semibold text-success" : "text-muted-foreground",
+                          l.kind === "fixed" && d !== null && d <= -1
+                            ? "font-semibold text-success"
+                            : "text-muted-foreground",
                         )}
                       >
                         {l.kind === "auction"
@@ -296,9 +309,7 @@ function MarketDetailPage() {
                   {r.label}
                 </button>
               ))}
-              <span className="sr-only">
-                แสดงข้อมูลย้อนหลัง {rangeDays[range]} วัน
-              </span>
+              <span className="sr-only">แสดงข้อมูลย้อนหลัง {rangeDays[range]} วัน</span>
             </div>
 
             <div className="h-72 w-full sm:h-80">

@@ -1,10 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowDownWideNarrow, ChevronDown, History } from "lucide-react";
+import { ArrowDownWideNarrow, ChevronDown, Gavel, History } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { AuctionCard, ResultCard, auctionKind } from "@/components/card/AuctionCard";
 import { NoLiveAuction } from "@/components/sections/NoLiveAuction";
-import { BackButton } from "@/components/site/BackButton";
+import { PageHeader } from "@/components/site/PageHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { Button } from "@/components/ui/button";
@@ -155,28 +155,30 @@ function AuctionsPage() {
     <div className="min-h-screen bg-background">
       <SiteHeader />
       <main className="mx-auto max-w-7xl px-4 pt-5 pb-16 sm:px-6 lg:px-8">
-        <BackButton />
-        <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
-          <h1 className="font-display text-3xl font-bold">ประมูล</h1>
-          {tab === "live" && running.length > 1 && (
-            <div className="relative">
-              <ArrowDownWideNarrow className="pointer-events-none absolute top-1/2 left-3.5 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-              <select
-                value={sort}
-                onChange={(e) => setSort(e.target.value)}
-                aria-label="เรียงลำดับ"
-                className="h-11 cursor-pointer appearance-none rounded-full border border-border bg-card pr-9 pl-9 text-xs font-semibold"
-              >
-                {SORTS.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    เรียง: {o.label}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="pointer-events-none absolute top-1/2 right-3.5 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-            </div>
-          )}
-        </div>
+        <PageHeader
+          title="ประมูล"
+          icon={Gavel}
+          aside={
+            tab === "live" && running.length > 1 ? (
+              <div className="relative">
+                <ArrowDownWideNarrow className="pointer-events-none absolute top-1/2 left-3.5 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                <select
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value)}
+                  aria-label="เรียงลำดับ"
+                  className="h-11 cursor-pointer appearance-none rounded-full border border-border bg-card pr-9 pl-9 text-xs font-semibold"
+                >
+                  {SORTS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      เรียง: {o.label}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute top-1/2 right-3.5 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              </div>
+            ) : undefined
+          }
+        />
 
         <div
           role="tablist"

@@ -295,9 +295,12 @@ export function FeaturedMarketplace({
   const selectCls = "h-11 w-full rounded-xl border border-border bg-card px-3 text-sm";
 
   return (
-    <section id="marketplace" className="border-y border-border bg-card/30">
+    <section
+      id="marketplace"
+      className={`bg-card/30 ${showHeading ? "border-y border-border" : "mt-4 border-y border-border"}`}
+    >
       <div
-        className={`mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 ${showHeading ? "py-10 sm:py-14" : "py-16"}`}
+        className={`mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 ${showHeading ? "py-10 sm:py-14" : "pt-6 pb-16"}`}
       >
         {showHeading && (
           // หัวข้อบรรทัดเดียวแบบเดียวกับ "ประมูลสด" (ตัดป้ายเล็ก + คำอธิบายออก)
@@ -315,7 +318,7 @@ export function FeaturedMarketplace({
         {showFilter && categories.length > 0 && (
           <nav
             aria-label="หมวดเกม"
-            className="-mx-4 mb-4 flex gap-1 overflow-x-auto border-b border-border px-4 sm:mx-0 sm:px-0"
+            className="-mx-4 mb-4 flex gap-1 no-scrollbar overflow-x-auto border-b border-border px-4 sm:mx-0 sm:px-0"
           >
             {[
               { id: "all", name: "ทั้งหมด" },
@@ -340,7 +343,7 @@ export function FeaturedMarketplace({
         )}
         {showFilter && (
           <div className="mb-5">
-            <div className="-mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
+            <div className="-mx-4 flex items-center gap-2 no-scrollbar overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
               {/* มือถือ: ปุ่ม "ตัวกรอง" อยู่หน้าสุด / จอใหญ่: อยู่ท้ายแถว — เปิดเป็นแผ่นล่างจอ */}
               <Sheet>
                 <SheetTrigger asChild>

@@ -73,7 +73,6 @@ const TRUST_POINTS = [
   { icon: QrCode, title: "จ่ายผ่าน QR", detail: "PromptPay ภายใน 24 ชม." },
 ] as const;
 
-
 function ProductPage() {
   const { id } = Route.useParams();
   const demo = Route.useLoaderData() as Product | null;
@@ -115,7 +114,10 @@ function ProductPage() {
   if (pendingOrderId || isAuctionCard || (!demo && liveQuery.isLoading)) {
     return (
       <PageShell
-        eyebrow="ตลาดซื้อขาย"
+        trail={[
+          { label: "หน้าแรก", to: "/" },
+          { label: "ตลาดซื้อขาย", to: "/marketplace" },
+        ]}
         title={pendingOrderId ? "กำลังพาไปหน้าชำระเงิน" : "กำลังโหลดรายละเอียด"}
         description="โปรดรอสักครู่"
       >
@@ -129,7 +131,10 @@ function ProductPage() {
   if (!product) {
     return (
       <PageShell
-        eyebrow="ตลาดซื้อขาย"
+        trail={[
+          { label: "หน้าแรก", to: "/" },
+          { label: "ตลาดซื้อขาย", to: "/marketplace" },
+        ]}
         title="ไม่พบการ์ดใบนี้"
         description="การ์ดอาจถูกขายหรือปิดการขายไปแล้ว"
       >
