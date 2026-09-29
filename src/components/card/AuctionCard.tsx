@@ -21,11 +21,49 @@ export function auctionKind(a: LiveAuction, now = Date.now()): AuctionCardKind {
   return new Date(a.startTime ?? 0).getTime() > now ? "upcoming" : "live";
 }
 
-/** "1ว 03:21:55" / "04:56:12" / "42:18" */
-function shortCountdown(c: { days: number; hours: number; minutes: number; seconds: number }) {
-  if (c.days > 0) return `${c.days}ว ${pad(c.hours)}:${pad(c.minutes)}:${pad(c.seconds)}`;
-  if (c.hours > 0) return `${pad(c.hours)}:${pad(c.minutes)}:${pad(c.seconds)}`;
-  return `${pad(c.minutes)}:${pad(c.seconds)}`;
+/** แผ่นตัวเลขมีหน่วยกำกับ: กำลังประมูล ชม./นาที/วินาที (สีส้ม, <1 ชม. สีแดง) · รอเปิด วัน/ชม./นาที/วินาที (สีเทา) */
+function CountdownTiles({
+  countdown: c,
+  kind,
+  urgent,
+}: {
+  countdown: { days: number; hours: number; minutes: number; seconds: number };
+  kind: "live" | "upcoming";
+  urgent: boolean;
+}) {
+  // กำลังประมูลที่เหลือหลายวัน ให้มีช่องวันด้วย ไม่ให้ชั่วโมงไปโชว์เกิน 24
+  const withDays = kind === "upcoming" || c.days > 0;
+  const units = [
+    ...(withDays ? [{ v: c.days, l: "วัน" }] : []),
+    { v: c.hours, l: "ชม." },
+    { v: c.minutes, l: "นาที" },
+    { v: c.seconds, l: "วินาที" },
+  ];
+  return (
+    <div
+      role="timer"
+      aria-label={`${kind === "upcoming" ? "เปิดประมูลใน" : "เหลือเวลา"} ${units.map((u) => `${u.v} ${u.l}`).join(" ")}`}
+      className={cn("mt-2 grid gap-1.5", withDays ? "grid-cols-4" : "grid-cols-3")}
+    >
+      {units.map((u) => (
+        <div key={u.l} className="text-center">
+          <span
+            className={cn(
+              "grid h-[34px] place-items-center rounded-[9px] font-display text-lg font-extrabold tabular-nums",
+              kind === "upcoming"
+                ? "bg-muted text-foreground/75"
+                : urgent
+                  ? "bg-gradient-to-b from-[var(--cd-urgent-top)] from-50% to-[var(--cd-urgent-bottom)] to-50% text-[var(--cd-urgent-fg)]"
+                  : "bg-gradient-to-b from-[var(--cd-top)] from-50% to-[var(--cd-bottom)] to-50% text-[var(--cd-fg)]",
+            )}
+          >
+            {pad(u.v)}
+          </span>
+          <span className="mt-0.5 block text-[10px] text-muted-foreground">{u.l}</span>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 /**
@@ -52,8 +90,8 @@ export function AuctionCard({
       params={{ id: a.cardId }}
       data-urgent={urgent}
       className={cn(
-        "group flex flex-col rounded-[18px] bg-card p-2 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-        kind === "live" ? "live-frame" : "ring-1 ring-border/70",
+        "group flex flex-col rounded-[20px] bg-card outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        kind === "live" ? "live-frame p-1" : "p-2 ring-1 ring-border/70",
         className,
       )}
     >
@@ -83,35 +121,20 @@ export function AuctionCard({
             />
             <span className="truncate">{a.outcome.label}</span>
           </span>
+        ) : kind === "live" ? (
+          <span
+            className={cn(
+              "absolute top-2 left-2 inline-flex h-[26px] items-center gap-1.5 rounded-full px-2.5 text-xs font-bold text-white",
+              "bg-[oklch(0.62_0.21_35)]",
+            )}
+          >
+            <span className="live-dot text-white" aria-hidden />
+            สด
+          </span>
         ) : (
-          countdown &&
-          !countdown.isFinished && (
-            <span
-              role="timer"
-              aria-label={
-                kind === "upcoming"
-                  ? `เปิดประมูลใน ${shortCountdown(countdown)}`
-                  : `เหลือเวลา ${shortCountdown(countdown)}`
-              }
-              className={cn(
-                "absolute top-2 left-2 inline-flex h-[26px] items-center gap-1.5 rounded-[9px] px-2.5 font-display text-[12.5px] font-extrabold tabular-nums shadow-[0_1px_4px_rgba(0,0,0,0.15)]",
-                urgent
-                  ? "bg-[oklch(0.62_0.21_35)] text-white"
-                  : kind === "upcoming"
-                    ? "bg-card/95 text-foreground"
-                    : "bg-card/95 text-[var(--cd-fg)]",
-              )}
-            >
-              {kind === "live" && (
-                <span
-                  className={cn("live-dot", urgent ? "text-white" : "text-[oklch(0.62_0.22_30)]")}
-                  aria-hidden
-                />
-              )}
-              {kind === "upcoming" && "เปิดใน "}
-              {shortCountdown(countdown)}
-            </span>
-          )
+          <span className="absolute top-2 left-2 inline-flex h-[26px] items-center rounded-full bg-foreground/80 px-2.5 text-xs font-bold text-background">
+            รอเปิด
+          </span>
         )}
 
         {kind !== "upcoming" && (
@@ -129,7 +152,10 @@ export function AuctionCard({
         <h3 className="mt-0.5 line-clamp-2 min-h-10 text-[15px] leading-snug font-semibold break-words group-hover:text-primary">
           {a.cardName}
         </h3>
-        <div className="mt-1.5 flex items-baseline justify-between gap-2">
+        {kind !== "past" && countdown && !countdown.isFinished && (
+          <CountdownTiles countdown={countdown} kind={kind} urgent={urgent} />
+        )}
+        <div className="mt-2 flex items-baseline justify-between gap-2">
           <p className="truncate font-display text-lg leading-tight font-bold">
             {thb.format(kind === "upcoming" ? a.startingPrice : a.currentBid)}
           </p>

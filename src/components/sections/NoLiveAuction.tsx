@@ -91,7 +91,7 @@ function MemberNotice() {
           {canAsk &&
             (enabled ? (
               <span className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-secondary px-4 text-sm font-semibold text-primary">
-                <BellRing className="h-4 w-4" /> เปิดแจ้งเตือนแล้ว
+                <BellRing className="h-4 w-4" /> รับแจ้งเตือนรอบใหม่อยู่
               </span>
             ) : (
               <Button
@@ -101,7 +101,7 @@ function MemberNotice() {
                 className="min-h-12 rounded-xl px-5 text-base font-semibold hover:bg-primary hover:brightness-95"
               >
                 <Bell className="h-4 w-4" />
-                {busy ? "กำลังเปิด…" : "แจ้งเตือนเมื่อเปิดรอบใหม่"}
+                {busy ? "กำลังเปิด…" : "เปิดแจ้งเตือนรอบใหม่"}
               </Button>
             ))}
           <Button

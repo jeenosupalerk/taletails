@@ -1,4 +1,5 @@
-import { Bell, BellRing, Clock } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { Bell, BellRing, Check, Clock } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
@@ -6,7 +7,13 @@ import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { pad, useCountdown } from "@/hooks/useCountdown";
 import { cn } from "@/lib/utils";
 
-const whenFmt = new Intl.DateTimeFormat("th-TH", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+const whenFmt = new Intl.DateTimeFormat("th-TH", {
+  weekday: "short",
+  day: "numeric",
+  month: "short",
+  hour: "2-digit",
+  minute: "2-digit",
+});
 const URGENT_MS = 60 * 60 * 1000;
 
 /**
@@ -14,7 +21,13 @@ const URGENT_MS = 60 * 60 * 1000;
  * ใช้แผ่นตัวเลขแบบเดียวกับ FlipCountdown (flip-tile, สีจาก --cd-*) ให้เข้าธีมเว็บ
  * เหลือไม่ถึง 1 ชม. เปลี่ยนเป็นโทนเร่งด่วนและกระพริบ ให้รู้สึกว่ากำลังจะเริ่ม
  */
-export function UpcomingCountdown({ startTime, className }: { startTime: string; className?: string | undefined }) {
+export function UpcomingCountdown({
+  startTime,
+  className,
+}: {
+  startTime: string;
+  className?: string | undefined;
+}) {
   const c = useCountdown(startTime);
   const urgent = !!c && !c.isFinished && c.totalMs < URGENT_MS;
   const units = [
@@ -28,14 +41,25 @@ export function UpcomingCountdown({ startTime, className }: { startTime: string;
     <div
       className={cn("w-full", className)}
       role="timer"
-      aria-label={c ? `เริ่มประมูลใน ${units.map((u) => `${u.v} ${u.l}`).join(" ")}` : "กำลังโหลดเวลา"}
+      aria-label={
+        c ? `เริ่มประมูลใน ${units.map((u) => `${u.v} ${u.l}`).join(" ")}` : "กำลังโหลดเวลา"
+      }
     >
       <div className="flex items-center justify-between gap-2 text-xs">
-        <span className={cn("inline-flex items-center gap-1.5 font-semibold", urgent ? "text-[var(--cd-urgent)]" : "text-primary")}>
+        <span
+          className={cn(
+            "inline-flex items-center gap-1.5 font-semibold",
+            urgent ? "text-[var(--cd-urgent)]" : "text-primary",
+          )}
+        >
           <Clock className="h-3.5 w-3.5" />
           {urgent ? "ใกล้เปิดแล้ว" : "เริ่มประมูลใน"}
         </span>
-        {c && <span className="text-muted-foreground">เปิด {whenFmt.format(new Date(startTime))} น.</span>}
+        {c && (
+          <span className="text-muted-foreground">
+            เปิด {whenFmt.format(new Date(startTime))} น.
+          </span>
+        )}
       </div>
       <div className="mt-2.5 grid grid-cols-4 gap-2 sm:gap-3">
         {units.map((u) => (
@@ -60,7 +84,13 @@ export function UpcomingCountdown({ startTime, className }: { startTime: string;
 }
 
 /** ตัวนับเล็กสำหรับการ์ดในรายการ "เร็ว ๆ นี้" เช่น "2ว 14:37:09" */
-export function MiniUpcoming({ startTime, className }: { startTime: string; className?: string | undefined }) {
+export function MiniUpcoming({
+  startTime,
+  className,
+}: {
+  startTime: string;
+  className?: string | undefined;
+}) {
   const c = useCountdown(startTime);
   if (!c || c.isFinished) return null;
   const text = `${c.days > 0 ? `${c.days}ว ` : ""}${pad(c.hours)}:${pad(c.minutes)}:${pad(c.seconds)}`;
@@ -79,33 +109,52 @@ export function MiniUpcoming({ startTime, className }: { startTime: string; clas
 }
 
 /**
- * ปุ่ม "แจ้งเตือนเมื่อเปิด" — ใช้ระบบ push เดิม: ผู้ที่เปิดรับ push ทุกคนได้แจ้งเตือน "เปิดประมูลใหม่แล้ว"
- * (trigger trg_auctions_notify_opened) จึงแค่ช่วยให้ผู้ใช้เปิดรับ push บนอุปกรณ์นี้
+ * ปุ่มเปิดแจ้งเตือนรอบประมูลใหม่ — ใช้ระบบ push เดิม (สวิตช์เดียวกับหน้าโปรไฟล์)
+ * เปิดครั้งเดียวได้ทุกรอบที่เปิดใหม่ (trigger trg_auctions_notify_opened) ไม่ได้ผูกกับการ์ดใบเดียว
+ * เปิดอยู่แล้ว → ขึ้นป้ายเขียวว่ารับอยู่ กดไปจัดการที่โปรไฟล์ (สถานะจำแยกตามอุปกรณ์/เบราว์เซอร์)
  */
-export function NotifyWhenOpenButton({ compact = false }: { compact?: boolean }) {
+export function NotifyWhenOpenButton({
+  compact = false,
+  hint = false,
+}: {
+  compact?: boolean;
+  /** โชว์ข้อความอธิบายใต้ปุ่ม */
+  hint?: boolean;
+}) {
   const { supported, permission, enabled, busy, enable } = usePushNotifications();
   if (!supported || permission === "denied") return null;
   if (enabled) {
     return (
-      <span
+      <Link
+        to="/profile"
         className={cn(
-          "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-secondary px-4 text-sm font-semibold text-primary",
+          "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-emerald-500/12 px-4 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-500/20 dark:text-emerald-400",
           !compact && "w-full",
         )}
+        title="ปิดหรือจัดการได้ที่หน้าโปรไฟล์"
       >
-        <BellRing className="h-4 w-4" /> {compact ? "แจ้งเตือนแล้ว" : "จะแจ้งเตือนทันทีที่เปิดประมูล"}
-      </span>
+        <BellRing className="h-4 w-4" />
+        {compact ? "รับแจ้งเตือนอยู่" : "รับแจ้งเตือนรอบใหม่อยู่"}
+        <Check className="h-4 w-4" />
+      </Link>
     );
   }
   return (
-    <Button
-      type="button"
-      onClick={() => void enable()}
-      disabled={busy}
-      className={cn("min-h-12 rounded-xl font-semibold hover:bg-primary hover:brightness-95", compact ? "flex-1" : "w-full")}
-    >
-      <Bell className="h-4 w-4" />
-      {busy ? "กำลังเปิด…" : "แจ้งเตือนเมื่อเปิด"}
-    </Button>
+    <div className={cn("flex flex-col gap-1.5", compact ? "flex-1" : "w-full")}>
+      <Button
+        type="button"
+        onClick={() => void enable()}
+        disabled={busy}
+        className="min-h-12 rounded-xl font-semibold hover:bg-primary hover:brightness-95"
+      >
+        <Bell className="h-4 w-4" />
+        {busy ? "กำลังเปิด…" : "เปิดแจ้งเตือนรอบใหม่"}
+      </Button>
+      {hint && (
+        <p className="text-center text-xs text-muted-foreground">
+          รับแจ้งเตือนทุกครั้งที่มีรอบประมูลเปิด
+        </p>
+      )}
+    </div>
   );
 }

@@ -20,8 +20,8 @@ export function PushNotificationToggle() {
         <div className="min-w-0 flex-1">
           <p className="font-display text-sm font-bold">การแจ้งเตือนบนอุปกรณ์นี้</p>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            รับแจ้งเตือนเมื่อมีคนเสนอราคาสูงกว่า ชนะการประมูล หรือคำสั่งซื้อมีอัปเดต
-            แม้ไม่ได้เปิดเว็บค้างไว้
+            รับแจ้งเตือนเมื่อมีรอบประมูลเปิดใหม่ มีคนเสนอราคาสูงกว่า ชนะการประมูล หรือคำสั่งซื้อมีอัปเดต
+            แม้ไม่ได้เปิดเว็บค้างไว้ (เปิดแยกในแต่ละเครื่อง)
           </p>
         </div>
         <Switch
