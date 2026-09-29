@@ -14,6 +14,7 @@ import {
   REVIEW_TAGS,
   uploadReviewImage,
   useMyReviews,
+  useReviewPoints,
   useShopProfile,
   useShopReviews,
   useShopSummary,
@@ -56,11 +57,15 @@ export function Stars({ value, className }: { value: number; className?: string 
 
 /** รีวิว 1 รายการ (ใช้ในหน้าสินค้า + แท็บรีวิวของร้าน) */
 export function ReviewItem({ review, footer }: { review: Review; footer?: React.ReactNode }) {
-  const name = maskName(review.buyer?.username);
+  const name = review.reviewer_name || maskName(review.buyer?.username);
   return (
     <article className="space-y-2">
       <div className="flex items-center gap-2.5">
-        <UserAvatar name={name} src={review.buyer?.avatar_url} className="h-8 w-8" />
+        <UserAvatar
+          name={name}
+          src={review.reviewer_avatar ?? review.buyer?.avatar_url}
+          className="h-8 w-8"
+        />
         <div className="min-w-0 flex-1">
           <p className="flex flex-wrap items-center gap-x-2 text-sm">
             <span className="font-semibold">{name}</span>
@@ -168,7 +173,8 @@ export function ReviewSheet({
   const fileRef = useRef<HTMLInputElement>(null);
   const submit = useSubmitReview();
   // ตรงกับ tt_settings.review_points (ตั้งไว้ 20) — get_tt_public_settings ยังไม่ได้ส่งค่านี้ออกมา
-  const reward = existing ? 0 : REVIEW_POINTS;
+  const { data: points } = useReviewPoints();
+  const reward = existing ? 0 : (points ?? REVIEW_POINTS);
 
   const toggleTag = (t: string) =>
     setTags((cur) => (cur.includes(t) ? cur.filter((x) => x !== t) : [...cur, t]));
@@ -394,6 +400,7 @@ export function OrderReviewButton({
 }) {
   const [open, setOpen] = useState(false);
   const mine = useMyReviews(userId);
+  const { data: points } = useReviewPoints();
   const existing = mine.data?.find((r) => r.order_id === orderId);
   const editable =
     !!existing && Date.now() - new Date(existing.created_at).getTime() < 30 * 86_400_000;
@@ -426,7 +433,7 @@ export function OrderReviewButton({
           className={cn("min-h-11 w-full rounded-xl font-semibold", className)}
           onClick={() => setOpen(true)}
         >
-          <Star className="h-4 w-4" /> ให้คะแนนร้าน · รับ {REVIEW_POINTS} แต้ม
+          <Star className="h-4 w-4" /> ให้คะแนนร้าน{points ? ` · รับ ${points} แต้ม` : ""}
         </Button>
       )}
       {open && (

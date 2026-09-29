@@ -5,6 +5,7 @@ import { GradeBadge } from "@/components/card/CardBits";
 import { SmartImage } from "@/components/ui/smart-image";
 import { pad, useCountdown } from "@/hooks/useCountdown";
 import type { LiveAuction } from "@/hooks/useLiveAuctions";
+import type { PublicAuctionResult } from "@/hooks/useShop";
 import { AUCTION_OUTCOME_DOT_CLASS, AUCTION_OUTCOME_TONE_CLASS } from "@/lib/auction-status";
 import { thb } from "@/lib/cart";
 import { cn } from "@/lib/utils";
@@ -298,6 +299,48 @@ export function AuctionStrip({
       <span className="hidden min-h-11 shrink-0 items-center gap-1.5 rounded-xl bg-gradient-ember px-5 text-sm font-semibold text-primary-foreground sm:inline-flex">
         <Gavel className="h-4 w-4" /> เสนอราคา
       </span>
+    </Link>
+  );
+}
+
+/** การ์ดผลประมูลที่ขายสำเร็จ (สำหรับผู้เยี่ยมชม) ไม่มีข้อมูลผู้บิด/ผู้ชนะ */
+export function ResultCard({ result: r }: { result: PublicAuctionResult }) {
+  return (
+    <Link
+      to="/card/$id"
+      params={{ id: r.card_id }}
+      className="group flex flex-col rounded-[18px] bg-card p-2 ring-1 ring-border/70 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      <div className="relative aspect-[5/7] overflow-hidden rounded-xl bg-tile">
+        {r.image && (
+          <SmartImage
+            src={r.image}
+            alt={r.card_name}
+            transformWidth={500}
+            className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+          />
+        )}
+        <span className="absolute top-2 left-2 inline-flex h-[26px] items-center rounded-full bg-emerald-600 px-2.5 text-xs font-bold text-white">
+          ขายสำเร็จ
+        </span>
+        <GradeBadge grade={r.grade ?? "-"} company={r.grading_company ?? "-"} condition="-" />
+      </div>
+      <div className="flex flex-col px-1.5 pt-2.5 pb-1">
+        <p className="truncate text-xs text-muted-foreground">
+          {r.set_name && r.set_name !== "-" ? r.set_name : " "}
+        </p>
+        <h3 className="mt-0.5 line-clamp-2 min-h-10 text-[15px] leading-snug font-semibold break-words group-hover:text-primary">
+          {r.card_name}
+        </h3>
+        <div className="mt-1.5 flex items-baseline justify-between gap-2">
+          <p className="truncate font-display text-lg leading-tight font-bold">
+            {thb.format(r.final_price)}
+          </p>
+          <p className="shrink-0 text-[11px] text-muted-foreground">
+            {r.bid_count} บิด · {dateFmt.format(new Date(r.closed_at))}
+          </p>
+        </div>
+      </div>
     </Link>
   );
 }

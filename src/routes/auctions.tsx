@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowDownWideNarrow, ChevronDown, History } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { AuctionCard, AuctionStrip, auctionKind } from "@/components/card/AuctionCard";
+import { AuctionCard, AuctionStrip, ResultCard, auctionKind } from "@/components/card/AuctionCard";
 import { NoLiveAuction } from "@/components/sections/NoLiveAuction";
 import { BackButton } from "@/components/site/BackButton";
 import { SiteFooter } from "@/components/site/SiteFooter";
@@ -10,6 +10,7 @@ import { SiteHeader } from "@/components/site/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLiveAuctions, type LiveAuction } from "@/hooks/useLiveAuctions";
+import { usePublicAuctionResults } from "@/hooks/useShop";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
@@ -227,20 +228,7 @@ function AuctionsPage() {
           isAuthenticated ? (
             <Empty title="ยังไม่มีผลประมูล" body="รอบที่ปิดแล้วจะแสดงราคาปิดจริงที่นี่" />
           ) : (
-            <Empty
-              title="เข้าสู่ระบบเพื่อดูผลประมูลที่ผ่านมา"
-              body="หรือดูราคาขายจริงล่าสุดของแต่ละการ์ดได้ที่หน้าสถิติราคา"
-              action={
-                <div className="flex flex-wrap justify-center gap-2">
-                  <Button asChild className="min-h-11 rounded-xl">
-                    <Link to="/auth">เข้าสู่ระบบ</Link>
-                  </Button>
-                  <Button asChild variant="secondary" className="min-h-11 rounded-xl">
-                    <Link to="/market">ดูสถิติราคา</Link>
-                  </Button>
-                </div>
-              }
-            />
+            <PublicResults />
           )
         ) : (
           <Grid items={past} />
@@ -248,6 +236,38 @@ function AuctionsPage() {
       </main>
       <SiteFooter />
     </div>
+  );
+}
+
+/** ผู้เยี่ยมชม: เห็นผลประมูลที่ขายสำเร็จ (ราคาปิดจริง) ผ่านฟังก์ชันสาธารณะ ไม่มีข้อมูลผู้บิด */
+function PublicResults() {
+  const { data, isLoading } = usePublicAuctionResults(12);
+  if (isLoading) {
+    return (
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Skeleton key={i} className="aspect-[5/7] rounded-[18px]" />
+        ))}
+      </div>
+    );
+  }
+  if (!data || data.length === 0) {
+    return (
+      <Empty
+        title="ยังไม่มีผลประมูลที่ขายสำเร็จ"
+        body="รอบที่ผู้ชนะชำระเงินแล้วจะแสดงราคาปิดจริงที่นี่"
+      />
+    );
+  }
+  return (
+    <>
+      <p className="mt-5 text-sm text-muted-foreground">ราคาปิดจริงของรอบที่ขายสำเร็จล่าสุด</p>
+      <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5">
+        {data.map((r) => (
+          <ResultCard key={r.auction_id} result={r} />
+        ))}
+      </div>
+    </>
   );
 }
 

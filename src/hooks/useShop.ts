@@ -46,6 +46,9 @@ export interface Review {
   created_at: string;
   updated_at: string;
   buyer?: { username: string | null; avatar_url: string | null } | null;
+  /** จาก get_shop_reviews: ชื่อย่อ + รูปที่ฐานข้อมูลทำให้แล้ว */
+  reviewer_name?: string | null;
+  reviewer_avatar?: string | null;
 }
 
 const REVIEW_COLUMNS =
@@ -130,14 +133,61 @@ export function useShopReviews(sellerId: string | null | undefined, limit = 50) 
     queryKey: ["shop", "reviews", sellerId, limit],
     enabled: !!sellerId,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("reviews" as never)
-        .select(REVIEW_COLUMNS)
-        .eq("seller_id" as never, sellerId as never)
-        .order("created_at" as never, { ascending: false })
-        .limit(limit);
+      // ผ่านฟังก์ชัน get_shop_reviews: ส่งชื่อย่อ + รูปผู้รีวิวให้ผู้เยี่ยมชมด้วย (ตาราง users อ่านได้เฉพาะคนล็อกอิน)
+      const { data, error } = await supabase.rpc(
+        "get_shop_reviews" as never,
+        { _seller_id: sellerId, _limit: limit } as never,
+      );
       if (error) throw new Error(error.message);
-      return (data ?? []) as unknown as Review[];
+      return ((data ?? []) as unknown as (Review & { buyer_id?: string })[]).map((r) => ({
+        ...r,
+        buyer_id: r.buyer_id ?? "",
+      })) as Review[];
+    },
+  });
+}
+
+/** แต้มที่ได้จากการรีวิวครั้งแรก (ตั้งใน tt_settings.review_points) */
+export function useReviewPoints() {
+  return useQuery({
+    queryKey: ["tt", "review-points"],
+    staleTime: 5 * 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_review_points" as never);
+      if (error) throw new Error(error.message);
+      return Number(data ?? 0);
+    },
+  });
+}
+
+export interface PublicAuctionResult {
+  auction_id: string;
+  card_id: string;
+  card_name: string;
+  set_name: string | null;
+  image: string | null;
+  grade: string | null;
+  grading_company: string | null;
+  final_price: number;
+  bid_count: number;
+  closed_at: string;
+}
+
+/** ผลประมูลที่ขายสำเร็จ สำหรับทุกคน (ไม่มีข้อมูลผู้บิด/ผู้ชนะ) */
+export function usePublicAuctionResults(limit = 12) {
+  return useQuery({
+    queryKey: ["auctions", "public-results", limit],
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc(
+        "get_public_auction_results" as never,
+        { _limit: limit } as never,
+      );
+      if (error) throw new Error(error.message);
+      return ((data ?? []) as unknown as PublicAuctionResult[]).map((r) => ({
+        ...r,
+        final_price: Number(r.final_price),
+      }));
     },
   });
 }
