@@ -16,11 +16,12 @@ import { registerWithPassword, requestEmailOtp, verifyEmailOtp } from "@/lib/aut
 import { requestPasswordResetOtp, resetPasswordWithOtp } from "@/lib/auth-reset.functions";
 import { PasswordStrength } from "@/components/ui/password-strength";
 
-const SITE_URL = "https://taletails-test.lovable.app";
+const SITE_URL = "https://www.taletails-trade.com";
 const OG_IMAGE = `${SITE_URL}${taletailsLogo}`;
 
 const title = "เข้าสู่ระบบ / สมัครสมาชิก | Taletails";
-const description = "เข้าสู่ระบบ Taletails เพื่อประมูลการ์ดสะสม ติดตามรายการโปรด และจัดการคอลเลกชันของคุณ";
+const description =
+  "เข้าสู่ระบบ Taletails เพื่อประมูลการ์ดสะสม ติดตามรายการโปรด และจัดการคอลเลกชันของคุณ";
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -47,7 +48,12 @@ function GoogleIcon({ className }: { className?: string }) {
 
 function FacebookIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      xmlns="http://www.w3.org/2000/svg"
+    >
       <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
     </svg>
   );
@@ -57,6 +63,7 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title },
+      { name: "robots", content: "noindex" },
       { name: "description", content: description },
       { property: "og:title", content: title },
       { property: "og:description", content: description },
@@ -118,7 +125,9 @@ function AuthPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
-    const email = String(form.get("email") ?? "").trim().toLowerCase();
+    const email = String(form.get("email") ?? "")
+      .trim()
+      .toLowerCase();
     const password = String(form.get("password") ?? "");
 
     if (mode === "register") {
@@ -176,8 +185,6 @@ function AuthPage() {
         setIsLoading(false);
       }
       return;
-
-
     }
 
     setIsLoading(true);
@@ -261,7 +268,6 @@ function AuthPage() {
       });
     }
   };
-
 
   const setOtpDigit = (index: number, value: string) => {
     const digit = value.replace(/\D/g, "").slice(-1);
@@ -376,7 +382,9 @@ function AuthPage() {
       if (error) {
         setForgotStep(null);
         setMode("login");
-        toast.success("ตั้งรหัสผ่านใหม่สำเร็จ", { description: "กรุณาเข้าสู่ระบบด้วยรหัสผ่านใหม่" });
+        toast.success("ตั้งรหัสผ่านใหม่สำเร็จ", {
+          description: "กรุณาเข้าสู่ระบบด้วยรหัสผ่านใหม่",
+        });
         return;
       }
       await refresh();
@@ -392,7 +400,6 @@ function AuthPage() {
       setIsLoading(false);
     }
   };
-
 
   const socialButtons = (
     <div className="space-y-3">
@@ -465,11 +472,7 @@ function AuthPage() {
           {/* Logo centered between orange header and white card */}
           <div className="-mt-14 mb-6 flex justify-center">
             <div className="h-20 w-20 overflow-hidden rounded-full border-4 border-card bg-card shadow-lg">
-              <img
-                src={taletailsLogo}
-                alt="Taletails"
-                className="h-full w-full object-cover"
-              />
+              <img src={taletailsLogo} alt="Taletails" className="h-full w-full object-cover" />
             </div>
           </div>
 
@@ -606,7 +609,11 @@ function AuthPage() {
 
               <button
                 type="button"
-                onClick={() => void handleRequestReset({ preventDefault: () => {} } as React.FormEvent<HTMLFormElement>)}
+                onClick={() =>
+                  void handleRequestReset({
+                    preventDefault: () => {},
+                  } as React.FormEvent<HTMLFormElement>)
+                }
                 disabled={isLoading}
                 className="w-full text-center text-sm font-medium text-primary transition-colors hover:underline disabled:opacity-50"
               >
@@ -630,7 +637,8 @@ function AuthPage() {
                     aria-label={`รหัส OTP หลักที่ ${i + 1}`}
                     onChange={(e) => setOtpDigit(i, e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === "Backspace" && !otp[i] && i > 0) otpRefs.current[i - 1]?.focus();
+                      if (e.key === "Backspace" && !otp[i] && i > 0)
+                        otpRefs.current[i - 1]?.focus();
                     }}
                     className="min-h-11 w-11 rounded-xl border border-border bg-secondary/40 text-center font-display text-lg font-bold text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
                   />
@@ -796,7 +804,6 @@ function AuthPage() {
                   {mode === "register" && <PasswordStrength value={passwordValue} />}
                 </div>
 
-
                 {mode === "register" && (
                   <div className="space-y-1.5">
                     <Label htmlFor="auth-confirm">ยืนยันรหัสผ่าน</Label>
@@ -838,27 +845,27 @@ function AuthPage() {
                       />
                       <span className="text-sm text-muted-foreground">จดจำฉัน</span>
                     </label>
-                     <div className="flex items-center gap-3">
-                       <button
-                         type="button"
-                         disabled={isLoading}
-                         onClick={() => void handleOtpLogin()}
-                         className="text-sm font-medium text-primary transition-colors hover:underline disabled:opacity-50"
-                       >
-                         เข้าสู่ระบบด้วยรหัส OTP
-                       </button>
-                       <span className="text-border">|</span>
-                       <button
-                         type="button"
-                         disabled={isLoading}
-                         onClick={openForgot}
-                         className="text-sm font-medium text-primary transition-colors hover:underline disabled:opacity-50"
-                       >
-                         ลืมรหัสผ่าน?
-                       </button>
-                     </div>
-                   </div>
-                 )}
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        disabled={isLoading}
+                        onClick={() => void handleOtpLogin()}
+                        className="text-sm font-medium text-primary transition-colors hover:underline disabled:opacity-50"
+                      >
+                        เข้าสู่ระบบด้วยรหัส OTP
+                      </button>
+                      <span className="text-border">|</span>
+                      <button
+                        type="button"
+                        disabled={isLoading}
+                        onClick={openForgot}
+                        className="text-sm font-medium text-primary transition-colors hover:underline disabled:opacity-50"
+                      >
+                        ลืมรหัสผ่าน?
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 <Button
                   type="submit"
@@ -880,7 +887,9 @@ function AuthPage() {
 
               <div className="my-5 flex items-center gap-3">
                 <div className="h-px flex-1 bg-border" />
-                <span className="text-xs font-medium text-muted-foreground">หรือดำเนินการต่อด้วย</span>
+                <span className="text-xs font-medium text-muted-foreground">
+                  หรือดำเนินการต่อด้วย
+                </span>
                 <div className="h-px flex-1 bg-border" />
               </div>
 
@@ -900,7 +909,6 @@ function AuthPage() {
         onAction={() => void router.navigate({ to: "/" })}
         secondaryLabel="ไปที่โปรไฟล์"
         onSecondary={() => void router.navigate({ to: "/profile" })}
-
       />
     </div>
   );

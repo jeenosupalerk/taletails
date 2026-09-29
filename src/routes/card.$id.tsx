@@ -15,6 +15,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { BackButton } from "@/components/site/BackButton";
+import {
+  SITE_URL,
+  absoluteImage,
+  breadcrumbJsonLd,
+  clip,
+  fetchSeoCard,
+  gradeLabel,
+} from "@/lib/seo";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { UserAvatar } from "@/components/site/UserAvatar";
@@ -39,26 +47,55 @@ import { AUCTION_OUTCOME_TONE_CLASS, getAuctionOutcome } from "@/lib/auction-sta
 import { thb } from "@/lib/cart";
 import { cn } from "@/lib/utils";
 
-const SITE_URL = "https://taletails-test.lovable.app";
 /** Stable placeholder so the countdown hook is not re-armed on every render. */
 const FAR_FUTURE = "2999-01-01T00:00:00.000Z";
 const PAST = "1970-01-01T00:00:00.000Z";
-const title = "รายละเอียดการ์ด — Taletails";
-const description =
-  "ดูรายละเอียดการ์ดสะสม เกรด ใบรับรอง ราคาประมูลแบบเรียลไทม์ และซื้อขาดได้ทันทีบน Taletails";
-
 export const Route = createFileRoute("/card/$id")({
-  head: () => ({
-    meta: [
-      { title },
-      { name: "description", content: description },
-      { property: "og:title", content: title },
-      { property: "og:description", content: description },
-      { property: "og:type", content: "product" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-    links: [{ rel: "canonical", href: `${SITE_URL}/card` }],
-  }),
+  loader: async ({ params }) => ({ seo: await fetchSeoCard(params.id) }),
+  head: ({ loaderData, params }) => {
+    const url = `${SITE_URL}/card/${params.id}`;
+    const seo = loaderData?.seo ?? null;
+    if (!seo) {
+      return {
+        meta: [{ title: "รายละเอียดการ์ด — Taletails" }, { name: "robots", content: "noindex" }],
+      };
+    }
+    const grade = gradeLabel(seo);
+    const title = [seo.name, seo.setName && seo.setName !== "-" ? seo.setName : "", grade]
+      .filter(Boolean)
+      .join(" ");
+    const fullTitle = `ประมูล ${title} | Taletails`;
+    const description = clip(
+      `ร่วมประมูล ${title} บน Taletails ดูราคาปัจจุบันแบบเรียลไทม์ ตรวจสอบเกรดและใบรับรอง จ่ายผ่าน PromptPay และมีเลขพัสดุติดตาม`,
+    );
+    const image = absoluteImage(seo.image);
+    return {
+      meta: [
+        { title: fullTitle },
+        { name: "description", content: description },
+        { property: "og:title", content: fullTitle },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "product" },
+        { property: "og:url", content: url },
+        { property: "og:image", content: image },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:image", content: image },
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify(
+            breadcrumbJsonLd([
+              { name: "หน้าแรก", path: "/" },
+              { name: "ประมูล", path: "/auctions" },
+              { name: title, path: `/card/${params.id}` },
+            ]),
+          ),
+        },
+      ],
+    };
+  },
   component: CardDetailPage,
 });
 

@@ -34,15 +34,15 @@ import { PointsBalanceCard } from "@/routes/points";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/lib/auth";
 
-const SITE_URL = "https://taletails-test.lovable.app";
+const SITE_URL = "https://www.taletails-trade.com";
 const title = "บัญชีของฉัน | Taletails";
-const description =
-  "จัดการโปรไฟล์ ติดตามคำสั่งซื้อ รายการโปรด และตั้งค่าบัญชีของคุณบน Taletails";
+const description = "จัดการโปรไฟล์ ติดตามคำสั่งซื้อ รายการโปรด และตั้งค่าบัญชีของคุณบน Taletails";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
     meta: [
       { title },
+      { name: "robots", content: "noindex" },
       { name: "description", content: description },
       { property: "og:title", content: title },
       { property: "og:description", content: description },
@@ -111,11 +111,7 @@ function ProfilePage() {
 
             {isSeller && (
               <MenuGroup title="สำหรับผู้ขาย">
-                <MenuItem
-                  to="/shop"
-                  icon={<Store className="h-5 w-5" />}
-                  label="ร้านของฉัน"
-                />
+                <MenuItem to="/shop" icon={<Store className="h-5 w-5" />} label="ร้านของฉัน" />
               </MenuGroup>
             )}
 
@@ -126,16 +122,16 @@ function ProfilePage() {
                 icon={<Coins className="h-5 w-5" />}
                 label="ประวัติแต้ม TT Points"
               />
-              <MenuItem
-                to="/wins"
-                icon={<Trophy className="h-5 w-5" />}
-                label="ของที่ประมูลชนะ"
-              />
+              <MenuItem to="/wins" icon={<Trophy className="h-5 w-5" />} label="ของที่ประมูลชนะ" />
               <MenuItem
                 to="/auctions"
                 icon={<Hammer className="h-5 w-5" />}
                 label="ประวัติการประมูล"
-                suffix={<Badge className="h-5 min-w-5 rounded-full bg-destructive px-1.5 text-[10px] text-destructive-foreground">2</Badge>}
+                suffix={
+                  <Badge className="h-5 min-w-5 rounded-full bg-destructive px-1.5 text-[10px] text-destructive-foreground">
+                    2
+                  </Badge>
+                }
               />
               <MenuItem
                 to="/orders"
@@ -147,11 +143,7 @@ function ProfilePage() {
                 icon={<Truck className="h-5 w-5" />}
                 label="สถานะการซื้อสินค้า"
               />
-              <MenuItem
-                to="/wishlist"
-                icon={<Heart className="h-5 w-5" />}
-                label="รายการโปรด"
-              />
+              <MenuItem to="/wishlist" icon={<Heart className="h-5 w-5" />} label="รายการโปรด" />
             </MenuGroup>
 
             {/* Account Settings */}
@@ -227,8 +219,12 @@ function MenuItem({
       className="group flex min-h-11 items-center justify-between gap-3 rounded-xl px-3 transition-[colors,transform,box-shadow] duration-150 ease-out hover:bg-primary/8 hover:shadow-sm hover:translate-x-0.5 active:bg-primary/15 active:scale-[0.98] active:translate-x-0"
     >
       <div className="flex items-center gap-3">
-        <span className="text-muted-foreground transition-colors duration-150 group-hover:text-primary group-active:text-primary">{icon}</span>
-        <span className="text-sm font-medium transition-colors duration-150 group-hover:text-primary group-active:text-primary">{label}</span>
+        <span className="text-muted-foreground transition-colors duration-150 group-hover:text-primary group-active:text-primary">
+          {icon}
+        </span>
+        <span className="text-sm font-medium transition-colors duration-150 group-hover:text-primary group-active:text-primary">
+          {label}
+        </span>
       </div>
       <div className="flex items-center gap-2">
         {suffix}
@@ -258,7 +254,6 @@ function ThemeRow() {
     </div>
   );
 }
-
 
 /** ยอด TT Points คงเหลือของผู้ใช้ที่ล็อกอินอยู่ */
 function PointsSummary() {

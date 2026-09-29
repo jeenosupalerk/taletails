@@ -21,7 +21,7 @@ import { thb } from "@/lib/cart";
 import { flushPendingPush } from "@/lib/push.functions";
 import { cn } from "@/lib/utils";
 
-const SITE_URL = "https://taletails-test.lovable.app";
+const SITE_URL = "https://www.taletails-trade.com";
 const title = "สถานะการซื้อสินค้า — Taletails";
 const description =
   "ติดตามสถานะคำสั่งซื้อการ์ดของคุณ ตั้งแต่รอตรวจสอบการชำระเงิน จัดส่ง จนถึงยืนยันรับสินค้า";

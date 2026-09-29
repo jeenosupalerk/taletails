@@ -16,7 +16,7 @@ import {
 import { useAuthUserId } from "@/hooks/useCardDetail";
 import { cn } from "@/lib/utils";
 
-const SITE_URL = "https://taletails-test.lovable.app";
+const SITE_URL = "https://www.taletails-trade.com";
 const title = "ที่อยู่สำหรับจัดส่ง | Taletails";
 const description =
   "จัดการสมุดที่อยู่จัดส่งของคุณ เพิ่ม ลบ และตั้งที่อยู่เริ่มต้นเพื่อใช้ในหน้าชำระเงิน";
@@ -25,6 +25,7 @@ export const Route = createFileRoute("/addresses")({
   head: () => ({
     meta: [
       { title },
+      { name: "robots", content: "noindex" },
       { name: "description", content: description },
       { property: "og:title", content: title },
       { property: "og:description", content: description },
@@ -104,7 +105,6 @@ function AddressesPage() {
       description="ที่อยู่ที่บันทึกไว้จะถูกนำไปใช้เลือกในหน้าชำระเงินโดยอัตโนมัติ"
     >
       <div className="mx-auto w-full max-w-2xl space-y-4 px-4 py-6 pb-28">
-
         {isLoading ? (
           <div className="space-y-3">
             {[0, 1].map((i) => (
@@ -177,17 +177,67 @@ function AddressesPage() {
         {open ? (
           <section className="space-y-3 rounded-3xl border border-border/70 bg-card p-4">
             <h2 className="font-display text-sm tracking-[0.16em] uppercase">เพิ่มที่อยู่ใหม่</h2>
-            <FormField id="a-label" label="ชื่อเรียกที่อยู่" value={form.label} onChange={set("label")} placeholder="เช่น บ้าน / ที่ทำงาน" />
+            <FormField
+              id="a-label"
+              label="ชื่อเรียกที่อยู่"
+              value={form.label}
+              onChange={set("label")}
+              placeholder="เช่น บ้าน / ที่ทำงาน"
+            />
             <div className="grid gap-3 sm:grid-cols-2">
-              <FormField id="a-name" label="ชื่อ-นามสกุล" value={form.name} onChange={set("name")} placeholder="เช่น สมชาย ใจดี" />
-              <FormField id="a-phone" label="เบอร์โทรศัพท์" value={form.phone} onChange={set("phone")} placeholder="08X-XXX-XXXX" inputMode="tel" />
+              <FormField
+                id="a-name"
+                label="ชื่อ-นามสกุล"
+                value={form.name}
+                onChange={set("name")}
+                placeholder="เช่น สมชาย ใจดี"
+              />
+              <FormField
+                id="a-phone"
+                label="เบอร์โทรศัพท์"
+                value={form.phone}
+                onChange={set("phone")}
+                placeholder="08X-XXX-XXXX"
+                inputMode="tel"
+              />
             </div>
-            <FormField id="a-address" label="ที่อยู่จัดส่ง" value={form.address} onChange={set("address")} placeholder="บ้านเลขที่ / หมู่บ้าน / ถนน" />
+            <FormField
+              id="a-address"
+              label="ที่อยู่จัดส่ง"
+              value={form.address}
+              onChange={set("address")}
+              placeholder="บ้านเลขที่ / หมู่บ้าน / ถนน"
+            />
             <div className="grid gap-3 sm:grid-cols-2">
-              <FormField id="a-sub" label="ตำบล / แขวง" value={form.subdistrict} onChange={set("subdistrict")} placeholder="เช่น คลองตัน" />
-              <FormField id="a-dist" label="อำเภอ / เขต" value={form.district} onChange={set("district")} placeholder="เช่น วัฒนา" />
-              <FormField id="a-prov" label="จังหวัด" value={form.province} onChange={set("province")} placeholder="เช่น กรุงเทพมหานคร" />
-              <FormField id="a-zip" label="รหัสไปรษณีย์" value={form.postcode} onChange={set("postcode")} placeholder="10110" inputMode="numeric" />
+              <FormField
+                id="a-sub"
+                label="ตำบล / แขวง"
+                value={form.subdistrict}
+                onChange={set("subdistrict")}
+                placeholder="เช่น คลองตัน"
+              />
+              <FormField
+                id="a-dist"
+                label="อำเภอ / เขต"
+                value={form.district}
+                onChange={set("district")}
+                placeholder="เช่น วัฒนา"
+              />
+              <FormField
+                id="a-prov"
+                label="จังหวัด"
+                value={form.province}
+                onChange={set("province")}
+                placeholder="เช่น กรุงเทพมหานคร"
+              />
+              <FormField
+                id="a-zip"
+                label="รหัสไปรษณีย์"
+                value={form.postcode}
+                onChange={set("postcode")}
+                placeholder="10110"
+                inputMode="numeric"
+              />
             </div>
             <label className="flex items-center gap-2.5 text-xs text-muted-foreground">
               <input

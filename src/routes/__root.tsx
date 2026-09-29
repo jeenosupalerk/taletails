@@ -102,10 +102,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "Taletails Collectibles" },
       {
         property: "og:description",
-        content:
-          "ประมูลสด ตลาดซื้อขายที่ยืนยันแล้ว และห้องนิรภัยสำหรับการ์ดสะสมเกรดพรีเมียม",
+        content: "ประมูลสด ตลาดซื้อขายที่ยืนยันแล้ว และห้องนิรภัยสำหรับการ์ดสะสมเกรดพรีเมียม",
       },
       { property: "og:type", content: "website" },
+      { property: "og:locale", content: "th_TH" },
+      { property: "og:image", content: "https://www.taletails-trade.com/taletails-logo.jpg" },
+      { name: "twitter:image", content: "https://www.taletails-trade.com/taletails-logo.jpg" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [

@@ -14,7 +14,7 @@ import { useSellerOrders, useShopProfile, useShopReviews, useShopSummary } from 
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
-const SITE_URL = "https://taletails-test.lovable.app";
+const SITE_URL = "https://www.taletails-trade.com";
 const title = "ร้านของฉัน | Taletails";
 const description =
   "ลงสินค้าการ์ดราคาปกติหรือเปิดรอบประมูล และจัดการสินค้าในร้านของคุณบน Taletails";

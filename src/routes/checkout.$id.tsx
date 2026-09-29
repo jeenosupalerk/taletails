@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { OrderCheckout } from "@/components/checkout/OrderCheckout";
 
-const SITE_URL = "https://taletails-test.lovable.app";
+const SITE_URL = "https://www.taletails-trade.com";
 const title = "ชำระเงินคำสั่งซื้อการ์ด — Taletails";
 const description =
   "สรุปยอดชำระ แนบสลิปโอนเงิน หรือสแกน QR PromptPay เพื่อยืนยันคำสั่งซื้อการ์ดบน Taletails";

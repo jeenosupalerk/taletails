@@ -22,7 +22,7 @@ import { useAuthUserId } from "@/hooks/useCardDetail";
 import { thb } from "@/lib/cart";
 import { SmartImage } from "@/components/ui/smart-image";
 
-const SITE_URL = "https://taletails-test.lovable.app";
+const SITE_URL = "https://www.taletails-trade.com";
 const title = "ของที่ประมูลชนะ | Taletails";
 const description =
   "รวมการ์ดที่คุณชนะการประมูล พร้อมเวลานับถอยหลังสำหรับชำระเงินและปุ่มไปชำระเงินทันที";

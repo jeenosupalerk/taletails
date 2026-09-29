@@ -27,9 +27,15 @@ import { CrossGradeTable } from "@/components/market/CrossGradeTable";
 import { useActiveListings } from "@/hooks/useMarketListings";
 import { diffVsMarket, timeAgo } from "@/lib/market-price";
 import { cn } from "@/lib/utils";
+import {
+  SITE_URL,
+  absoluteImage,
+  breadcrumbJsonLd,
+  clip,
+  fetchSeoCard,
+  gradeLabel,
+} from "@/lib/seo";
 import { SmartImage } from "@/components/ui/smart-image";
-
-const SITE_URL = "https://taletails-test.lovable.app";
 
 const rangeLabels: { key: MarketRange; label: string }[] = [
   { key: "7d", label: "7 วัน" },
@@ -37,22 +43,57 @@ const rangeLabels: { key: MarketRange; label: string }[] = [
   { key: "1y", label: "1 ปี" },
 ];
 
-const pageTitle = "สถิติราคาการ์ด — Taletails";
-const pageDescription =
-  "เจาะลึกกราฟราคา สถิติสูงสุด-ต่ำสุด ค่าเฉลี่ย และประวัติการซื้อขายจริงของการ์ดใบนี้บนตลาดกลาง Taletails";
-
 export const Route = createFileRoute("/market/$id")({
-  head: ({ params }) => ({
-    meta: [
-      { title: pageTitle },
-      { name: "description", content: pageDescription },
-      { property: "og:title", content: pageTitle },
-      { property: "og:description", content: pageDescription },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-    links: [{ rel: "canonical", href: `${SITE_URL}/market/${params.id}` }],
-  }),
+  loader: async ({ params }) => ({ seo: await fetchSeoCard(params.id) }),
+  head: ({ loaderData, params }) => {
+    const url = `${SITE_URL}/market/${params.id}`;
+    const seo = loaderData?.seo ?? null;
+    const grade = seo ? gradeLabel(seo) : "";
+    const name = seo
+      ? [seo.name, seo.setName && seo.setName !== "-" ? seo.setName : "", grade]
+          .filter(Boolean)
+          .join(" ")
+      : "";
+    const pageTitle = seo
+      ? `ราคากลาง ${name} สถิติการซื้อขายจริง | Taletails`
+      : "สถิติราคาการ์ด — Taletails";
+    const pageDescription = seo
+      ? clip(
+          `ราคากลางและกราฟราคา ${name} คำนวณจากการซื้อขายสำเร็จจริงบน Taletails ดูราคาสูงสุด ต่ำสุด ค่าเฉลี่ย และประวัติการขาย`,
+        )
+      : "เจาะลึกกราฟราคา สถิติสูงสุด-ต่ำสุด ค่าเฉลี่ย และประวัติการซื้อขายจริงของการ์ดใบนี้บนตลาดกลาง Taletails";
+    const image = absoluteImage(seo?.image);
+    return {
+      meta: [
+        { title: pageTitle },
+        { name: "description", content: pageDescription },
+        { property: "og:title", content: pageTitle },
+        { property: "og:description", content: pageDescription },
+        { property: "og:type", content: "website" },
+        { property: "og:url", content: url },
+        { property: "og:image", content: image },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:image", content: image },
+      ],
+      links: [{ rel: "canonical", href: url }],
+      ...(seo
+        ? {
+            scripts: [
+              {
+                type: "application/ld+json",
+                children: JSON.stringify(
+                  breadcrumbJsonLd([
+                    { name: "หน้าแรก", path: "/" },
+                    { name: "สถิติตลาด", path: "/market" },
+                    { name: name, path: `/market/${params.id}` },
+                  ]),
+                ),
+              },
+            ],
+          }
+        : {}),
+    };
+  },
   errorComponent: ({ error }) => (
     <div role="alert" className="p-8 text-center text-sm text-destructive">
       {error.message}

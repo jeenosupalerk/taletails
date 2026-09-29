@@ -31,7 +31,7 @@ const steps = [
   },
 ];
 
-const SITE_URL = "https://taletails-test.lovable.app";
+const SITE_URL = "https://www.taletails-trade.com";
 const OG_IMAGE = `${SITE_URL}/taletails-logo.jpg`;
 
 export const Route = createFileRoute("/vault")({

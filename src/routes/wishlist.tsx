@@ -8,7 +8,7 @@ import { thb } from "@/lib/cart";
 import { useWatchlist } from "@/lib/watchlist";
 import { SmartImage } from "@/components/ui/smart-image";
 
-const SITE_URL = "https://taletails-test.lovable.app";
+const SITE_URL = "https://www.taletails-trade.com";
 const title = "รายการโปรดของฉัน | Taletails";
 const description =
   "รวมการ์ดสะสมที่คุณกดถูกใจไว้ ติดตามราคาและกลับมาประมูลหรือซื้อได้ทันทีบน Taletails";
@@ -17,6 +17,7 @@ export const Route = createFileRoute("/wishlist")({
   head: () => ({
     meta: [
       { title },
+      { name: "robots", content: "noindex" },
       { name: "description", content: description },
       { property: "og:title", content: title },
       { property: "og:description", content: description },
@@ -44,7 +45,10 @@ function WishlistPage() {
             <p className="text-sm text-muted-foreground">
               ยังไม่มีรายการโปรด กดรูปหัวใจบนการ์ดที่สนใจเพื่อบันทึกไว้
             </p>
-            <Button asChild className="min-h-11 rounded-xl bg-gradient-ember font-semibold text-primary-foreground">
+            <Button
+              asChild
+              className="min-h-11 rounded-xl bg-gradient-ember font-semibold text-primary-foreground"
+            >
               <Link to="/marketplace">ไปที่ตลาดซื้อขาย</Link>
             </Button>
           </div>

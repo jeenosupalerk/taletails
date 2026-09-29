@@ -16,7 +16,7 @@ import { flushPendingPush } from "@/lib/push.functions";
 import { cn } from "@/lib/utils";
 import { PURCHASE_SELECT, STATUS_META, useAuthUserId, type PurchaseOrder } from "./purchases.index";
 
-const SITE_URL = "https://taletails-test.lovable.app";
+const SITE_URL = "https://www.taletails-trade.com";
 const title = "รายละเอียดสถานะคำสั่งซื้อ — Taletails";
 const description = "ดูสถานะคำสั่งซื้อการ์ด เลขพัสดุจัดส่ง และยืนยันการรับสินค้าบน Taletails";
 

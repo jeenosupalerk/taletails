@@ -1,5 +1,15 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { ArrowDownRight, ArrowUpRight, Coins, Gift, Loader2, Package, RotateCcw, Sparkles, Truck } from "lucide-react";
+import {
+  ArrowDownRight,
+  ArrowUpRight,
+  Coins,
+  Gift,
+  Loader2,
+  Package,
+  RotateCcw,
+  Sparkles,
+  Truck,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { PageShell } from "@/components/site/PageShell";
@@ -28,6 +38,7 @@ export const Route = createFileRoute("/points")({
   head: () => ({
     meta: [
       { title },
+      { name: "robots", content: "noindex" },
       { name: "description", content: description },
       { property: "og:title", content: title },
       { property: "og:description", content: description },
@@ -50,7 +61,9 @@ function PointsPage() {
   const redemptions = useMyRedemptions(userId ?? null);
   const points = balance.data ?? 0;
   const rows = history.data ?? [];
-  const waiting = (redemptions.data ?? []).filter((r) => r.status === "pending" || r.status === "attached");
+  const waiting = (redemptions.data ?? []).filter(
+    (r) => r.status === "pending" || r.status === "attached",
+  );
 
   return (
     <PageShell title="แต้มของฉัน" description="TT Points สะสมจากการซื้อผ่าน Taletails">
@@ -58,7 +71,9 @@ function PointsPage() {
         {!userId ? (
           <div className="surface-panel flex flex-col items-center gap-4 px-6 py-14 text-center">
             <Coins className="h-10 w-10 text-primary" />
-            <p className="text-sm text-muted-foreground">เข้าสู่ระบบเพื่อดูแต้มสะสมและแลกของรางวัล</p>
+            <p className="text-sm text-muted-foreground">
+              เข้าสู่ระบบเพื่อดูแต้มสะสมและแลกของรางวัล
+            </p>
             <Button asChild className="min-h-11 rounded-xl font-semibold">
               <Link to="/auth">เข้าสู่ระบบ</Link>
             </Button>
@@ -69,8 +84,9 @@ function PointsPage() {
 
             {settings.v2_active && settings.cash_redeem_active && settings.cash_redeem_until && (
               <p className="rounded-2xl bg-secondary p-4 text-sm leading-relaxed">
-                <b className="font-semibold">แต้มเดิมแปลงเป็นระบบใหม่แล้ว</b> มูลค่าเท่าเดิม · ใช้ TT
-                ลดราคาตอนชำระเงินได้ถึงวันที่ {dateTh(settings.cash_redeem_until)} หลังจากนั้นใช้แลกของรางวัลแทน
+                <b className="font-semibold">แต้มเดิมแปลงเป็นระบบใหม่แล้ว</b> มูลค่าเท่าเดิม · ใช้
+                TT ลดราคาตอนชำระเงินได้ถึงวันที่ {dateTh(settings.cash_redeem_until)}{" "}
+                หลังจากนั้นใช้แลกของรางวัลแทน
               </p>
             )}
 
@@ -88,7 +104,12 @@ function PointsPage() {
                 ) : (
                   <ul className="space-y-2.5">
                     {(rewards.data ?? []).map((r) => (
-                      <RewardRow key={r.id} reward={r} balance={points} bahtPerPoint={settings.baht_per_point} />
+                      <RewardRow
+                        key={r.id}
+                        reward={r}
+                        balance={points}
+                        bahtPerPoint={settings.baht_per_point}
+                      />
                     ))}
                   </ul>
                 )}
@@ -108,7 +129,9 @@ function PointsPage() {
                         <Package className="h-4 w-4 text-primary" /> {w.reward_name}
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        {w.status === "attached" ? "แนบกับคำสั่งซื้อแล้ว" : `แลกเมื่อ ${dateTh(w.created_at)}`}
+                        {w.status === "attached"
+                          ? "แนบกับคำสั่งซื้อแล้ว"
+                          : `แลกเมื่อ ${dateTh(w.created_at)}`}
                       </span>
                     </li>
                   ))}
@@ -121,7 +144,9 @@ function PointsPage() {
                 <h2 className="text-sm font-semibold">ประวัติ TT</h2>
                 <p className="text-xs text-muted-foreground">
                   ซื้อทุก {settings.baht_per_point} บาท ได้ 1 TT
-                  {settings.promo_active ? ` · ตอนนี้ ${settings.promo_name ?? "โปรโมชั่น"} x${settings.promo_multiplier}` : ""}
+                  {settings.promo_active
+                    ? ` · ตอนนี้ ${settings.promo_name ?? "โปรโมชั่น"} x${settings.promo_multiplier}`
+                    : ""}
                 </p>
               </div>
 
@@ -141,13 +166,22 @@ function PointsPage() {
                   {rows.map((r) => {
                     const positive = r.points > 0;
                     const isRefund = r.kind === "refund" || r.kind === "release";
-                    const Icon = r.kind === "reward" ? Gift : isRefund ? RotateCcw : positive ? ArrowUpRight : ArrowDownRight;
+                    const Icon =
+                      r.kind === "reward"
+                        ? Gift
+                        : isRefund
+                          ? RotateCcw
+                          : positive
+                            ? ArrowUpRight
+                            : ArrowDownRight;
                     return (
                       <li key={r.id} className="flex items-start gap-3 px-4 py-3">
                         <span
                           className={cn(
                             "mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full",
-                            positive ? "bg-primary/10 text-primary" : "bg-secondary text-muted-foreground",
+                            positive
+                              ? "bg-primary/10 text-primary"
+                              : "bg-secondary text-muted-foreground",
                           )}
                         >
                           <Icon className="h-4 w-4" />
@@ -157,7 +191,10 @@ function PointsPage() {
                             {r.description ?? (positive ? "ได้รับแต้ม" : "ใช้แต้ม")}
                           </p>
                           <p className="mt-0.5 text-xs text-muted-foreground">
-                            {new Date(r.created_at).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })}
+                            {new Date(r.created_at).toLocaleString("th-TH", {
+                              dateStyle: "medium",
+                              timeStyle: "short",
+                            })}
                             {r.kind === "earn" ? ` • ยอดชำระ ${thb.format(Number(r.amount))}` : ""}
                             {r.kind === "redeem" ? ` • ส่วนลด ${thb.format(Number(r.amount))}` : ""}
                           </p>
@@ -194,7 +231,15 @@ function PointsPage() {
 }
 
 /** ของรางวัล 1 รายการ — แต้มไม่พอจะเห็นแถบความคืบหน้าแทนปุ่มแลก */
-function RewardRow({ reward, balance, bahtPerPoint }: { reward: TtReward; balance: number; bahtPerPoint: number }) {
+function RewardRow({
+  reward,
+  balance,
+  bahtPerPoint,
+}: {
+  reward: TtReward;
+  balance: number;
+  bahtPerPoint: number;
+}) {
   const redeem = useRedeemReward();
   const enough = balance >= reward.points_cost;
   const missing = Math.max(0, reward.points_cost - balance);
@@ -213,7 +258,9 @@ function RewardRow({ reward, balance, bahtPerPoint }: { reward: TtReward; balanc
         <p className="truncate text-[15px] font-semibold">{reward.name}</p>
         <p className="flex items-center gap-1 text-xs text-muted-foreground">
           <HowIcon className="h-3.5 w-3.5" />
-          {reward.fulfillment === "free_shipping_coupon" ? "ใช้ได้ตอนชำระเงินครั้งถัดไป" : "ส่งไปพร้อมคำสั่งซื้อถัดไป"}
+          {reward.fulfillment === "free_shipping_coupon"
+            ? "ใช้ได้ตอนชำระเงินครั้งถัดไป"
+            : "ส่งไปพร้อมคำสั่งซื้อถัดไป"}
         </p>
         <p className="mt-0.5 font-display text-base font-bold text-primary">
           {reward.points_cost.toLocaleString("th-TH")} TT
@@ -227,13 +274,16 @@ function RewardRow({ reward, balance, bahtPerPoint }: { reward: TtReward; balanc
               />
             </span>
             <p className="mt-1 text-[11px] text-muted-foreground">
-              อีก {missing.toLocaleString("th-TH")} TT (ซื้ออีกประมาณ {thb.format(missing * bahtPerPoint)})
+              อีก {missing.toLocaleString("th-TH")} TT (ซื้ออีกประมาณ{" "}
+              {thb.format(missing * bahtPerPoint)})
             </p>
           </>
         )}
       </div>
       {!reward.in_stock ? (
-        <span className="shrink-0 rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">หมดแล้ว</span>
+        <span className="shrink-0 rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
+          หมดแล้ว
+        </span>
       ) : enough ? (
         <ConfirmDialog
           title={`แลก ${reward.name}`}
@@ -251,7 +301,10 @@ function RewardRow({ reward, balance, bahtPerPoint }: { reward: TtReward; balanc
             })
           }
           trigger={
-            <Button className="min-h-11 shrink-0 rounded-xl px-4 font-semibold" disabled={redeem.isPending}>
+            <Button
+              className="min-h-11 shrink-0 rounded-xl px-4 font-semibold"
+              disabled={redeem.isPending}
+            >
               {redeem.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
               แลก
             </Button>
@@ -263,7 +316,13 @@ function RewardRow({ reward, balance, bahtPerPoint }: { reward: TtReward; balanc
 }
 
 /** ยอดแต้มคงเหลือ — โทนเข้มเหมือนป้ายเกรด ให้ต่างจากปุ่มสีส้ม (ใช้ในหน้าโปรไฟล์ด้วย) */
-export function PointsBalanceCard({ points, compact = false }: { points: number; compact?: boolean }) {
+export function PointsBalanceCard({
+  points,
+  compact = false,
+}: {
+  points: number;
+  compact?: boolean;
+}) {
   const { settings } = useTtSettings();
   return (
     <div className="rounded-3xl bg-foreground p-5 text-background">
@@ -278,7 +337,8 @@ export function PointsBalanceCard({ points, compact = false }: { points: number;
           <p className="mt-2 text-xs opacity-80">
             {settings.promo_active ? (
               <span className="inline-flex items-center gap-1">
-                <Sparkles className="h-3.5 w-3.5" /> {settings.promo_name ?? "โปรโมชั่น"} ได้แต้ม x{settings.promo_multiplier}
+                <Sparkles className="h-3.5 w-3.5" /> {settings.promo_name ?? "โปรโมชั่น"} ได้แต้ม x
+                {settings.promo_multiplier}
               </span>
             ) : (
               `ซื้อทุก ${settings.baht_per_point} บาท ได้ 1 TT`
@@ -286,7 +346,11 @@ export function PointsBalanceCard({ points, compact = false }: { points: number;
           </p>
         </div>
         {compact && (
-          <Button asChild variant="secondary" className="min-h-11 shrink-0 rounded-xl text-sm font-semibold">
+          <Button
+            asChild
+            variant="secondary"
+            className="min-h-11 shrink-0 rounded-xl text-sm font-semibold"
+          >
             <Link to="/points">{settings.v2_active ? "แลกของรางวัล" : "ดูประวัติ"}</Link>
           </Button>
         )}

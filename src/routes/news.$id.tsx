@@ -4,9 +4,9 @@ import { Loader2 } from "lucide-react";
 
 import { PageShell } from "@/components/site/PageShell";
 import { getArticleById } from "@/data/articles";
-import { useArticle } from "@/hooks/useArticles";
-
-const SITE_URL = "https://taletails-test.lovable.app";
+import { useArticle, toArticle, type DbArticle } from "@/hooks/useArticles";
+import { supabase } from "@/integrations/supabase/client";
+import { SITE_URL, absoluteImage, clip } from "@/lib/seo";
 
 const dateFormatter = new Intl.DateTimeFormat("th-TH", {
   day: "numeric",
@@ -15,13 +15,38 @@ const dateFormatter = new Intl.DateTimeFormat("th-TH", {
 });
 
 export const Route = createFileRoute("/news/$id")({
-  loader: ({ params }) => ({ article: getArticleById(params.id) ?? null }),
+  // บทความจริงจากฐานข้อมูลก็ต้องมีหัวเรื่อง/รูปแชร์ตอนเรนเดอร์ฝั่งเซิร์ฟเวอร์ ไม่ใช่เฉพาะบทความตัวอย่าง
+  loader: async ({ params }) => {
+    const mock = getArticleById(params.id) ?? null;
+    if (mock) return { article: mock };
+    try {
+      const { data } = await supabase
+        .from("articles")
+        .select(
+          "id, title, category_tag, excerpt, content, thumbnail_url, is_published, published_at, created_at",
+        )
+        .eq("id", params.id)
+        .eq("is_published", true)
+        .maybeSingle();
+      return { article: data ? toArticle(data as DbArticle) : null };
+    } catch {
+      return { article: null };
+    }
+  },
   head: ({ loaderData, params }) => {
     const a = loaderData?.article;
-    const title = a ? `${a.title} — Taletails` : "บทความ — Taletails";
-    const description = a
-      ? `${a.categoryTag}: ${a.title} อ่านบทวิเคราะห์และคู่มือการ์ดสะสมจาก Taletails`
-      : "อ่านข่าวสารและคู่มือการ์ดสะสมจาก Taletails";
+    const url = `${SITE_URL}/news/${params.id}`;
+    if (!a) {
+      return {
+        meta: [{ title: "บทความ — Taletails" }, { name: "robots", content: "noindex" }],
+      };
+    }
+    const title = `${a.title} | Taletails`;
+    const excerpt = "excerpt" in a && typeof a.excerpt === "string" ? a.excerpt : "";
+    const description = clip(
+      excerpt || `${a.categoryTag}: ${a.title} อ่านบทวิเคราะห์และคู่มือการ์ดสะสมจาก Taletails`,
+    );
+    const image = absoluteImage(a.thumbnailUrl);
     return {
       meta: [
         { title },
@@ -29,9 +54,32 @@ export const Route = createFileRoute("/news/$id")({
         { property: "og:title", content: title },
         { property: "og:description", content: description },
         { property: "og:type", content: "article" },
-        { property: "og:url", content: `${SITE_URL}/news/${params.id}` },
+        { property: "og:url", content: url },
+        { property: "og:image", content: image },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:image", content: image },
       ],
-      links: [{ rel: "canonical", href: `${SITE_URL}/news/${params.id}` }],
+      links: [{ rel: "canonical", href: url }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Article",
+            headline: a.title,
+            description,
+            image: [image],
+            datePublished: a.publishedDate,
+            mainEntityOfPage: url,
+            author: { "@type": "Organization", name: "Taletails" },
+            publisher: {
+              "@type": "Organization",
+              name: "Taletails",
+              logo: { "@type": "ImageObject", url: `${SITE_URL}/icon-512.png` },
+            },
+          }),
+        },
+      ],
     };
   },
   component: ArticlePage,

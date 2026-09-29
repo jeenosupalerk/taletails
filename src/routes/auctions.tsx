@@ -14,7 +14,7 @@ import { usePublicAuctionResults } from "@/hooks/useShop";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
-const SITE_URL = "https://taletails-test.lovable.app";
+const SITE_URL = "https://www.taletails-trade.com";
 const OG_IMAGE = `${SITE_URL}/taletails-logo.jpg`;
 
 const title = "ประมูลสด — Taletails";

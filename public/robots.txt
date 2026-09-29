@@ -1,16 +1,17 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /api/
+Disallow: /auth
+Disallow: /checkout
+Disallow: /order/
+Disallow: /orders
+Disallow: /purchases
+Disallow: /profile
+Disallow: /points
+Disallow: /addresses
+Disallow: /wishlist
+Disallow: /wins
+Disallow: /shop
 
-Sitemap: https://taletails-test.lovable.app/sitemap.xml
+Sitemap: https://www.taletails-trade.com/sitemap.xml

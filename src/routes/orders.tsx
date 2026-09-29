@@ -18,7 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { thb } from "@/lib/cart";
 import { cn } from "@/lib/utils";
 
-const SITE_URL = "https://taletails-test.lovable.app";
+const SITE_URL = "https://www.taletails-trade.com";
 const title = "คำสั่งซื้อของฉัน — Taletails";
 const description = "ดูรายการคำสั่งซื้อที่รอชำระเงิน และดำเนินการชำระเงินได้ทันที";
 

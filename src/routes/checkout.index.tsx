@@ -10,7 +10,7 @@ import { useCancelOrder, useMyPendingOrder } from "@/hooks/useCardDetail";
 import { useStartCheckout } from "@/hooks/useStartCheckout";
 import { thb, useCart, type CartLine } from "@/lib/cart";
 
-const SITE_URL = "https://taletails-test.lovable.app";
+const SITE_URL = "https://www.taletails-trade.com";
 const title = "ตะกร้าสินค้า — Taletails";
 const description = "ดูรายการการ์ดที่คุณเพิ่มไว้ในตะกร้า และกดดำเนินการชำระเงินได้ทันที";
 

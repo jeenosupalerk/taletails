@@ -87,3 +87,11 @@
 - banner มือถือ 4:3 (1440×1080) จอคอม 16:5 (2400×750) · ครอบใน `BannerCropDialog.tsx` · ตลาดซื้อขายหน้าแรก: หัวข้อบรรทัดเดียว มือถือ 4 ใบ + ปุ่มดูทั้งหมด
 - ร้านของฉัน: รายการสินค้ามีแท็บกรอง + ปุ่มหลัก 1 ปุ่ม/แถว + เมนู ⋯ (`CardListingManager.tsx`, `listing-state.ts`), ฟอร์มลงการ์ด 3 ขั้น (`NewListingSheet.tsx`), แผงแก้ไขปิดเองหลังบันทึก
 - หลังบ้านใหม่: `/admin/reviews` ซ่อน/แสดงรีวิวที่ผิดกติกา (`reviews.is_hidden`)
+
+## SEO รอบ 1 (29 ก.ย. 2026)
+
+- โดเมนหลักที่ใช้จริง = https://www.taletails-trade.com (มี www) เก็บที่ `SITE_URL` ใน `src/lib/seo.ts` ที่เดียว ห้ามกลับไปใช้ taletails-test.lovable.app
+- หน้า /product/$id, /card/$id, /market/$id, /news/$id ดึงข้อมูลจริงใน loader ฝั่งเซิร์ฟเวอร์ (ผ่าน `fetchSeoCard` / query articles) เพื่อทำ title, description, og:image, canonical รายหน้า และ JSON-LD (Product/Article/Breadcrumb)
+- หน้าส่วนตัว (auth, profile, points, addresses, wishlist, shop, orders ฯลฯ) ใส่ noindex และ Disallow ใน `public/robots.txt`
+- `/sitemap.xml` สร้างสดจากฐานข้อมูล (สินค้าขายตายตัว, ห้องประมูลที่เปิด, บทความ, หน้าสถิติราคารายรุ่น) แคช 10 นาที
+- ยังต้องทำเอง: ยืนยันเว็บใน Google Search Console / Bing Webmaster แล้วส่ง sitemap

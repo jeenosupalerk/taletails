@@ -8,7 +8,7 @@ import { InstallAppCard } from "@/components/site/InstallAppCard";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 
-const SITE_URL = "https://taletails-test.lovable.app";
+const SITE_URL = "https://www.taletails-trade.com";
 const OG_IMAGE = `${SITE_URL}/taletails-logo.jpg`;
 
 const title = "ประมูลการ์ดสดทุกคืน + ตลาดการ์ดยืนยันแล้ว | Taletails";

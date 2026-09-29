@@ -19,7 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 import { SmartImage } from "@/components/ui/smart-image";
 
-const SITE_URL = "https://taletails-test.lovable.app";
+const SITE_URL = "https://www.taletails-trade.com";
 const title = "สถิติตลาด — Taletails";
 const description =
   "ติดตามราคาและเทรนด์การ์ดสะสมแบบเรียลไทม์ มูลค่าซื้อขายรวม การ์ดมาแรง และสถิติตลาดกลางของ Taletails";

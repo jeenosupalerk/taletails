@@ -38,28 +38,92 @@ import { useLiveProduct, useMarketplaceCards } from "@/hooks/useSupabaseCatalog"
 import { thb, useCart } from "@/lib/cart";
 import { useWatchlist } from "@/lib/watchlist";
 import { supabase } from "@/integrations/supabase/client";
-
-const SITE_URL = "https://taletails-test.lovable.app";
+import {
+  SITE_URL,
+  absoluteImage,
+  breadcrumbJsonLd,
+  clip,
+  fetchSeoCard,
+  gradeLabel,
+  productJsonLd,
+} from "@/lib/seo";
 
 export const Route = createFileRoute("/product/$id")({
-  loader: ({ params }) => getProductById(params.id) ?? null,
-  head: ({ loaderData }) => {
-    const title = loaderData
-      ? `${loaderData.cardName} — ตลาดซื้อขาย Taletails`
-      : "รายละเอียดการ์ด — Taletails";
-    const description = loaderData
-      ? `${loaderData.cardName} ชุด ${loaderData.setName} เกรด ${loaderData.grade} ราคา ${loaderData.price.toLocaleString("th-TH")} บาท จากร้าน ${loaderData.storeName}`
-      : "รายละเอียดการ์ดสะสมบน Taletails ดูสภาพ เกรด ใบรับรอง และราคาขายจริง";
+  // demo = การ์ดตัวอย่างในโค้ด, seo = ข้อมูลการ์ดจริงจากฐานข้อมูลไว้ทำหัวเรื่อง/รูปแชร์ตอนเรนเดอร์ฝั่งเซิร์ฟเวอร์
+  loader: async ({ params }) => {
+    const demo = getProductById(params.id) ?? null;
+    const seo = demo ? null : await fetchSeoCard(params.id);
+    return { demo, seo };
+  },
+  head: ({ loaderData, params }) => {
+    const url = `${SITE_URL}/product/${params.id}`;
+    const demo = loaderData?.demo ?? null;
+    const seo = loaderData?.seo ?? null;
+
+    // การ์ดประมูลที่หลงมาหน้านี้ จะถูกพาไป /card/ อยู่แล้ว ให้ Google ถือ /card/ เป็นหน้าหลัก
+    if (seo?.saleType === "auction") {
+      return { links: [{ rel: "canonical", href: `${SITE_URL}/card/${params.id}` }] };
+    }
+    if (!demo && !seo) {
+      return {
+        meta: [{ title: "รายละเอียดการ์ด — Taletails" }, { name: "robots", content: "noindex" }],
+      };
+    }
+
+    const name = demo ? demo.cardName : seo!.name;
+    const setName = demo ? demo.setName : (seo!.setName ?? "");
+    const grade = demo
+      ? gradeLabel({ grade: demo.grade, gradingCompany: demo.gradingCompany })
+      : gradeLabel(seo!);
+    const price = demo ? demo.price : seo!.price;
+    const image = absoluteImage(demo ? demo.imageUrl : seo!.image);
+    const title = [name, setName && setName !== "-" ? setName : "", grade]
+      .filter(Boolean)
+      .join(" ");
+    const fullTitle = `${title} ราคา ${price.toLocaleString("th-TH")} บาท | Taletails`;
+    const description = clip(
+      `ซื้อ ${title} ราคา ${price.toLocaleString("th-TH")} บาท จากร้านที่ยืนยันตัวตนแล้วบน Taletails ตรวจสอบรหัสการ์ดย้อนหลังได้ จ่ายผ่าน PromptPay มีเลขพัสดุติดตามทุกขั้น`,
+    );
+    const card = seo ?? {
+      id: params.id,
+      name,
+      setName,
+      grade: demo!.grade,
+      gradingCompany: demo!.gradingCompany,
+      price,
+      image: demo!.imageUrl,
+      status: "available" as const,
+      saleType: "fixed_price" as const,
+      isPublished: true,
+    };
+
     return {
       meta: [
-        { title },
+        { title: fullTitle },
         { name: "description", content: description },
-        { property: "og:title", content: title },
+        { property: "og:title", content: fullTitle },
         { property: "og:description", content: description },
         { property: "og:type", content: "product" },
+        { property: "og:url", content: url },
+        { property: "og:image", content: image },
         { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:image", content: image },
+        ...(seo && !seo.isPublished ? [{ name: "robots", content: "noindex" }] : []),
       ],
-      links: [{ rel: "canonical", href: `${SITE_URL}/product` }],
+      links: [{ rel: "canonical", href: url }],
+      scripts: [
+        { type: "application/ld+json", children: JSON.stringify(productJsonLd(card, url)) },
+        {
+          type: "application/ld+json",
+          children: JSON.stringify(
+            breadcrumbJsonLd([
+              { name: "หน้าแรก", path: "/" },
+              { name: "ตลาดซื้อขาย", path: "/marketplace" },
+              { name: title, path: `/product/${params.id}` },
+            ]),
+          ),
+        },
+      ],
     };
   },
   component: ProductPage,
@@ -75,7 +139,7 @@ const TRUST_POINTS = [
 
 function ProductPage() {
   const { id } = Route.useParams();
-  const demo = Route.useLoaderData() as Product | null;
+  const { demo } = Route.useLoaderData();
 
   const liveQuery = useLiveProduct(id, !demo);
   const live = liveQuery.data ?? null;
