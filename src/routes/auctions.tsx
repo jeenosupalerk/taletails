@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowDownWideNarrow, ChevronDown, History } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { AuctionCard, AuctionStrip, ResultCard, auctionKind } from "@/components/card/AuctionCard";
+import { AuctionCard, ResultCard, auctionKind } from "@/components/card/AuctionCard";
 import { NoLiveAuction } from "@/components/sections/NoLiveAuction";
 import { BackButton } from "@/components/site/BackButton";
 import { SiteFooter } from "@/components/site/SiteFooter";
@@ -120,9 +120,30 @@ function AuctionsPage() {
     if (sort === "price-asc") return a.currentBid - b.currentBid;
     return new Date(a.endTime).getTime() - new Date(b.endTime).getTime();
   });
-  // ใบที่ใกล้ปิดที่สุดขึ้นเป็นแถบเด่นด้านบน (เฉพาะตอนเรียงใกล้ปิดก่อน) ที่เหลือลงตาราง
-  const featured = sort === "ending" ? sortedRunning[0] : undefined;
-  const gridRunning = featured ? sortedRunning.slice(1) : sortedRunning;
+  // จัดกลุ่มตามเวลาปิด (mockup 29 ก.ย. 2026): เฉพาะตอนเรียงใกล้ปิดก่อน + มีรอบ ≥ 4 + มี ≥ 2 กลุ่ม
+  // ไม่เข้าเงื่อนไข → รายการเรียบ ใบแรกมีป้าย "ใกล้ปิดที่สุด"
+  const endOfToday = new Date(now);
+  endOfToday.setHours(23, 59, 59, 999);
+  const groupOf = (a: LiveAuction): "hot" | "today" | "later" => {
+    const end = new Date(a.endTime).getTime();
+    if (end - now < 60 * 60 * 1000) return "hot";
+    return end <= endOfToday.getTime() ? "today" : "later";
+  };
+  const GROUPS = [
+    {
+      key: "hot" as const,
+      label: "ปิดใน 1 ชม.",
+      cls: "bg-[var(--cd-urgent-top)] text-[var(--cd-urgent-fg)]",
+    },
+    { key: "today" as const, label: "ปิดวันนี้", cls: "bg-[var(--cd-top)] text-[var(--cd-fg)]" },
+    { key: "later" as const, label: "ปิดวันถัดไป", cls: "bg-secondary text-muted-foreground" },
+  ];
+  const groups = GROUPS.map((g) => ({
+    ...g,
+    items: sortedRunning.filter((a) => groupOf(a) === g.key),
+  })).filter((g) => g.items.length > 0);
+  const grouped = sort === "ending" && sortedRunning.length >= 4 && groups.length >= 2;
+  const closestId = sort === "ending" ? sortedRunning[0]?.id : undefined;
 
   const TABS: { key: Tab; label: string; count: number }[] = [
     { key: "live", label: "กำลังประมูล", count: running.length },
@@ -207,13 +228,24 @@ function AuctionsPage() {
                 </p>
               )}
             </div>
+          ) : grouped ? (
+            <div>
+              {groups.map((g) => (
+                <section key={g.key} className="mt-6" aria-label={g.label}>
+                  <div className="flex items-center justify-between">
+                    <span
+                      className={`inline-flex h-[26px] items-center rounded-full px-3 text-xs font-bold ${g.cls}`}
+                    >
+                      {g.label}
+                    </span>
+                    <span className="text-xs text-muted-foreground">{g.items.length} รอบ</span>
+                  </div>
+                  <Grid items={g.items} />
+                </section>
+              ))}
+            </div>
           ) : (
-            <>
-              {featured && (
-                <AuctionStrip auction={featured} label="ใกล้ปิดที่สุด" className="mt-5" />
-              )}
-              {gridRunning.length > 0 && <Grid items={gridRunning} />}
-            </>
+            <Grid items={sortedRunning} closestId={closestId} />
           )
         ) : tab === "upcoming" ? (
           upcoming.length === 0 ? (
@@ -271,11 +303,17 @@ function PublicResults() {
   );
 }
 
-function Grid({ items }: { items: LiveAuction[] }) {
+/** มือถือ: การ์ดแนวนอนคอลัมน์เดียว (เหมือนหน้าแรก) · sm ขึ้นไป: การ์ดตั้งเป็นตาราง */
+function Grid({ items, closestId }: { items: LiveAuction[]; closestId?: string | undefined }) {
   return (
-    <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5">
+    <div className="mt-3 grid grid-cols-1 gap-3 sm:mt-4 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5">
       {items.map((a) => (
-        <AuctionCard key={a.id} auction={a} />
+        <AuctionCard
+          key={a.id}
+          auction={a}
+          rowOnMobile
+          label={a.id === closestId ? "ใกล้ปิดที่สุด" : undefined}
+        />
       ))}
     </div>
   );

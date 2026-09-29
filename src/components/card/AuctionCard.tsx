@@ -84,11 +84,14 @@ export function AuctionCard({
   auction: a,
   className,
   rowOnMobile = false,
+  label,
 }: {
   auction: LiveAuction;
   className?: string | undefined;
   /** มือถือ: เรียงแนวนอน (รูปเล็กซ้าย ข้อมูลขวา) สูง ~140px แทนการ์ดตั้ง ~460px · จอ sm ขึ้นไปเป็นการ์ดตั้งตามเดิม */
   rowOnMobile?: boolean;
+  /** ป้ายเล็กเหนือชื่อชุด เช่น "ใกล้ปิดที่สุด" (ใบแรกของรายการเรียบ) */
+  label?: string | undefined;
 }) {
   const kind = auctionKind(a);
   const countdown = useCountdown(kind === "upcoming" ? a.startTime : a.endTime);
@@ -188,6 +191,11 @@ export function AuctionCard({
             "max-sm:min-w-0 max-sm:flex-1 max-sm:justify-center max-sm:px-0 max-sm:py-0.5",
         )}
       >
+        {label && (
+          <span className="mb-1 inline-block self-start rounded-full bg-[var(--cd-urgent-top)] px-2 py-px text-[10.5px] font-bold text-[var(--cd-urgent-fg)]">
+            {label}
+          </span>
+        )}
         <p className={cn("truncate text-xs text-muted-foreground", rowOnMobile && "max-sm:hidden")}>
           {a.setName !== "-" ? a.setName : " "}
         </p>
