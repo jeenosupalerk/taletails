@@ -444,6 +444,33 @@ function MarketDetailPage() {
             </div>
           </div>
         )}
+
+        {/* คำอธิบายเป็นข้อความจริงในหน้า ให้ Google เข้าใจว่าหน้านี้คือราคากลางของการ์ดรุ่นนี้ และให้ผู้ใช้รู้ที่มาของตัวเลข */}
+        <section className="surface-panel space-y-2 p-4 text-sm leading-relaxed text-muted-foreground sm:p-5">
+          <h2 className="font-display text-base font-semibold text-foreground">
+            ราคากลาง {card.cardName} คำนวณอย่างไร
+          </h2>
+          <p>
+            ราคากลางคือค่าเฉลี่ยของราคาขายจริงล่าสุดไม่เกิน 3 ครั้งภายใน 90 วัน ของการ์ดชื่อเดียวกัน
+            {card.setName && card.setName !== "-" ? ` ชุด ${card.setName}` : ""} เกรด {card.grade}{" "}
+            นับเฉพาะรายการที่ซื้อขายสำเร็จบน Taletails ทั้งแบบประมูลและซื้อขาด
+          </p>
+          <p>
+            ตอนนี้การ์ดรุ่นนี้ขายไปแล้ว {card.totalSold} ใบ ราคาขายล่าสุด{" "}
+            {formatThb(card.lastPrice)}
+            {card.marketPrice ? ` และราคากลางอยู่ที่ ${formatThb(card.marketPrice)}` : ""}{" "}
+            ตัวเลขจะอัปเดตเมื่อมีการขายใหม่
+          </p>
+          <p>
+            <Link to="/marketplace" className="font-semibold text-primary hover:underline">
+              ดูการ์ดที่วางขายในตลาด
+            </Link>
+            {" · "}
+            <Link to="/market" className="font-semibold text-primary hover:underline">
+              ดูสถิติการ์ดรุ่นอื่น
+            </Link>
+          </p>
+        </section>
       </section>
     </PageShell>
   );

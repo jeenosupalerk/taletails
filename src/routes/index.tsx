@@ -11,9 +11,9 @@ import { SiteHeader } from "@/components/site/SiteHeader";
 const SITE_URL = "https://www.taletails-trade.com";
 const OG_IMAGE = `${SITE_URL}/taletails-logo.jpg`;
 
-const title = "ประมูลการ์ดสดทุกคืน + ตลาดการ์ดยืนยันแล้ว | Taletails";
+const title = "ประมูลการ์ดสะสม + ตลาดการ์ดยืนยันแล้ว ราคากลางเกรดไทย | Taletails";
 const description =
-  "ประมูลการ์ดเกรดพรีเมียมแบบสดทุกคืน ซื้อการ์ดใบเดี่ยวจากร้านที่ยืนยันตัวตน และเก็บทุกใบไว้ในห้องนิรภัยกับ Taletails";
+  "ประมูลการ์ดสะสมเกรดพรีเมียม ซื้อการ์ดใบเดี่ยวจากร้านที่ยืนยันตัวตน และเช็กราคากลางจากการซื้อขายจริง รวมเกรดไทย SQC บน Taletails";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -48,9 +48,7 @@ function Index() {
     <div className="min-h-screen bg-background">
       <SiteHeader />
       <main>
-        <h1 className="sr-only">
-          Taletails — ประมูลการ์ดสะสมสดและตลาดซื้อขายการ์ดที่ยืนยันแล้ว
-        </h1>
+        <h1 className="sr-only">Taletails — ประมูลการ์ดสะสมสดและตลาดซื้อขายการ์ดที่ยืนยันแล้ว</h1>
         <HeroCarousel />
         <QuickActions />
         <LiveAuctionSlider />

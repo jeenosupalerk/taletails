@@ -315,34 +315,41 @@ export function FeaturedMarketplace({
           </div>
         )}
         {!showHeading && <h2 className="sr-only">การ์ดที่วางขายในตลาด</h2>}
-        {showFilter && categories.length > 0 && (
-          <nav
-            aria-label="หมวดเกม"
-            className="-mx-4 mb-4 flex gap-1 no-scrollbar scroll-fade overflow-x-auto border-b border-border px-4 sm:mx-0 sm:px-0"
-          >
-            {[
-              { id: "all", name: "ทั้งหมด" },
-              ...categories.map((c) => ({ id: c.id, name: c.name })),
-              { id: "none", name: "อื่น ๆ" },
-            ].map((c) => (
-              <button
-                key={c.id}
-                type="button"
-                onClick={() => setCategory(c.id)}
-                aria-pressed={category === c.id}
-                className={`-mb-px min-h-11 shrink-0 border-b-2 px-4 text-sm font-semibold transition-colors ${
-                  category === c.id
-                    ? "border-primary text-foreground"
-                    : "border-transparent text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {c.name}
-              </button>
-            ))}
-          </nav>
-        )}
         {showFilter && (
-          <div className="mb-5">
+          // หน้าตลาด: หมวด + ตัวกรองค้างติดใต้แถบเมนูบนตอนเลื่อน เปลี่ยนตัวกรองได้ทุกตำแหน่ง ไม่ต้องเลื่อนกลับขึ้นไป
+          <div
+            className={
+              showHeading
+                ? undefined
+                : "sticky top-16 z-30 -mx-4 bg-background/90 px-4 pb-2 backdrop-blur-lg sm:-mx-6 sm:px-6 md:top-[5.375rem] lg:-mx-8 lg:px-8"
+            }
+          >
+            {categories.length > 0 && (
+              <nav
+                aria-label="หมวดเกม"
+                className="-mx-4 mb-2 flex gap-1 no-scrollbar scroll-fade overflow-x-auto border-b border-border px-4 sm:mx-0 sm:px-0"
+              >
+                {[
+                  { id: "all", name: "ทั้งหมด" },
+                  ...categories.map((c) => ({ id: c.id, name: c.name })),
+                  { id: "none", name: "อื่น ๆ" },
+                ].map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => setCategory(c.id)}
+                    aria-pressed={category === c.id}
+                    className={`-mb-px min-h-11 shrink-0 border-b-2 px-4 text-sm font-semibold transition-colors ${
+                      category === c.id
+                        ? "border-primary text-foreground"
+                        : "border-transparent text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {c.name}
+                  </button>
+                ))}
+              </nav>
+            )}
             <div className="-mx-4 flex items-center gap-2 no-scrollbar scroll-fade overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:[mask-image:none] sm:overflow-visible sm:px-0">
               {/* มือถือ: ปุ่ม "ตัวกรอง" อยู่หน้าสุด / จอใหญ่: อยู่ท้ายแถว — เปิดเป็นแผ่นล่างจอ */}
               <Sheet>
@@ -502,7 +509,11 @@ export function FeaturedMarketplace({
                 <ChevronDown className="pointer-events-none absolute top-1/2 right-3.5 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
               </div>
             </div>
-            <p className="mt-3 text-sm text-muted-foreground">
+          </div>
+        )}
+        {showFilter && (
+          <div className="mb-5">
+            <p className="mt-2 text-sm text-muted-foreground">
               พบ {items.length} ใบ
               {anyFilter && (
                 <>

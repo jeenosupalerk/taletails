@@ -123,9 +123,22 @@ function BannersSection() {
         </p>
       )}
 
+      {/* banner ใหม่: ฟอร์มขึ้นบนสุดของรายการ */}
+      {editing && !editing.id && (
+        <BannerEditor key="new" initial={editing} onClose={() => setEditing(null)} />
+      )}
+
       <ul className="space-y-3">
         {banners.map((b) => {
           const state = bannerState(b);
+          // ฟอร์มแก้ไขกางใต้ banner ที่กดเลย (เดิมไปโผล่ท้ายรายการ มองไม่เห็นว่ากดแล้ว)
+          if (editing?.id === b.id) {
+            return (
+              <li key={b.id}>
+                <BannerEditor key={b.id} initial={editing} onClose={() => setEditing(null)} />
+              </li>
+            );
+          }
           return (
             <li
               key={b.id}
@@ -189,8 +202,6 @@ function BannersSection() {
           );
         })}
       </ul>
-
-      {editing && <BannerEditor initial={editing} onClose={() => setEditing(null)} />}
     </section>
   );
 }
@@ -199,7 +210,13 @@ function BannerEditor({ initial, onClose }: { initial: BannerInput; onClose: () 
   const [form, setForm] = useState<BannerInput>(initial);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const save = useSaveBanner();
+
+  // เปิดฟอร์มแล้วเลื่อนมาให้เห็นทันที
+  useEffect(() => {
+    panelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
   const set = <K extends keyof BannerInput>(k: K, v: BannerInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
@@ -296,7 +313,10 @@ function BannerEditor({ initial, onClose }: { initial: BannerInput; onClose: () 
   };
 
   return (
-    <div className="space-y-4 rounded-2xl bg-secondary/40 p-4 ring-1 ring-primary/30">
+    <div
+      ref={panelRef}
+      className="scroll-mt-24 space-y-4 rounded-2xl bg-secondary/40 p-4 ring-1 ring-primary/30"
+    >
       <div className="flex items-center justify-between">
         <h3 className="font-semibold">{form.id ? "แก้ไข banner" : "banner ใหม่"}</h3>
         <Button
@@ -364,7 +384,9 @@ function BannerEditor({ initial, onClose }: { initial: BannerInput; onClose: () 
         <span className="text-xs text-muted-foreground">
           {sizes
             ? `รวม ${kb(sizes.desktop + sizes.mobile)} · ต้นฉบับ ${kb(sizes.original)} ไม่ถูกเก็บ`
-            : "JPG / PNG / WebP ไม่เกิน 25 MB แนะนำกว้าง 2400 px ขึ้นไป"}
+            : form.image_url
+              ? "อยากครอบใหม่: กด เปลี่ยนรูป แล้วเลือกรูปต้นฉบับอีกครั้ง (ระบบไม่เก็บต้นฉบับไว้)"
+              : "JPG / PNG / WebP ไม่เกิน 25 MB แนะนำกว้าง 2400 px ขึ้นไป"}
         </span>
         <input
           ref={fileRef}
