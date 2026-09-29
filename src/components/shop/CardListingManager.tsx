@@ -521,14 +521,24 @@ function ListingRow({
 
       {panel && (
         <div className="flex flex-wrap items-center gap-2 border-t border-dashed border-border px-3 py-3 sm:px-4">
-          {panel === "stock" && <StockControl card={c} />}
-          {panel === "draft" && <PublishAuctionDraft cardId={c.id} />}
-          {panel === "relist" && s.auction && <RelistAuctionControl auctionId={s.auction.id} />}
+          {panel === "stock" && <StockControl card={c} onDone={() => setPanel(null)} />}
+          {panel === "draft" && <PublishAuctionDraft cardId={c.id} onDone={() => setPanel(null)} />}
+          {panel === "relist" && s.auction && (
+            <RelistAuctionControl auctionId={s.auction.id} onDone={() => setPanel(null)} />
+          )}
           {panel === "category" && (
-            <CardCategorySelect cardId={c.id} value={c.category_id ?? null} />
+            <CardCategorySelect
+              cardId={c.id}
+              value={c.category_id ?? null}
+              onDone={() => setPanel(null)}
+            />
           )}
           {panel === "end" && s.auction && (
-            <EndTimeControl auctionId={s.auction.id} endTime={s.auction.end_time} />
+            <EndTimeControl
+              auctionId={s.auction.id}
+              endTime={s.auction.end_time}
+              onDone={() => setPanel(null)}
+            />
           )}
           <Button
             variant="ghost"
@@ -655,7 +665,15 @@ function ListingRow({
 }
 
 /** แก้เวลาปิดของรอบประมูลที่เปิดอยู่ */
-function EndTimeControl({ auctionId, endTime }: { auctionId: string; endTime: string }) {
+function EndTimeControl({
+  auctionId,
+  endTime,
+  onDone,
+}: {
+  auctionId: string;
+  endTime: string;
+  onDone?: (() => void) | undefined;
+}) {
   const setEnd = useUpdateAuctionEndTime();
   const [value, setValue] = useState(() => {
     const d = new Date(endTime);
@@ -679,7 +697,10 @@ function EndTimeControl({ auctionId, endTime }: { auctionId: string; endTime: st
           setEnd.mutate(
             { auctionId, endTime: value },
             {
-              onSuccess: () => toast.success("อัปเดตเวลาปิดประมูลแล้ว"),
+              onSuccess: () => {
+                toast.success("อัปเดตเวลาปิดประมูลแล้ว");
+                onDone?.();
+              },
               onError: (err) => toast.error(err instanceof Error ? err.message : "ไม่สำเร็จ"),
             },
           )
@@ -693,7 +714,13 @@ function EndTimeControl({ auctionId, endTime }: { auctionId: string; endTime: st
 }
 
 /** ปุ่มเปิดประมูลใหม่ สำหรับรอบที่ผู้ชนะไม่ชำระเงินหรือปิดไปแล้ว */
-function RelistAuctionControl({ auctionId }: { auctionId: string }) {
+function RelistAuctionControl({
+  auctionId,
+  onDone,
+}: {
+  auctionId: string;
+  onDone?: (() => void) | undefined;
+}) {
   const relist = useRelistAuction();
   const [endTime, setEndTime] = useState("");
 
@@ -721,6 +748,7 @@ function RelistAuctionControl({ auctionId }: { auctionId: string }) {
               onSuccess: () => {
                 toast.success("เปิดประมูลรอบใหม่แล้ว");
                 setEndTime("");
+                onDone?.();
               },
               onError: (e) => toast.error(e instanceof Error ? e.message : "ไม่สำเร็จ"),
             },
@@ -739,7 +767,7 @@ function RelistAuctionControl({ auctionId }: { auctionId: string }) {
 }
 
 /** แก้จำนวนสต็อก — การ์ดชิ้นเดียวแบบเดิม (ยังไม่มีสต็อก) ก็ตั้งเพื่อเติมของได้ */
-function StockControl({ card }: { card: AdminCardRow }) {
+function StockControl({ card, onDone }: { card: AdminCardRow; onDone?: (() => void) | undefined }) {
   const update = useUpdateCardListing();
   const [value, setValue] = useState(
     card.stock_quantity === null ? "" : String(card.stock_quantity),
@@ -761,10 +789,12 @@ function StockControl({ card }: { card: AdminCardRow }) {
     update.mutate(
       { cardId: card.id, stockQuantity: n },
       {
-        onSuccess: () =>
+        onSuccess: () => {
           toast.success(
             n > 0 ? `อัปเดตสต็อกเป็น ${n} ชิ้นแล้ว` : "ตั้งสต็อกเป็น 0 — ปิดการซื้อแล้ว",
-          ),
+          );
+          onDone?.();
+        },
         onError: (e) => toast.error(e instanceof Error ? e.message : "อัปเดตสต็อกไม่สำเร็จ"),
       },
     );
@@ -805,7 +835,13 @@ function StockControl({ card }: { card: AdminCardRow }) {
 }
 
 /** ฉบับร่างของการ์ดประมูล: ตั้งเวลาปิดแล้วกดเปิดประมูล (เริ่มนับเวลาตอนนี้) */
-function PublishAuctionDraft({ cardId }: { cardId: string }) {
+function PublishAuctionDraft({
+  cardId,
+  onDone,
+}: {
+  cardId: string;
+  onDone?: (() => void) | undefined;
+}) {
   const update = useUpdateCardListing();
   const [endTime, setEndTime] = useState("");
   const [increment, setIncrement] = useState("50");
@@ -844,7 +880,10 @@ function PublishAuctionDraft({ cardId }: { cardId: string }) {
               bidIncrement: Number(increment) || 50,
             },
             {
-              onSuccess: () => toast.success("เปิดประมูลแล้ว"),
+              onSuccess: () => {
+                toast.success("เปิดประมูลแล้ว");
+                onDone?.();
+              },
               onError: (e) => toast.error(e instanceof Error ? e.message : "ไม่สำเร็จ"),
             },
           );
@@ -862,7 +901,15 @@ function PublishAuctionDraft({ cardId }: { cardId: string }) {
 }
 
 /** เปลี่ยนหมวดเกมของการ์ดที่ลงไปแล้ว — เลือกแล้วบันทึกทันที */
-function CardCategorySelect({ cardId, value }: { cardId: string; value: string | null }) {
+function CardCategorySelect({
+  cardId,
+  value,
+  onDone,
+}: {
+  cardId: string;
+  value: string | null;
+  onDone?: (() => void) | undefined;
+}) {
   const { data } = useCategories();
   const setCategory = useSetCardCategory();
   const options = (data ?? []).filter((c) => c.is_active || c.id === value);
@@ -876,7 +923,10 @@ function CardCategorySelect({ cardId, value }: { cardId: string; value: string |
         setCategory.mutate(
           { cardId, categoryId: e.target.value || null },
           {
-            onSuccess: () => toast.success("เปลี่ยนหมวดแล้ว"),
+            onSuccess: () => {
+              toast.success("เปลี่ยนหมวดแล้ว");
+              onDone?.();
+            },
             onError: (err) => toast.error(err.message),
           },
         )
