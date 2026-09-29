@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import {
   ArrowDownWideNarrow,
+  ArrowRight,
   BadgeCheck,
   ChevronDown,
   Heart,
@@ -18,7 +19,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { SectionHeading } from "@/components/site/SectionHeading";
 import { getFeaturedProducts, type Product } from "@/data/products";
 import { useMarketplaceCards } from "@/hooks/useSupabaseCatalog";
 import { thb } from "@/lib/cart";
@@ -296,15 +296,20 @@ export function FeaturedMarketplace({
 
   return (
     <section id="marketplace" className="border-y border-border bg-card/30">
-      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+      <div
+        className={`mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 ${showHeading ? "py-10 sm:py-14" : "py-16"}`}
+      >
         {showHeading && (
-          <SectionHeading
-            eyebrow="รายการแนะนำ"
-            title="ตลาดซื้อขาย"
-            description="ซื้อได้ทันทีจากร้านที่ยืนยันตัวตนแล้ว ทุกใบมีรหัสการ์ดตรวจสอบย้อนหลังได้"
-            actionLabel="ดูทั้งหมด"
-            actionTo="/marketplace"
-          />
+          // หัวข้อบรรทัดเดียวแบบเดียวกับ "ประมูลสด" (ตัดป้ายเล็ก + คำอธิบายออก)
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 className="font-display text-2xl font-bold sm:text-[26px]">ตลาดซื้อขาย</h2>
+            <Link
+              to="/marketplace"
+              className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-primary hover:underline"
+            >
+              ดูทั้งหมด <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
         )}
         {!showHeading && <h2 className="sr-only">การ์ดที่วางขายในตลาด</h2>}
         {showFilter && categories.length > 0 && (
@@ -517,10 +522,21 @@ export function FeaturedMarketplace({
           </p>
         )}
         <div className="grid grid-cols-2 items-start gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 lg:gap-5">
-          {items.map((product) => (
-            <ProductGridCard key={product.id} product={product} />
+          {items.map((product, i) => (
+            // หน้าแรกบนมือถือแสดง 4 ใบ (จอใหญ่แสดงครบ) ที่เหลือดูได้ที่ปุ่มด้านล่าง
+            <div key={product.id} className={showHeading && i >= 4 ? "hidden sm:block" : undefined}>
+              <ProductGridCard product={product} />
+            </div>
           ))}
         </div>
+        {showHeading && items.length > 4 && (
+          <Link
+            to="/marketplace"
+            className="mt-4 flex min-h-12 items-center justify-center gap-1.5 rounded-2xl border border-border bg-card text-sm font-semibold sm:hidden"
+          >
+            ดูตลาดซื้อขายทั้งหมด <ArrowRight className="h-4 w-4" />
+          </Link>
+        )}
       </div>
     </section>
   );

@@ -10,6 +10,8 @@ import { useLiveAuctions, type LiveAuction } from "@/hooks/useLiveAuctions";
 const MAX_ITEMS = 8;
 /** แถวการ์ดเต็มที่ 5 ใบ (จอใหญ่) — น้อยกว่านี้ให้แผง "รอบถัดไป" เติมที่ว่าง */
 const FULL_ROW = 5;
+/** มือถือแสดงกี่ใบ (ที่เหลือดูที่ปุ่ม "ดูทั้งหมด") */
+const MOBILE_MAX = 3;
 
 const openFmt = new Intl.DateTimeFormat("th-TH", {
   weekday: "short",
@@ -80,12 +82,14 @@ export function LiveAuctionSlider() {
           </Link>
         </div>
       ) : (
-        <div className="no-scrollbar -mx-4 mt-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pt-1 pb-3 sm:mx-0 sm:gap-4 sm:overflow-visible sm:px-0 lg:grid lg:grid-cols-5">
-          {items.map((a) => (
+        <div className="sm:no-scrollbar mt-4 grid gap-3 sm:flex sm:snap-x sm:snap-mandatory sm:gap-4 sm:overflow-x-auto sm:pt-1 sm:pb-3 lg:grid lg:grid-cols-5 lg:overflow-visible">
+          {/* มือถือ: การ์ดแนวนอนเรียงลงมา แสดง 3 ใบแรก · จอ sm ขึ้นไป: การ์ดตั้ง */}
+          {items.map((a, i) => (
             <AuctionCard
               key={a.id}
               auction={a}
-              className="w-[220px] shrink-0 snap-start sm:w-[236px] lg:w-auto"
+              rowOnMobile
+              className={`w-full sm:w-[236px] sm:shrink-0 sm:snap-start lg:w-auto ${i >= MOBILE_MAX ? "max-sm:hidden" : ""}`}
             />
           ))}
           {/* มีน้อยกว่า 5 ใบ (เฉพาะจอใหญ่) → แผงรอบถัดไปกินที่ที่เหลือ ไม่ปล่อยเป็นช่องว่าง */}
@@ -97,6 +101,14 @@ export function LiveAuctionSlider() {
             />
           )}
         </div>
+      )}
+      {items.length > MOBILE_MAX && (
+        <Link
+          to="/auctions"
+          className="mt-3 flex min-h-12 items-center justify-center gap-1.5 rounded-2xl border border-border bg-card text-sm font-semibold sm:hidden"
+        >
+          ดูประมูลทั้งหมด {items.length} รายการ <ArrowRight className="h-4 w-4" />
+        </Link>
       )}
     </section>
   );

@@ -26,13 +26,16 @@ function CountdownTiles({
   countdown: c,
   kind,
   urgent,
+  compact = false,
 }: {
   countdown: { days: number; hours: number; minutes: number; seconds: number };
   kind: "live" | "upcoming";
   urgent: boolean;
+  /** มือถือแบบแนวนอน: แผ่นเตี้ยลง */
+  compact?: boolean;
 }) {
-  // กำลังประมูลที่เหลือหลายวัน ให้มีช่องวันด้วย ไม่ให้ชั่วโมงไปโชว์เกิน 24
-  const withDays = kind === "upcoming" || c.days > 0;
+  // มีช่อง "วัน" เมื่อเหลือตั้งแต่ 1 วันขึ้นไปเท่านั้น (00 วัน ไม่มีความหมาย และทำให้ตัวเลขแคบ)
+  const withDays = c.days > 0;
   const units = [
     ...(withDays ? [{ v: c.days, l: "วัน" }] : []),
     { v: c.hours, l: "ชม." },
@@ -43,13 +46,18 @@ function CountdownTiles({
     <div
       role="timer"
       aria-label={`${kind === "upcoming" ? "เปิดประมูลใน" : "เหลือเวลา"} ${units.map((u) => `${u.v} ${u.l}`).join(" ")}`}
-      className={cn("mt-2 grid gap-1.5", withDays ? "grid-cols-4" : "grid-cols-3")}
+      className={cn(
+        "mt-2 grid gap-1.5",
+        compact && "max-sm:gap-1",
+        withDays ? "grid-cols-4" : "grid-cols-3",
+      )}
     >
       {units.map((u) => (
         <div key={u.l} className="text-center">
           <span
             className={cn(
               "grid h-[34px] place-items-center rounded-[9px] font-display text-lg font-extrabold tabular-nums",
+              compact && "max-sm:h-7 max-sm:text-[15px]",
               kind === "upcoming"
                 ? "bg-muted text-foreground/75"
                 : urgent
@@ -74,9 +82,12 @@ function CountdownTiles({
 export function AuctionCard({
   auction: a,
   className,
+  rowOnMobile = false,
 }: {
   auction: LiveAuction;
   className?: string | undefined;
+  /** มือถือ: เรียงแนวนอน (รูปเล็กซ้าย ข้อมูลขวา) สูง ~140px แทนการ์ดตั้ง ~460px · จอ sm ขึ้นไปเป็นการ์ดตั้งตามเดิม */
+  rowOnMobile?: boolean;
 }) {
   const kind = auctionKind(a);
   const countdown = useCountdown(kind === "upcoming" ? a.startTime : a.endTime);
@@ -92,10 +103,16 @@ export function AuctionCard({
       className={cn(
         "group flex flex-col rounded-[20px] bg-card outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         kind === "live" ? "live-frame p-1" : "p-2 ring-1 ring-border/70",
+        rowOnMobile && "max-sm:flex-row max-sm:gap-3",
         className,
       )}
     >
-      <div className="relative aspect-[5/7] overflow-hidden rounded-xl bg-tile">
+      <div
+        className={cn(
+          "relative aspect-[5/7] overflow-hidden rounded-xl bg-tile",
+          rowOnMobile && "max-sm:w-[88px] max-sm:shrink-0 max-sm:self-start",
+        )}
+      >
         <SmartImage
           src={a.imageUrl}
           alt={a.cardName}
@@ -126,36 +143,84 @@ export function AuctionCard({
             className={cn(
               "absolute top-2 left-2 inline-flex h-[26px] items-center gap-1.5 rounded-full px-2.5 text-xs font-bold text-white",
               "bg-[oklch(0.62_0.21_35)]",
+              rowOnMobile &&
+                "max-sm:top-1.5 max-sm:left-1.5 max-sm:h-[21px] max-sm:px-2 max-sm:text-[11px]",
             )}
           >
             <span className="live-dot text-white" aria-hidden />
             สด
           </span>
         ) : (
-          <span className="absolute top-2 left-2 inline-flex h-[26px] items-center rounded-full bg-foreground/80 px-2.5 text-xs font-bold text-background">
+          <span
+            className={cn(
+              "absolute top-2 left-2 inline-flex h-[26px] items-center rounded-full bg-foreground/80 px-2.5 text-xs font-bold text-background",
+              rowOnMobile &&
+                "max-sm:top-1.5 max-sm:left-1.5 max-sm:h-[21px] max-sm:px-2 max-sm:text-[11px]",
+            )}
+          >
             รอเปิด
           </span>
         )}
 
         {kind !== "upcoming" && (
-          <span className="absolute bottom-2 left-2 inline-flex h-[22px] items-center rounded-full bg-foreground/70 px-2 text-[11px] font-semibold text-background backdrop-blur-sm">
+          <span
+            className={cn(
+              "absolute bottom-2 left-2 inline-flex h-[22px] items-center rounded-full bg-foreground/70 px-2 text-[11px] font-semibold text-background backdrop-blur-sm",
+              rowOnMobile && "max-sm:hidden",
+            )}
+          >
             {a.bidCount > 0 ? `${a.bidCount} บิด` : "ยังไม่มีบิด"}
           </span>
         )}
-        <GradeBadge grade={a.grade} company={a.gradingCompany} condition={a.conditionNote} />
+        <GradeBadge
+          grade={a.grade}
+          company={a.gradingCompany}
+          condition={a.conditionNote}
+          className={rowOnMobile ? "max-sm:hidden" : undefined}
+        />
       </div>
 
-      <div className="flex flex-col px-1.5 pt-2.5 pb-1">
-        <p className="truncate text-xs text-muted-foreground">
-          {a.setName !== "-" ? a.setName : " "}
+      <div
+        className={cn(
+          "flex flex-col px-1.5 pt-2.5 pb-1",
+          rowOnMobile &&
+            "max-sm:min-w-0 max-sm:flex-1 max-sm:justify-center max-sm:px-0 max-sm:py-0.5",
+        )}
+      >
+        <p className={cn("truncate text-xs text-muted-foreground", rowOnMobile && "max-sm:hidden")}>
+          {a.setName !== "-" ? a.setName : " "}
         </p>
-        <h3 className="mt-0.5 line-clamp-2 min-h-10 text-[15px] leading-snug font-semibold break-words group-hover:text-primary">
+        {rowOnMobile && (
+          <p className="truncate text-[11px] text-muted-foreground sm:hidden">
+            {[
+              a.setName !== "-" ? a.setName : null,
+              kind === "upcoming"
+                ? "ราคาเริ่มต้น"
+                : a.bidCount > 0
+                  ? `${a.bidCount} บิด`
+                  : "ยังไม่มีบิด",
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          </p>
+        )}
+        <h3
+          className={cn(
+            "mt-0.5 line-clamp-2 min-h-10 text-[15px] leading-snug font-semibold break-words group-hover:text-primary",
+            rowOnMobile && "max-sm:line-clamp-1 max-sm:min-h-0 max-sm:leading-tight",
+          )}
+        >
           {a.cardName}
         </h3>
         {kind !== "past" && countdown && !countdown.isFinished && (
-          <CountdownTiles countdown={countdown} kind={kind} urgent={urgent} />
+          <CountdownTiles countdown={countdown} kind={kind} urgent={urgent} compact={rowOnMobile} />
         )}
-        <div className="mt-2 flex items-baseline justify-between gap-2">
+        <div
+          className={cn(
+            "mt-2 flex items-baseline justify-between gap-2",
+            rowOnMobile && "max-sm:mt-1.5",
+          )}
+        >
           <p className="truncate font-display text-lg leading-tight font-bold">
             {thb.format(kind === "upcoming" ? a.startingPrice : a.currentBid)}
           </p>
