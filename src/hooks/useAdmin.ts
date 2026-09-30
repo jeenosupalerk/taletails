@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 
+import { fetchAdminContacts } from "@/hooks/userContacts";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthUserId } from "@/hooks/useCardDetail";
 import { processAuctions } from "@/lib/auctions.functions";
@@ -541,12 +542,20 @@ export function useAdminOrders() {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id, user_id, card_id, auction_id, total_amount, payment_method, slip_url, tracking_number, shipping_name, shipping_phone, shipping_address, status, payment_due_at, received_at, created_at, cards:card_id (name, set_name, images), users:user_id (username, email)",
+          "id, user_id, card_id, auction_id, total_amount, payment_method, slip_url, tracking_number, shipping_name, shipping_phone, shipping_address, status, payment_due_at, received_at, created_at, cards:card_id (name, set_name, images), users:user_id (username)",
         )
         .order("created_at", { ascending: false })
         .limit(100);
       if (error) throw error;
-      return (data ?? []) as unknown as AdminOrderRow[];
+      const rows = (data ?? []) as unknown as (Omit<AdminOrderRow, "users"> & {
+        users?: { username: string | null } | null;
+      })[];
+      // อีเมลผู้ซื้ออ่านผ่านฟังก์ชันสำหรับแอดมิน
+      const contacts = await fetchAdminContacts([...new Set(rows.map((r) => r.user_id))]);
+      return rows.map((r) => ({
+        ...r,
+        users: { username: r.users?.username ?? null, email: contacts.get(r.user_id)?.email ?? "" },
+      })) as AdminOrderRow[];
     },
   });
 }
@@ -616,15 +625,23 @@ export function useAdminMembers() {
   return useQuery({
     queryKey: ["admin", "members"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("users")
-        .select(
-          "id, email, username, phone, is_banned, auction_strikes, auction_banned_until, auction_ban_forever, created_at",
-        )
-        .order("created_at", { ascending: false })
-        .limit(200);
+      const [{ data, error }, contacts] = await Promise.all([
+        supabase
+          .from("users")
+          .select(
+            "id, username, is_banned, auction_strikes, auction_banned_until, auction_ban_forever, created_at",
+          )
+          .order("created_at", { ascending: false })
+          .limit(200),
+        fetchAdminContacts(),
+      ]);
       if (error) throw error;
-      return (data ?? []) as AdminMemberRow[];
+      // email/phone มาจากฟังก์ชันสำหรับแอดมิน (ตาราง users ไม่เปิดให้อ่านสองคอลัมน์นี้ตรง ๆ)
+      return (data ?? []).map((r) => ({
+        ...r,
+        email: contacts.get(r.id)?.email ?? "",
+        phone: contacts.get(r.id)?.phone ?? null,
+      })) as AdminMemberRow[];
     },
   });
 }

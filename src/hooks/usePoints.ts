@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { fetchAdminContacts } from "@/hooks/userContacts";
 import { supabase } from "@/integrations/supabase/client";
 
 /** 1 TT = 0.50 บาท, ทุก 25 บาทที่ชำระ = 1 TT */
@@ -57,10 +58,13 @@ export function useRedeemPoints(orderId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (points: number) => {
-      const { data, error } = await supabase.rpc("redeem_order_points" as never, {
-        _order_id: orderId,
-        _points: Math.max(0, Math.floor(points)),
-      } as never);
+      const { data, error } = await supabase.rpc(
+        "redeem_order_points" as never,
+        {
+          _order_id: orderId,
+          _points: Math.max(0, Math.floor(points)),
+        } as never,
+      );
       if (error) throw new Error(error.message);
       return data as unknown as { points_redeemed: number; points_discount: number };
     },
@@ -185,7 +189,10 @@ export function useRedeemReward() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (rewardId: string) => {
-      const { error } = await supabase.rpc("redeem_tt_reward" as never, { _reward_id: rewardId } as never);
+      const { error } = await supabase.rpc(
+        "redeem_tt_reward" as never,
+        { _reward_id: rewardId } as never,
+      );
       if (error) throw new Error(error.message);
       return true;
     },
@@ -276,7 +283,9 @@ export function useTtAdminRewards() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tt_rewards" as never)
-        .select("id, name, description, image_url, points_cost, unit_cost, fulfillment, stock, is_active, sort_order")
+        .select(
+          "id, name, description, image_url, points_cost, unit_cost, fulfillment, stock, is_active, sort_order",
+        )
         .order("sort_order" as never)
         .order("points_cost" as never);
       if (error) throw new Error(error.message);
@@ -296,7 +305,10 @@ export function useSaveTtReward() {
     mutationFn: async ({ id, ...row }: TtRewardInput) => {
       const payload = { ...row, updated_at: new Date().toISOString() };
       const { error } = id
-        ? await supabase.from("tt_rewards" as never).update(payload as never).eq("id" as never, id as never)
+        ? await supabase
+            .from("tt_rewards" as never)
+            .update(payload as never)
+            .eq("id" as never, id as never)
         : await supabase.from("tt_rewards" as never).insert(payload as never);
       if (error) throw new Error(error.message);
       return true;
@@ -314,7 +326,10 @@ export function useTtConversionPreview(enabled: boolean) {
       const { data, error } = await supabase.from("users").select("tt_points").gt("tt_points", 0);
       if (error) throw new Error(error.message);
       const rows = (data ?? []) as { tt_points: number }[];
-      return { members: rows.length, points: rows.reduce((s, r) => s + Number(r.tt_points ?? 0), 0) };
+      return {
+        members: rows.length,
+        points: rows.reduce((s, r) => s + Number(r.tt_points ?? 0), 0),
+      };
     },
   });
 }
@@ -345,11 +360,22 @@ export function useTtAdminRedemptions() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tt_redemptions" as never)
-        .select(`${REDEMPTION_COLS}, users:user_id (username, email)`)
+        .select(`${REDEMPTION_COLS}, users:user_id (username)`)
         .in("status" as never, ["pending", "attached"] as never)
         .order("created_at" as never);
       if (error) throw new Error(error.message);
-      return (data ?? []) as unknown as TtAdminRedemption[];
+      const rows = (data ?? []) as unknown as (Omit<TtAdminRedemption, "users"> & {
+        users: { username: string | null } | null;
+      })[];
+      // อีเมลลูกค้าอ่านผ่านฟังก์ชันสำหรับแอดมิน
+      const contacts = await fetchAdminContacts([...new Set(rows.map((r) => r.user_id))]);
+      return rows.map((r) => ({
+        ...r,
+        users: {
+          username: r.users?.username ?? null,
+          email: contacts.get(r.user_id)?.email ?? null,
+        },
+      })) as TtAdminRedemption[];
     },
   });
 }

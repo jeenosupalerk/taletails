@@ -132,3 +132,10 @@
 - ค่าที่แก้ที่เดียว: `src/lib/site-info.ts` (`CONTACT_EMAIL` = shizu.taletails@gmail.com, `POLICY_UPDATED`, `REPORT_WINDOW_DAYS`) 
 - เมนูบัญชีมีกลุ่ม "ข้อมูลและช่วยเหลือ" (ติดต่อ/นโยบายซื้อและจัดส่ง/เงื่อนไข/ความเป็นส่วนตัว) และ footer ทั้งมือถือและจอกว้างมีลิงก์ 4 หน้านี้
 - **ยังไม่ได้แก้ (ต้องรออนุมัติ SQL): สมาชิกที่ล็อกอินอ่านอีเมลและเบอร์โทรของสมาชิกคนอื่นได้** เพราะตาราง `users` มี policy "Profiles are viewable by signed-in users" (true) และ role authenticated มีสิทธิ์ SELECT ทุกคอลัมน์รวม `email`, `phone`, `tt_points`, `auction_strikes` (ผู้เยี่ยมชมที่ไม่ล็อกอินอ่านไม่ได้ ทดสอบแล้ว) ทางแก้ต้องแยกคอลัมน์สาธารณะ (username, avatar) ออกจากคอลัมน์ส่วนตัว และให้หลังบ้านอ่านอีเมลผ่านทางที่ปลอดภัย (หลังบ้านใช้ `users:user_id (username, email)` ใน `useAdmin.ts`) ห้ามลืมทำไฟล์ ROLLBACK คู่กัน
+
+## 30 ก.ย. 2026 (ต่อ) — ปิดช่องโหว่อีเมล/เบอร์สมาชิก (สถานะ)
+
+- **ขั้น 1 apply แล้ว (30 ก.ย. 2026)**: ฟังก์ชัน `my_contact()` (ของตัวเอง) และ `admin_user_contacts(p_ids)` (แอดมินเท่านั้น) เป็น security definer เรียกได้เฉพาะ authenticated (anon ถูกปฏิเสธ ทดสอบแล้ว) · ROLLBACK: `patches/2026-09-30_users_pii_step1_functions_ROLLBACK.sql`
+- **ขั้น 2 แก้โค้ดแล้ว (ยังไม่ deploy)**: helper `src/hooks/userContacts.ts` · `auth.tsx` loadProfile, `useAdmin.ts` (สมาชิก + คำสั่งซื้อ), `usePoints.ts` (รายการแลกของรางวัล) เลิกอ่าน email/phone จากตาราง users ตรง ๆ · types ของฟังก์ชันเพิ่มใน `src/integrations/supabase/types.ts` (มือ — ถ้า regenerate types จะมีเองหลังขั้น 1)
+- **ขั้น 3 ยังไม่ apply**: `patches/2026-09-30_users_pii_step3_column_grants.sql` ห้าม apply จนกว่าโค้ดขั้น 2 ขึ้นเว็บจริงและทดสอบล็อกอิน + หลังบ้านด้วยบัญชีแอดมินแล้ว (ไม่งั้นหน้าเข้าสู่ระบบ/หลังบ้านพัง)
+- ยังไม่เคยทดสอบด้วยบัญชีจริง: ล็อกอินแล้วเห็น email/phone ตัวเอง · หลังบ้านสมาชิก/คำสั่งซื้อ/แลกแต้มยังเห็นอีเมลลูกค้า

@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 
+import { fetchMyContact } from "@/hooks/userContacts";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface AuthUser {
@@ -76,7 +77,9 @@ async function syncSocialProfile(input: {
   const defaultName = input.email.split("@")[0] ?? "";
   const nameIsDefault = !input.storedName || input.storedName === defaultName;
   const nextName =
-    input.socialName && nameIsDefault && input.storedName !== input.socialName ? input.socialName : "";
+    input.socialName && nameIsDefault && input.storedName !== input.socialName
+      ? input.socialName
+      : "";
 
   // แยกคำสั่งกัน: users.username เป็น UNIQUE ถ้าชื่อจาก Google ไปชนกับคนอื่นแล้วพัง
   // อย่างน้อยรูปต้องบันทึกได้
@@ -92,13 +95,17 @@ async function syncSocialProfile(input: {
 }
 
 async function loadProfile(sessionUser: SessionUser): Promise<AuthUser> {
-  const { data } = await supabase
-    .from("users")
-    .select("id, email, username, avatar_url, phone")
-    .eq("id", sessionUser.id)
-    .maybeSingle();
+  // email/phone อ่านผ่านฟังก์ชันของตัวเอง (สมาชิกอื่นอ่านสองคอลัมน์นี้จากตาราง users ไม่ได้)
+  const [{ data }, contact] = await Promise.all([
+    supabase
+      .from("users")
+      .select("id, username, avatar_url")
+      .eq("id", sessionUser.id)
+      .maybeSingle(),
+    fetchMyContact(),
+  ]);
 
-  const email = data?.email || sessionUser.email || "";
+  const email = contact.email || sessionUser.email || "";
   const socialAvatar = socialAvatarOf(sessionUser.user_metadata);
   const socialName = socialNameOf(sessionUser.user_metadata);
   const storedAvatar = data?.avatar_url ?? "";
@@ -123,7 +130,7 @@ async function loadProfile(sessionUser: SessionUser): Promise<AuthUser> {
     name: storedName || socialName || email.split("@")[0] || "สมาชิก Taletails",
     ...(avatarUrl ? { avatarUrl } : {}),
     ...(socialAvatar ? { socialAvatarUrl: socialAvatar } : {}),
-    ...(data?.phone ? { phone: data.phone } : {}),
+    ...(contact.phone ? { phone: contact.phone } : {}),
   };
 }
 

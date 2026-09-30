@@ -790,6 +790,11 @@ export type Database = {
     }
     Functions: {
       admin_delete_card: { Args: { _card_id: string }; Returns: undefined }
+      admin_user_contacts: {
+        Args: { p_ids?: string[] }
+        Returns: { id: string; email: string; phone: string | null }[]
+      }
+      my_contact: { Args: never; Returns: { email: string; phone: string | null }[] }
       apply_auction_strike: {
         Args: { _auction_id: string; _order_id: string; _user_id: string }
         Returns: undefined
