@@ -14,14 +14,19 @@ import { Route as AddressesRouteImport } from './routes/addresses'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuctionsRouteImport } from './routes/auctions'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ContactRouteImport } from './routes/contact'
 import { Route as MarketRouteImport } from './routes/market'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
+import { Route as MyBidsRouteImport } from './routes/my-bids'
 import { Route as NewsRouteImport } from './routes/news'
 import { Route as OrdersRouteImport } from './routes/orders'
 import { Route as PointsRouteImport } from './routes/points'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as PurchasePolicyRouteImport } from './routes/purchase-policy'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as VaultRouteImport } from './routes/vault'
 import { Route as WinsRouteImport } from './routes/wins'
 import { Route as WishlistRouteImport } from './routes/wishlist'
@@ -72,6 +77,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MarketRoute = MarketRouteImport.update({
   id: '/market',
   path: '/market',
@@ -80,6 +90,11 @@ const MarketRoute = MarketRouteImport.update({
 const MarketplaceRoute = MarketplaceRouteImport.update({
   id: '/marketplace',
   path: '/marketplace',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MyBidsRoute = MyBidsRouteImport.update({
+  id: '/my-bids',
+  path: '/my-bids',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NewsRoute = NewsRouteImport.update({
@@ -97,9 +112,19 @@ const PointsRoute = PointsRouteImport.update({
   path: '/points',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PurchasePolicyRoute = PurchasePolicyRouteImport.update({
+  id: '/purchase-policy',
+  path: '/purchase-policy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ShopRoute = ShopRouteImport.update({
@@ -110,6 +135,11 @@ const ShopRoute = ShopRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const VaultRoute = VaultRouteImport.update({
@@ -240,14 +270,19 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/auctions': typeof AuctionsRoute
   '/auth': typeof AuthRoute
+  '/contact': typeof ContactRoute
   '/market': typeof MarketRouteWithChildren
   '/marketplace': typeof MarketplaceRoute
+  '/my-bids': typeof MyBidsRoute
   '/news': typeof NewsRouteWithChildren
   '/orders': typeof OrdersRoute
   '/points': typeof PointsRoute
+  '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
+  '/purchase-policy': typeof PurchasePolicyRoute
   '/shop': typeof ShopRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/vault': typeof VaultRoute
   '/wins': typeof WinsRoute
   '/wishlist': typeof WishlistRoute
@@ -278,13 +313,18 @@ export interface FileRoutesByTo {
   '/addresses': typeof AddressesRoute
   '/auctions': typeof AuctionsRoute
   '/auth': typeof AuthRoute
+  '/contact': typeof ContactRoute
   '/marketplace': typeof MarketplaceRoute
+  '/my-bids': typeof MyBidsRoute
   '/news': typeof NewsRouteWithChildren
   '/orders': typeof OrdersRoute
   '/points': typeof PointsRoute
+  '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
+  '/purchase-policy': typeof PurchasePolicyRoute
   '/shop': typeof ShopRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/vault': typeof VaultRoute
   '/wins': typeof WinsRoute
   '/wishlist': typeof WishlistRoute
@@ -317,14 +357,19 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/auctions': typeof AuctionsRoute
   '/auth': typeof AuthRoute
+  '/contact': typeof ContactRoute
   '/market': typeof MarketRouteWithChildren
   '/marketplace': typeof MarketplaceRoute
+  '/my-bids': typeof MyBidsRoute
   '/news': typeof NewsRouteWithChildren
   '/orders': typeof OrdersRoute
   '/points': typeof PointsRoute
+  '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
+  '/purchase-policy': typeof PurchasePolicyRoute
   '/shop': typeof ShopRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/vault': typeof VaultRoute
   '/wins': typeof WinsRoute
   '/wishlist': typeof WishlistRoute
@@ -358,14 +403,19 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auctions'
     | '/auth'
+    | '/contact'
     | '/market'
     | '/marketplace'
+    | '/my-bids'
     | '/news'
     | '/orders'
     | '/points'
+    | '/privacy'
     | '/profile'
+    | '/purchase-policy'
     | '/shop'
     | '/sitemap.xml'
+    | '/terms'
     | '/vault'
     | '/wins'
     | '/wishlist'
@@ -396,13 +446,18 @@ export interface FileRouteTypes {
     | '/addresses'
     | '/auctions'
     | '/auth'
+    | '/contact'
     | '/marketplace'
+    | '/my-bids'
     | '/news'
     | '/orders'
     | '/points'
+    | '/privacy'
     | '/profile'
+    | '/purchase-policy'
     | '/shop'
     | '/sitemap.xml'
+    | '/terms'
     | '/vault'
     | '/wins'
     | '/wishlist'
@@ -434,14 +489,19 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auctions'
     | '/auth'
+    | '/contact'
     | '/market'
     | '/marketplace'
+    | '/my-bids'
     | '/news'
     | '/orders'
     | '/points'
+    | '/privacy'
     | '/profile'
+    | '/purchase-policy'
     | '/shop'
     | '/sitemap.xml'
+    | '/terms'
     | '/vault'
     | '/wins'
     | '/wishlist'
@@ -474,14 +534,19 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   AuctionsRoute: typeof AuctionsRoute
   AuthRoute: typeof AuthRoute
+  ContactRoute: typeof ContactRoute
   MarketRoute: typeof MarketRouteWithChildren
   MarketplaceRoute: typeof MarketplaceRoute
+  MyBidsRoute: typeof MyBidsRoute
   NewsRoute: typeof NewsRouteWithChildren
   OrdersRoute: typeof OrdersRoute
   PointsRoute: typeof PointsRoute
+  PrivacyRoute: typeof PrivacyRoute
   ProfileRoute: typeof ProfileRoute
+  PurchasePolicyRoute: typeof PurchasePolicyRoute
   ShopRoute: typeof ShopRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  TermsRoute: typeof TermsRoute
   VaultRoute: typeof VaultRoute
   WinsRoute: typeof WinsRoute
   WishlistRoute: typeof WishlistRoute
@@ -535,6 +600,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/market': {
       id: '/market'
       path: '/market'
@@ -547,6 +619,13 @@ declare module '@tanstack/react-router' {
       path: '/marketplace'
       fullPath: '/marketplace'
       preLoaderRoute: typeof MarketplaceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/my-bids': {
+      id: '/my-bids'
+      path: '/my-bids'
+      fullPath: '/my-bids'
+      preLoaderRoute: typeof MyBidsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/news': {
@@ -570,11 +649,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PointsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile': {
       id: '/profile'
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/purchase-policy': {
+      id: '/purchase-policy'
+      path: '/purchase-policy'
+      fullPath: '/purchase-policy'
+      preLoaderRoute: typeof PurchasePolicyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/shop': {
@@ -589,6 +682,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/vault': {
@@ -813,14 +913,19 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   AuctionsRoute: AuctionsRoute,
   AuthRoute: AuthRoute,
+  ContactRoute: ContactRoute,
   MarketRoute: MarketRouteWithChildren,
   MarketplaceRoute: MarketplaceRoute,
+  MyBidsRoute: MyBidsRoute,
   NewsRoute: NewsRouteWithChildren,
   OrdersRoute: OrdersRoute,
   PointsRoute: PointsRoute,
+  PrivacyRoute: PrivacyRoute,
   ProfileRoute: ProfileRoute,
+  PurchasePolicyRoute: PurchasePolicyRoute,
   ShopRoute: ShopRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  TermsRoute: TermsRoute,
   VaultRoute: VaultRoute,
   WinsRoute: WinsRoute,
   WishlistRoute: WishlistRoute,

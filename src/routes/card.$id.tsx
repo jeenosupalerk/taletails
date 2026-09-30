@@ -3,8 +3,12 @@ import { LogoLoader } from "@/components/ui/logo-loader";
 import {
   BadgeCheck,
   Gavel,
+  CircleAlert,
+  CircleCheck,
   Loader2,
   Lock,
+  Minus,
+  Plus,
   ShieldCheck,
   ShoppingBag,
   TrendingUp,
@@ -141,6 +145,19 @@ function CardDetailPage() {
   const upcoming =
     !!auction && auction.status === "active" && !!startCountdown && !startCountdown.isFinished;
 
+  // สถานะของผู้เสนอราคา: bids เรียงใหม่สุดก่อน → แถวแรกคือผู้เสนอสูงสุด
+  const bidRows = bidsQuery.data ?? [];
+  const isLeading = !!userId && bidRows[0]?.user_id === userId;
+  const isOutbid = !!userId && !isLeading && bidRows.some((b) => b.user_id === userId);
+  const myStatus: "lead" | "out" | null =
+    isAuction && !!auction && !closed && !upcoming
+      ? isLeading
+        ? "lead"
+        : isOutbid
+          ? "out"
+          : null
+      : null;
+
   // Anti-sniping: ฐานข้อมูลจะยืดเวลาปิดประมูลอัตโนมัติเมื่อมีการเคาะราคาในช่วงวินาทีสุดท้าย
   // (ดู trg_bids_apply ใน Supabase) — ฝั่งนี้แค่คอยเทียบเวลาที่เปลี่ยนแล้วแจ้งเตือนผู้ดูสด
   const prevEndTimeRef = useRef<string | null>(null);
@@ -165,22 +182,11 @@ function CardDetailPage() {
     : 0;
 
   const [amount, setAmount] = useState<number>(0);
-  // ช่องกรอกราคาอยู่บนจอแล้ว → ซ่อนแถบล่างบนมือถือ (กันมีปุ่ม "เสนอราคา" 2 ปุ่มพร้อมกัน)
-  const [bidFormVisible, setBidFormVisible] = useState(false);
-  // ช่องกรอกมาทีหลังข้อมูลโหลด → ใช้ ref แบบ state ให้ผูก observer เมื่อ element โผล่จริง
-  const [bidFormEl, setBidFormEl] = useState<HTMLElement | null>(null);
+  // มือถือ: ถ้าตอนนี้นำอยู่ แถบล่างแสดงข้อความ "คุณนำอยู่" ก่อน กด "เสนอเพิ่ม" ค่อยโชว์ตัวปรับราคา
+  const [raising, setRaising] = useState(false);
   useEffect(() => {
-    if (!bidFormEl || typeof IntersectionObserver === "undefined") {
-      setBidFormVisible(false);
-      return;
-    }
-    const io = new IntersectionObserver(([e]) => setBidFormVisible(!!e?.isIntersecting), {
-      // เว้นขอบล่างเท่าความสูงแถบ ให้แถบไม่ทับช่องกรอกที่โผล่มาแค่ครึ่งเดียว
-      rootMargin: "0px 0px -80px 0px",
-    });
-    io.observe(bidFormEl);
-    return () => io.disconnect();
-  }, [bidFormEl]);
+    if (!isLeading) setRaising(false);
+  }, [isLeading]);
   useEffect(() => {
     if (minNext > 0) setAmount(minNext);
   }, [minNext]);
@@ -265,7 +271,10 @@ function CardDetailPage() {
     placeBid.mutate(
       { amount, userId },
       {
-        onSuccess: () => toast.success(`เสนอราคา ${thb.format(amount)} สำเร็จ`),
+        onSuccess: () => {
+          toast.success(`เสนอราคา ${thb.format(amount)} สำเร็จ`);
+          setRaising(false);
+        },
         onError: (e) => toast.error(e.message),
       },
     );
@@ -291,10 +300,10 @@ function CardDetailPage() {
     <div className="min-h-screen bg-background">
       <SiteHeader />
 
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-        <BackButton className="mb-6" />
+      <main className="mx-auto max-w-6xl px-4 py-4 sm:px-6 sm:py-8 lg:px-8">
+        <BackButton className="mb-3 sm:mb-6" />
 
-        <div className="grid gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-16">
+        <div className="grid gap-5 sm:gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-16">
           {/* Gallery */}
           <CardGallery
             images={images}
@@ -303,6 +312,7 @@ function CardDetailPage() {
             // ห้ามขึ้นป้าย "กำลังประมูล" ในกรณีนั้น
             liveAuction={isAuction && Boolean(auction) && !closed && !upcoming}
             status={card.status}
+            peek
           />
 
           {/* Detail */}
@@ -310,11 +320,11 @@ function CardDetailPage() {
             <p className="text-[11px] tracking-[0.22em] text-muted-foreground uppercase">
               {card.set_name ?? "TALETAILS COLLECTION"}
             </p>
-            <h1 className="mt-3 font-display text-3xl leading-tight font-semibold sm:text-4xl">
+            <h1 className="mt-2 font-display text-2xl leading-tight font-semibold sm:mt-3 sm:text-4xl">
               {card.name}
             </h1>
 
-            <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs sm:mt-4">
               {card.grade && (
                 <span className="rounded-full bg-foreground px-3 py-1 font-semibold text-background">
                   {card.grading_company ? `${card.grading_company} ` : ""}
@@ -345,11 +355,47 @@ function CardDetailPage() {
             </div>
 
             {/* Price block */}
-            <div className="mt-8 rounded-[24px] border border-border/70 bg-card p-6 shadow-[0_18px_50px_-38px_hsl(var(--foreground)/0.5)]">
+            <div
+              className={cn(
+                "mt-4 rounded-[24px] border bg-card p-4 shadow-[0_18px_50px_-38px_hsl(var(--foreground)/0.5)] sm:mt-8 sm:p-6",
+                myStatus === "lead"
+                  ? "border-emerald-600/40 ring-4 ring-emerald-600/10"
+                  : myStatus === "out"
+                    ? "border-destructive/40 ring-4 ring-destructive/10"
+                    : "border-border/70",
+              )}
+            >
+              {myStatus && (
+                <div
+                  role="status"
+                  className={cn(
+                    "mb-4 flex items-start gap-2.5 rounded-2xl px-3.5 py-3 text-xs",
+                    myStatus === "lead"
+                      ? "bg-emerald-600/10 text-emerald-700 dark:text-emerald-400"
+                      : "bg-destructive/10 text-destructive",
+                  )}
+                >
+                  {myStatus === "lead" ? (
+                    <CircleCheck className="mt-0.5 h-5 w-5 shrink-0" />
+                  ) : (
+                    <CircleAlert className="mt-0.5 h-5 w-5 shrink-0" />
+                  )}
+                  <div>
+                    <p className="font-display text-sm font-semibold">
+                      {myStatus === "lead" ? "คุณนำอยู่" : "ถูกแซงแล้ว"}
+                    </p>
+                    <p className="mt-0.5 leading-snug">
+                      {myStatus === "lead"
+                        ? "ราคาของคุณสูงสุดอยู่ตอนนี้"
+                        : `มีคนเสนอสูงกว่าคุณ เสนอ ${thb.format(minNext)} ขึ้นไปเพื่อกลับมานำ`}
+                    </p>
+                  </div>
+                </div>
+              )}
               <p className="text-[12px] tracking-wide text-muted-foreground">
                 {upcoming ? "ราคาเริ่มต้น" : isAuction ? "ราคาประมูลปัจจุบัน" : "ราคาขาย"}
               </p>
-              <p className="mt-1 font-display text-4xl font-semibold tracking-tight">
+              <p className="mt-1 font-display text-3xl font-semibold tracking-tight sm:text-4xl">
                 {thb.format(price)}
               </p>
 
@@ -366,7 +412,7 @@ function CardDetailPage() {
 
               {isAuction && auction && !upcoming && (
                 <>
-                  <div className="mt-5 border-t border-dashed border-border pt-5">
+                  <div className="mt-3 border-t border-dashed border-border pt-3 sm:mt-5 sm:pt-5">
                     <FlipCountdown
                       endTime={auction.end_time}
                       startTime={auction.start_time}
@@ -382,7 +428,7 @@ function CardDetailPage() {
                     </p>
                   )}
 
-                  <div className="mt-5 grid grid-cols-2 gap-4 text-xs">
+                  <div className="mt-4 grid grid-cols-2 gap-4 text-xs sm:mt-5">
                     <div>
                       <p className="text-muted-foreground">เสนอราคาไปแล้ว</p>
                       <p className="mt-0.5 font-display text-base font-semibold">
@@ -400,8 +446,7 @@ function CardDetailPage() {
                   {!closed ? (
                     <div
                       id="bid-form"
-                      ref={setBidFormEl}
-                      className="mt-6 flex scroll-mt-28 flex-wrap items-center gap-2"
+                      className="mt-6 flex scroll-mt-28 flex-wrap items-center gap-2 max-lg:hidden"
                     >
                       <Input
                         type="number"
@@ -564,13 +609,19 @@ function CardDetailPage() {
                   ประวัติการเสนอราคา
                 </h2>
                 <div className="divide-y divide-border/60 overflow-hidden rounded-2xl border border-border/70">
-                  {(bidsQuery.data ?? []).length === 0 && (
+                  {bidRows.length === 0 && (
                     <p className="px-4 py-5 text-center text-xs text-muted-foreground">
                       ยังไม่มีการเสนอราคา
                     </p>
                   )}
-                  {(bidsQuery.data ?? []).map((b, i) => (
-                    <div key={b.id} className="flex items-center justify-between gap-3 px-4 py-3">
+                  {bidRows.map((b, i) => (
+                    <div
+                      key={b.id}
+                      className={cn(
+                        "flex items-center justify-between gap-3 px-4 py-3",
+                        !!userId && b.user_id === userId && "bg-primary/5",
+                      )}
+                    >
                       <UserAvatar
                         name={b.users?.username ?? "ผู้ประมูล"}
                         src={b.users?.avatar_url}
@@ -583,6 +634,11 @@ function CardDetailPage() {
                           {i === 0 && (
                             <span className="ml-2 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] text-primary">
                               สูงสุด
+                            </span>
+                          )}
+                          {!!userId && b.user_id === userId && (
+                            <span className="ml-1.5 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground">
+                              คุณ
                             </span>
                           )}
                         </p>
@@ -605,63 +661,126 @@ function CardDetailPage() {
       {/* แถบล่างบนมือถือ: ราคา + ปุ่มหลัก (เมนูล่างของเว็บถูกซ่อนในหน้านี้) */}
       {((isAuction && auction && !closed) ||
         (!isAuction && card.status === "available" && card.is_published)) && (
-        <div
-          inert={bidFormVisible && isAuction && !upcoming}
-          className={`fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur transition-transform duration-300 lg:hidden ${
-            bidFormVisible && isAuction && !upcoming
-              ? "pointer-events-none translate-y-full"
-              : "translate-y-0"
-          }`}
-        >
-          <div className="mx-auto flex max-w-xl items-center gap-3">
-            <div className="min-w-0 flex-1">
-              <p className="text-[11px] text-muted-foreground">
-                {upcoming ? "เปิดประมูลใน" : isAuction ? "ราคาปัจจุบัน" : "ราคาขาย"}
-              </p>
-              <p className="truncate font-display text-xl leading-tight font-bold tabular-nums">
-                {upcoming ? formatCountdownTh(startCountdown) : thb.format(price)}
-              </p>
-            </div>
-            {upcoming ? (
-              <NotifyWhenOpenButton compact />
-            ) : isAuction ? (
-              <Button
-                className="min-h-12 flex-1 rounded-xl font-semibold hover:bg-primary hover:brightness-95 active:brightness-90"
-                onClick={() => {
-                  document
-                    .getElementById("bid-form")
-                    ?.scrollIntoView({ behavior: "smooth", block: "center" });
-                  window.setTimeout(
-                    () => document.getElementById("bid-amount")?.focus({ preventScroll: true }),
-                    350,
-                  );
-                }}
-              >
-                <Gavel className="h-4 w-4" /> เสนอราคา
-              </Button>
-            ) : (
-              <ConfirmDialog
-                title="ยืนยันการซื้อการ์ด"
-                description={`ยืนยันซื้อ "${card.name}" ราคา ${thb.format(Number(card.price ?? 0))} ระบบจะจองสินค้าไว้ให้คุณและพาไปหน้าชำระเงิน`}
-                confirmLabel="ซื้อเลย"
-                disabled={buyNow.isPending}
-                onConfirm={submitBuyNow}
-                trigger={
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur lg:hidden">
+          {isAuction && auction && !upcoming ? (
+            <div className="mx-auto max-w-xl">
+              {isLeading && !raising ? (
+                <div className="flex items-center gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-display text-base leading-tight font-semibold text-emerald-700 tabular-nums dark:text-emerald-400">
+                      คุณนำอยู่ {thb.format(price)}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      ขั้นต่ำถัดไป {thb.format(minNext)}
+                    </p>
+                  </div>
                   <Button
-                    className="min-h-12 flex-1 rounded-xl font-semibold hover:bg-primary hover:brightness-95 active:brightness-90"
-                    disabled={buyNow.isPending}
+                    variant="outline"
+                    className="min-h-12 rounded-xl border-primary px-5 font-semibold text-primary"
+                    onClick={() => setRaising(true)}
                   >
-                    {buyNow.isPending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <ShoppingBag className="h-4 w-4" />
-                    )}
-                    ซื้อเลย
+                    <Gavel className="h-4 w-4" /> เสนอเพิ่ม
                   </Button>
-                }
-              />
-            )}
-          </div>
+                </div>
+              ) : (
+                <>
+                  <p className="mb-1.5 px-0.5 text-[11px] text-muted-foreground">
+                    ขั้นละ{" "}
+                    <b className="text-foreground">{thb.format(Number(auction.bid_increment))}</b> ·
+                    ต่ำสุด <b className="text-foreground">{thb.format(minNext)}</b>
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-12 shrink-0 items-center rounded-2xl border border-border bg-card">
+                      <button
+                        type="button"
+                        aria-label="ลดราคาที่เสนอ"
+                        disabled={amount <= minNext}
+                        onClick={() =>
+                          setAmount((a) => Math.max(minNext, a - Number(auction.bid_increment)))
+                        }
+                        className="grid h-full w-11 place-items-center rounded-l-2xl text-foreground disabled:opacity-30"
+                      >
+                        <Minus className="h-4 w-4" />
+                      </button>
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        aria-label="จำนวนเงินที่ต้องการเสนอ"
+                        value={amount}
+                        min={minNext}
+                        step={Number(auction.bid_increment)}
+                        onChange={(e) => setAmount(Number(e.target.value))}
+                        className="h-full w-[4.5rem] min-w-0 [appearance:textfield] bg-transparent text-center font-display text-base font-bold tabular-nums outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                      />
+                      <button
+                        type="button"
+                        aria-label="เพิ่มราคาที่เสนอ"
+                        onClick={() => setAmount((a) => a + Number(auction.bid_increment))}
+                        className="grid h-full w-11 place-items-center rounded-r-2xl text-foreground"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <ConfirmDialog
+                      title="ยืนยันการเสนอราคา"
+                      description={`คุณกำลังเสนอราคา ${thb.format(amount)} สำหรับการ์ดนี้ การเสนอราคาไม่สามารถยกเลิกได้`}
+                      confirmLabel="เสนอราคา"
+                      disabled={placeBid.isPending}
+                      onConfirm={submitBid}
+                      trigger={
+                        <Button
+                          className="min-h-12 min-w-0 flex-1 rounded-xl font-semibold hover:bg-primary hover:brightness-95 active:brightness-90"
+                          disabled={placeBid.isPending}
+                        >
+                          {placeBid.isPending ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Gavel className="h-4 w-4" />
+                          )}
+                          <span className="truncate">เสนอ {thb.format(amount)}</span>
+                        </Button>
+                      }
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+          ) : (
+            <div className="mx-auto flex max-w-xl items-center gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] text-muted-foreground">
+                  {upcoming ? "เปิดประมูลใน" : "ราคาขาย"}
+                </p>
+                <p className="truncate font-display text-xl leading-tight font-bold tabular-nums">
+                  {upcoming ? formatCountdownTh(startCountdown) : thb.format(price)}
+                </p>
+              </div>
+              {upcoming ? (
+                <NotifyWhenOpenButton compact />
+              ) : (
+                <ConfirmDialog
+                  title="ยืนยันการซื้อการ์ด"
+                  description={`ยืนยันซื้อ "${card.name}" ราคา ${thb.format(Number(card.price ?? 0))} ระบบจะจองสินค้าไว้ให้คุณและพาไปหน้าชำระเงิน`}
+                  confirmLabel="ซื้อเลย"
+                  disabled={buyNow.isPending}
+                  onConfirm={submitBuyNow}
+                  trigger={
+                    <Button
+                      className="min-h-12 flex-1 rounded-xl font-semibold hover:bg-primary hover:brightness-95 active:brightness-90"
+                      disabled={buyNow.isPending}
+                    >
+                      {buyNow.isPending ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <ShoppingBag className="h-4 w-4" />
+                      )}
+                      ซื้อเลย
+                    </Button>
+                  }
+                />
+              )}
+            </div>
+          )}
         </div>
       )}
 

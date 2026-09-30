@@ -12,6 +12,7 @@ Disallow: /points
 Disallow: /addresses
 Disallow: /wishlist
 Disallow: /wins
+Disallow: /my-bids
 Disallow: /shop
 
 Sitemap: https://www.taletails-trade.com/sitemap.xml

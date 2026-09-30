@@ -2,20 +2,22 @@ import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
 import {
   ChevronRight,
   Coins,
-  CreditCard,
-  Hammer,
+  FileText,
+  Gavel,
+  Headset,
   Heart,
+  Lock,
   LogOut,
   MapPin,
   Moon,
-  Package,
-  Settings,
+  PackageCheck,
   ShieldCheck,
   Store,
   Sun,
   Trophy,
   Truck,
   User,
+  Wallet,
 } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -29,6 +31,8 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Switch } from "@/components/ui/switch";
 import { useIsAdmin, useIsSeller } from "@/hooks/useAdmin";
 import { useAuthUserId } from "@/hooks/useCardDetail";
+import { myBidState, useMyBids } from "@/hooks/useMyBids";
+import { usePendingOrderCount } from "@/hooks/usePendingOrderCount";
 import { usePointsBalance } from "@/hooks/usePoints";
 import { PointsBalanceCard } from "@/routes/points";
 import { useTheme } from "@/hooks/useTheme";
@@ -59,6 +63,11 @@ function ProfilePage() {
   const { isSeller } = useIsSeller();
   const { isAdmin } = useIsAdmin();
   const router = useRouter();
+  const pendingCount = usePendingOrderCount(user?.id ?? null).data ?? 0;
+  const myBids = useMyBids().data;
+  const outbidCount = (myBids ?? []).filter(
+    (r) => myBidState(r, user?.id ?? null) === "outbid",
+  ).length;
 
   const handleLogout = () => {
     logout();
@@ -117,56 +126,79 @@ function ProfilePage() {
 
             {/* My Activities */}
             <MenuGroup title="กิจกรรมของฉัน">
+              {/* ป้ายตัวเลข = จำนวนรอบที่ยังเปิดอยู่และถูกแซง (ข้อมูลจริง ไม่ใช่ตัวเลขตายตัวเหมือนเมนูเดิม) */}
+              <MenuItem
+                to="/my-bids"
+                icon={<Gavel className="h-5 w-5" />}
+                label="การประมูลของฉัน"
+                hint="นำอยู่ ถูกแซง ชนะ แพ้"
+                suffix={
+                  outbidCount > 0 ? (
+                    <Badge
+                      aria-label={`ถูกแซง ${outbidCount} รอบ`}
+                      className="h-5 min-w-5 rounded-full bg-destructive px-1.5 text-[10px] text-destructive-foreground"
+                    >
+                      {outbidCount}
+                    </Badge>
+                  ) : undefined
+                }
+              />
+              <MenuItem to="/wins" icon={<Trophy className="h-5 w-5" />} label="ของที่ประมูลชนะ" />
+              <MenuItem
+                to="/orders"
+                icon={<Wallet className="h-5 w-5" />}
+                label="รอชำระเงิน"
+                hint="จ่ายให้ทันก่อนหมดเวลา"
+                suffix={
+                  pendingCount > 0 ? (
+                    <Badge
+                      aria-label={`${pendingCount} รายการรอชำระเงิน`}
+                      className="h-5 min-w-5 rounded-full bg-primary px-1.5 text-[10px] text-primary-foreground"
+                    >
+                      {pendingCount}
+                    </Badge>
+                  ) : undefined
+                }
+              />
+              <MenuItem
+                to="/purchases"
+                icon={<Truck className="h-5 w-5" />}
+                label="การซื้อของฉัน"
+                hint="ติดตามพัสดุ"
+              />
+              <MenuItem to="/wishlist" icon={<Heart className="h-5 w-5" />} label="รายการโปรด" />
               <MenuItem
                 to="/points"
                 icon={<Coins className="h-5 w-5" />}
                 label="ประวัติแต้ม TT Points"
               />
-              <MenuItem to="/wins" icon={<Trophy className="h-5 w-5" />} label="ของที่ประมูลชนะ" />
-              <MenuItem
-                to="/auctions"
-                icon={<Hammer className="h-5 w-5" />}
-                label="ประวัติการประมูล"
-                suffix={
-                  <Badge className="h-5 min-w-5 rounded-full bg-destructive px-1.5 text-[10px] text-destructive-foreground">
-                    2
-                  </Badge>
-                }
-              />
-              <MenuItem
-                to="/orders"
-                icon={<Package className="h-5 w-5" />}
-                label="คำสั่งซื้อของฉัน"
-              />
-              <MenuItem
-                to="/purchases"
-                icon={<Truck className="h-5 w-5" />}
-                label="สถานะการซื้อสินค้า"
-              />
-              <MenuItem to="/wishlist" icon={<Heart className="h-5 w-5" />} label="รายการโปรด" />
             </MenuGroup>
 
-            {/* Account Settings */}
-            <MenuGroup title="ตั้งค่าบัญชี">
+            {/* ช่องทางชำระเงิน/ตั้งค่ารหัสผ่านถอดออก: ไม่มีหน้าจริง (เดิมลิงก์ไปตะกร้าและหน้าล็อกอิน)
+                ระบบจ่ายผ่าน PromptPay ตอนสั่งซื้อ ส่วนชื่อ/รูปแก้ที่การ์ดโปรไฟล์ด้านบน */}
+            <MenuGroup title="ตั้งค่า">
               <MenuItem
                 to="/addresses"
                 icon={<MapPin className="h-5 w-5" />}
                 label="ที่อยู่สำหรับจัดส่ง"
               />
-              <MenuItem
-                to="/checkout"
-                icon={<CreditCard className="h-5 w-5" />}
-                label="ช่องทางการชำระเงิน"
-              />
-              <MenuItem
-                to="/auth"
-                icon={<Settings className="h-5 w-5" />}
-                label="ตั้งค่าบัญชีและรหัสผ่าน"
-              />
               <ThemeRow />
             </MenuGroup>
 
-            {/* "ศูนย์ช่วยเหลือ / ติดต่อเรา" เคยลิงก์ไปหน้าข่าวสาร (ไม่มีข้อมูลติดต่อ) — ซ่อนไว้จนมีช่องทางติดต่อจริง */}
+            <MenuGroup title="ข้อมูลและช่วยเหลือ">
+              <MenuItem to="/contact" icon={<Headset className="h-5 w-5" />} label="ติดต่อเรา" />
+              <MenuItem
+                to="/purchase-policy"
+                icon={<PackageCheck className="h-5 w-5" />}
+                label="นโยบายการซื้อและจัดส่ง"
+              />
+              <MenuItem
+                to="/terms"
+                icon={<FileText className="h-5 w-5" />}
+                label="เงื่อนไขการใช้งาน"
+              />
+              <MenuItem to="/privacy" icon={<Lock className="h-5 w-5" />} label="ความเป็นส่วนตัว" />
+            </MenuGroup>
 
             <ConfirmDialog
               title="ออกจากระบบ"
@@ -206,12 +238,15 @@ function MenuItem({
   to,
   icon,
   label,
+  hint,
   suffix,
 }: {
   to: string;
   icon: ReactNode;
   label: string;
-  suffix?: ReactNode;
+  /** บรรทัดเล็กใต้ชื่อเมนู */
+  hint?: string | undefined;
+  suffix?: ReactNode | undefined;
 }) {
   return (
     <Link
@@ -222,8 +257,13 @@ function MenuItem({
         <span className="text-muted-foreground transition-colors duration-150 group-hover:text-primary group-active:text-primary">
           {icon}
         </span>
-        <span className="text-sm font-medium transition-colors duration-150 group-hover:text-primary group-active:text-primary">
+        <span className="py-1.5 text-sm font-medium transition-colors duration-150 group-hover:text-primary group-active:text-primary">
           {label}
+          {hint && (
+            <span className="block text-[11px] leading-tight font-normal text-muted-foreground">
+              {hint}
+            </span>
+          )}
         </span>
       </div>
       <div className="flex items-center gap-2">
