@@ -117,7 +117,7 @@ export function CardGallery({
                   type="button"
                   onClick={() => setActive(i)}
                   aria-label={`ดูรูปที่ ${i + 1}`}
-                  className="absolute top-1/2 left-1/2 z-0 aspect-[5/7] h-[84%] overflow-hidden rounded-2xl bg-tile opacity-60 shadow-md transition-[transform,opacity] duration-300 lg:hidden"
+                  className="absolute top-1/2 left-1/2 z-0 aspect-[4/5] h-[86%] overflow-hidden rounded-2xl bg-tile opacity-60 shadow-md transition-[transform,opacity] duration-300 lg:hidden"
                   style={{ transform: `translate(${-50 + o * 69}%, -50%) scale(0.8)` }}
                 >
                   <SmartImage src={src} alt="" transformWidth={300} className="object-contain" />
@@ -129,7 +129,7 @@ export function CardGallery({
           <div
             className={
               peek
-                ? "absolute top-1/2 left-1/2 z-10 aspect-[5/7] h-[84%] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl bg-tile shadow-[0_18px_34px_-14px_color-mix(in_oklch,var(--primary)_55%,transparent)] ring-2 ring-card lg:top-0 lg:left-0 lg:aspect-auto lg:h-full lg:w-full lg:translate-x-0 lg:translate-y-0 lg:rounded-none lg:shadow-none lg:ring-0"
+                ? "absolute top-1/2 left-1/2 z-10 aspect-[4/5] h-[86%] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl bg-tile shadow-[0_18px_34px_-14px_color-mix(in_oklch,var(--primary)_55%,transparent)] ring-2 ring-card lg:top-0 lg:left-0 lg:aspect-auto lg:h-full lg:w-full lg:translate-x-0 lg:translate-y-0 lg:rounded-none lg:shadow-none lg:ring-0"
                 : "contents"
             }
           >

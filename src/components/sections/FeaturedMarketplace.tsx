@@ -3,9 +3,11 @@ import {
   ArrowDownWideNarrow,
   ArrowRight,
   BadgeCheck,
+  Check,
   ChevronDown,
   Heart,
   Images,
+  Plus,
   SlidersHorizontal,
 } from "lucide-react";
 import { useState } from "react";
@@ -21,10 +23,11 @@ import {
 } from "@/components/ui/sheet";
 import { getFeaturedProducts, type Product } from "@/data/products";
 import { useMarketplaceCards } from "@/hooks/useSupabaseCatalog";
-import { thb } from "@/lib/cart";
+import { thb, useCart } from "@/lib/cart";
 import { useWatchlist } from "@/lib/watchlist";
-import { SmartImage } from "@/components/ui/smart-image";
 import { GradeBadge, MarketDiffChip } from "@/components/card/CardBits";
+import { ProductPhoto } from "@/components/card/ProductPhoto";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useCategories } from "@/hooks/useSiteContent";
 import { useMarketPriceIndex } from "@/hooks/useMarketStats";
@@ -39,6 +42,8 @@ export function ProductGridCard({ product }: { product: Product }) {
   const stock = product.stockQuantity ?? null;
   const lowStock = !isSold && stock !== null && stock > 0 && stock <= 3;
   const photoCount = product.images?.length ?? 0;
+  const cart = useCart();
+  const requireAuth = useRequireAuth();
 
   // เทียบราคาที่ตั้งขายกับราคาตลาดของ "การ์ดรุ่นเดียวกัน" (ชื่อ + ชุด + เกรด)
   const market = lookup({
@@ -65,26 +70,39 @@ export function ProductGridCard({ product }: { product: Product }) {
     );
   };
 
+  // ใส่ตะกร้าจากหน้าตลาดได้เลย (ตะกร้ารับรายการละ 1 ชิ้น กดซ้ำไม่เพิ่ม) — ขายแล้ว/รอชำระไม่มีปุ่ม
+  const canBuy = !isSold && !isPending && (stock === null || stock > 0);
+  const inCart = cart.lines.some((l) => l.id === product.id);
+  const addToCart = () => {
+    if (!requireAuth("กรุณาเข้าสู่ระบบก่อนสั่งซื้อ")) return;
+    cart.add({
+      id: product.id,
+      name: product.cardName,
+      price: product.price,
+      imageUrl: product.imageUrl,
+    });
+    toast.success("เพิ่มลงตะกร้าแล้ว", { description: product.cardName });
+  };
+
   return (
-    <article className="group relative flex flex-col rounded-[18px] bg-card p-2 shadow-[0_1px_2px_oklch(0.3_0.03_55/0.06)] ring-1 ring-border/70 transition-shadow duration-200 hover:shadow-card">
+    <article className="group relative flex flex-col overflow-hidden rounded-[20px] bg-card shadow-[0_1px_2px_oklch(0.3_0.03_55/0.05),0_14px_30px_-16px_oklch(0.45_0.12_45/0.3)] transition-[box-shadow,transform] duration-200 hover:shadow-[0_1px_2px_oklch(0.3_0.03_55/0.05),0_20px_40px_-18px_oklch(0.45_0.12_45/0.4)] active:scale-[0.99] dark:ring-1 dark:ring-border/70">
       <Link
         to="/product/$id"
         params={{ id: product.id }}
-        className="flex flex-col rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        className="flex flex-1 flex-col outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
         aria-label={product.cardName}
       >
-        {/* ช่องรูป 5:7 เท่าการ์ดจริง — รูปที่ครอบตอนลงสินค้าจะพอดีช่องเต็มใบ */}
-        <div className="relative aspect-[5/7] overflow-hidden rounded-xl bg-tile transition-transform duration-200 group-active:scale-[0.98]">
-          <SmartImage
+        {/* กรอบ 4:5 ชนขอบการ์ด (ไม่มีกรอบซ้อน) — รูปเลือกเต็มกรอบหรือเห็นทั้งรูป + พื้นเบลอเอง */}
+        <div className="relative aspect-[4/5] overflow-hidden bg-tile">
+          <ProductPhoto
             src={product.imageUrl}
             alt={`${product.cardName} ${product.setName}`}
-            transformWidth={600}
-            className={`object-cover ${isSold ? "opacity-45 grayscale-[40%]" : ""}`}
+            className={isSold ? "opacity-45 grayscale-[40%]" : undefined}
           />
 
           {(isSold || isPending) && (
             <span
-              className={`absolute top-2 left-2 rounded-full px-2.5 py-1 text-[11px] font-semibold shadow-sm ${
+              className={`absolute top-2.5 left-2.5 rounded-full px-2.5 py-1 text-[11px] font-semibold shadow-sm ${
                 isSold ? "bg-foreground/85 text-background" : "bg-amber-500 text-white"
               }`}
             >
@@ -94,7 +112,7 @@ export function ProductGridCard({ product }: { product: Product }) {
 
           {/* บอกว่ามีหลายรูปตั้งแต่หน้าตลาด ไม่ต้องกดเข้าไปถึงจะรู้ */}
           {photoCount > 1 && (
-            <span className="absolute bottom-2 left-2 inline-flex h-[22px] items-center gap-1 rounded-full bg-foreground/70 px-2 text-[11px] font-semibold text-background backdrop-blur-sm">
+            <span className="absolute bottom-2.5 left-2.5 inline-flex h-[22px] items-center gap-1 rounded-full bg-foreground/70 px-2 text-[11px] font-semibold text-background backdrop-blur-sm">
               <Images className="h-3 w-3" />
               {photoCount} รูป
             </span>
@@ -107,7 +125,7 @@ export function ProductGridCard({ product }: { product: Product }) {
           />
         </div>
 
-        <div className="flex flex-col px-1.5 pt-2.5 pb-1">
+        <div className="flex flex-1 flex-col px-3 pt-2.5 pb-3">
           <p className="flex min-h-4 items-center gap-1 text-xs text-muted-foreground">
             <span className="truncate">{product.setName !== "-" ? product.setName : " "}</span>
             {product.isVerified && (
@@ -117,20 +135,21 @@ export function ProductGridCard({ product }: { product: Product }) {
           <h3 className="mt-0.5 line-clamp-2 min-h-10 text-[15px] leading-snug font-semibold break-words text-foreground sm:text-base">
             {product.cardName}
           </h3>
-          <div className="mt-1.5 flex items-center justify-between gap-1.5">
+          {/* เว้นที่ขวาให้ปุ่มใส่ตะกร้า (ปุ่มอยู่นอกลิงก์ ลอยมุมขวาล่าง) */}
+          <div className="mt-1.5 flex min-h-11 flex-col justify-center pr-12">
             <p
-              className={`truncate font-display text-base font-bold sm:text-lg ${isSold ? "text-muted-foreground" : ""}`}
+              className={`truncate font-display text-base font-bold tabular-nums sm:text-lg ${isSold ? "text-muted-foreground" : ""}`}
             >
               {thb.format(product.price)}
             </p>
-            <MarketDiffChip diff={diff} />
+            <div className="flex min-h-4 items-center gap-1.5 truncate text-[11px] text-muted-foreground">
+              <MarketDiffChip diff={diff} />
+              {lowStock && <span className="font-semibold text-primary">เหลือ {stock} ชิ้น</span>}
+              {!diff && !lowStock && product.soldCount > 0 && (
+                <span>ขายแล้ว {product.soldCount}</span>
+              )}
+            </div>
           </div>
-          {/* บรรทัดสต็อก/ยอดขาย — เว้นความสูงไว้เสมอให้การ์ดทุกใบเรียงตรงกัน */}
-          <p className="mt-0.5 flex h-4 items-center gap-1 truncate text-[11px] text-muted-foreground">
-            {lowStock && <span className="font-semibold text-primary">เหลือ {stock} ชิ้น</span>}
-            {lowStock && product.soldCount > 0 && <span aria-hidden>·</span>}
-            {product.soldCount > 0 && <span>ขายแล้ว {product.soldCount}</span>}
-          </p>
         </div>
       </Link>
 
@@ -140,12 +159,28 @@ export function ProductGridCard({ product }: { product: Product }) {
         aria-label={wished ? "นำออกจากรายการที่อยากได้" : "เพิ่มลงรายการที่อยากได้"}
         aria-pressed={wished}
         onClick={toggleWish}
-        className="absolute top-4 right-4 flex h-9 w-9 items-center justify-center rounded-full bg-card/90 shadow-sm ring-1 ring-border/60 backdrop-blur transition-transform duration-150 hover:text-primary active:scale-90"
+        className="absolute top-2.5 right-2.5 flex h-9 w-9 items-center justify-center rounded-full bg-card/90 shadow-[0_4px_10px_-4px_rgba(0,0,0,0.3)] backdrop-blur transition-transform duration-150 hover:text-primary active:scale-90"
       >
         <Heart
           className={`h-4 w-4 ${wished ? "fill-primary text-primary" : "text-muted-foreground"}`}
         />
       </button>
+
+      {canBuy && (
+        <button
+          type="button"
+          onClick={addToCart}
+          disabled={inCart}
+          aria-label={inCart ? "อยู่ในตะกร้าแล้ว" : `ใส่ตะกร้า ${product.cardName}`}
+          className={`absolute right-3 bottom-3 flex h-11 w-11 items-center justify-center rounded-[14px] transition-transform duration-150 active:scale-90 ${
+            inCart
+              ? "bg-secondary text-primary"
+              : "bg-primary text-primary-foreground shadow-[0_8px_16px_-8px_color-mix(in_oklch,var(--primary)_80%,transparent)]"
+          }`}
+        >
+          {inCart ? <Check className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
+        </button>
+      )}
     </article>
   );
 }
@@ -327,7 +362,7 @@ export function FeaturedMarketplace({
             {categories.length > 0 && (
               <nav
                 aria-label="หมวดเกม"
-                className="-mx-4 mb-2 flex gap-1 no-scrollbar scroll-fade overflow-x-auto border-b border-border px-4 sm:mx-0 sm:px-0"
+                className="-mx-4 mb-1 flex gap-2 no-scrollbar scroll-fade overflow-x-auto px-4 py-2 sm:mx-0 sm:px-0"
               >
                 {[
                   { id: "all", name: "ทั้งหมด" },
@@ -339,10 +374,11 @@ export function FeaturedMarketplace({
                     type="button"
                     onClick={() => setCategory(c.id)}
                     aria-pressed={category === c.id}
-                    className={`-mb-px min-h-11 shrink-0 border-b-2 px-4 text-sm font-semibold transition-colors ${
+                    // แคปซูลลอยเงานุ่ม (หน้าตลาดแบบ A) — หมวดที่เลือกเป็นสีส้มทึบ
+                    className={`min-h-11 shrink-0 rounded-full px-4 text-sm font-semibold transition-[color,background-color,box-shadow] duration-150 active:scale-95 ${
                       category === c.id
-                        ? "border-primary text-foreground"
-                        : "border-transparent text-muted-foreground hover:text-foreground"
+                        ? "bg-primary text-primary-foreground shadow-[0_8px_18px_-10px_color-mix(in_oklch,var(--primary)_85%,transparent)]"
+                        : "bg-card text-foreground shadow-[0_1px_2px_oklch(0.3_0.03_55/0.05),0_6px_14px_-10px_oklch(0.45_0.12_45/0.4)] hover:text-primary dark:ring-1 dark:ring-border/70"
                     }`}
                   >
                     {c.name}

@@ -386,6 +386,8 @@ function ProductPage() {
               alt={`${product.cardName} ${gradeText}`}
               status={soldOut ? "sold" : pendingPayment ? "locked" : "available"}
               dimmed={soldOut}
+              // มือถือ: แกลเลอรีเตี้ยแบบการ์ดกลาง + รูปข้างโผล่ ให้ราคาและปุ่มซื้อขึ้นจอแรก (เหมือนหน้าประมูล)
+              peek
             />
           </div>
 
@@ -564,18 +566,21 @@ function ProductPage() {
       </main>
 
       {/* แถบซื้อด้านล่าง (มือถือ) — เมนูล่างของเว็บถูกซ่อนในหน้านี้ จึงเหลือแถบเดียว */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur lg:hidden">
-        <div className="mx-auto flex max-w-xl items-center gap-2.5">
-          <div className="mr-1 min-w-0">
-            <p className="truncate font-display text-xl leading-tight font-bold tabular-nums">
-              {thb.format(product.price)}
-            </p>
-            {stockLeft !== null && stockLeft > 0 && !notOnSale && (
-              <p className="text-[11px] font-semibold text-primary">เหลือ {stockLeft} ชิ้น</p>
-            )}
+      {/* แถบลอยแบบแคปซูล ห่างขอบซ้าย/ขวา/ล่าง เหมือนเมนูล่าง — iPhone มุมจอโค้งและมีขีด Home ถ้าชิดขอบปุ่มจะโดนกินและกดยาก */}
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(1.25rem,env(safe-area-inset-bottom))] lg:hidden">
+        <div className="pointer-events-auto mx-auto max-w-xl rounded-[1.75rem] border border-border/70 bg-card/95 px-3.5 pt-2.5 pb-2.5 shadow-[0_18px_40px_-16px_oklch(0.35_0.06_45/0.45)] backdrop-blur-xl">
+          <div className="mx-auto flex max-w-xl items-center gap-2.5">
+            <div className="mr-1 min-w-0">
+              <p className="truncate font-display text-xl leading-tight font-bold tabular-nums">
+                {thb.format(product.price)}
+              </p>
+              {stockLeft !== null && stockLeft > 0 && !notOnSale && (
+                <p className="text-[11px] font-semibold text-primary">เหลือ {stockLeft} ชิ้น</p>
+              )}
+            </div>
+            {cartButton}
+            {buyButton}
           </div>
-          {cartButton}
-          {buyButton}
         </div>
       </div>
 

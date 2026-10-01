@@ -2,6 +2,7 @@ import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-r
 import { LogoLoader } from "@/components/ui/logo-loader";
 import {
   Coins,
+  FileSpreadsheet,
   GalleryHorizontal,
   MessageSquareWarning,
   LayoutGrid,
@@ -38,6 +39,7 @@ export const Route = createFileRoute("/admin")({
 
 const TABS: { to: string; label: string; hint: string; icon: LucideIcon }[] = [
   { to: "/admin", label: "การ์ดทั้งหมด", hint: "ลงขาย & ประมูล", icon: LayoutGrid },
+  { to: "/admin/import", label: "นำเข้าหลายใบ", hint: "Excel + รูป", icon: FileSpreadsheet },
   { to: "/admin/orders", label: "คำสั่งซื้อ", hint: "สลิป & จัดส่ง", icon: Receipt },
   { to: "/admin/members", label: "สมาชิก", hint: "สิทธิ์ & ระงับบัญชี", icon: Users },
   { to: "/admin/news", label: "ข่าวสาร", hint: "บทความ & โปรโมชัน", icon: Newspaper },

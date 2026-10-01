@@ -15,9 +15,11 @@ export interface CropTarget {
   fileName: string;
 }
 
-type RatioKey = "card" | "slab" | "square" | "original";
+type RatioKey = "portrait" | "card" | "slab" | "square" | "original";
 
 const RATIOS: { key: RatioKey; label: string; hint: string; value: number | null }[] = [
+  // หน้าตลาดใช้กรอบ 4:5 → รูปที่ครอปสัดส่วนนี้เต็มกรอบพอดี (ค่าเริ่มต้นตอนลงสินค้า)
+  { key: "portrait", label: "4:5 (แนะนำ)", hint: "เต็มกรอบหน้าตลาด", value: 4 / 5 },
   { key: "card", label: "การ์ด 5:7", hint: "การ์ดเปล่า 63×88 มม.", value: 5 / 7 },
   { key: "slab", label: "สแลบเกรด", hint: "กล่องเกรด PSA / BGS / CGC", value: 3 / 5 },
   { key: "square", label: "สี่เหลี่ยม", hint: "1:1 เช่น กล่องสุ่ม", value: 1 },
@@ -25,7 +27,7 @@ const RATIOS: { key: RatioKey; label: string; hint: string; value: number | null
 ];
 
 /**
- * หน้าครอบรูปทีละรูป (ล็อกสัดส่วนการ์ด 5:7 เป็นค่าเริ่มต้น)
+ * หน้าครอบรูปทีละรูป (ค่าเริ่มต้นตามที่ผู้เรียกส่งมา — ลงสินค้าใช้ 4:5 ให้ตรงกรอบหน้าตลาด)
  * - ใช้รูปนี้ → ส่งไฟล์ที่ครอบแล้ว · ข้ามรูปนี้ → ใช้รูปเดิม · ปิด → ข้ามรูปที่เหลือทั้งหมด
  */
 export function ImageCropDialog({
@@ -169,23 +171,25 @@ export function ImageCropDialog({
 
           <div className="space-y-3.5 px-4 py-3.5">
             {ratioChoices.length > 1 && (
-            <div className="no-scrollbar flex gap-1.5 overflow-x-auto">
-              {ratioChoices.map((r) => (
-                <button
-                  key={r.key}
-                  type="button"
-                  title={r.hint}
-                  onClick={() => setRatio(r.key)}
-                  aria-pressed={ratio === r.key}
-                  className={cn(
-                    "shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors",
-                    ratio === r.key ? "bg-foreground text-background" : "bg-tile text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {r.label}
-                </button>
-              ))}
-            </div>
+              <div className="no-scrollbar flex gap-1.5 overflow-x-auto">
+                {ratioChoices.map((r) => (
+                  <button
+                    key={r.key}
+                    type="button"
+                    title={r.hint}
+                    onClick={() => setRatio(r.key)}
+                    aria-pressed={ratio === r.key}
+                    className={cn(
+                      "shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors",
+                      ratio === r.key
+                        ? "bg-foreground text-background"
+                        : "bg-tile text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
             )}
 
             <div className="flex items-center gap-3">
@@ -235,7 +239,13 @@ export function ImageCropDialog({
 
           <div className="flex items-center justify-between gap-2 border-t border-border px-4 py-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] sm:pb-3">
             {allowSkip ? (
-              <Button type="button" variant="ghost" className="rounded-xl" onClick={skip} disabled={busy}>
+              <Button
+                type="button"
+                variant="ghost"
+                className="rounded-xl"
+                onClick={skip}
+                disabled={busy}
+              >
                 ข้ามรูปนี้
               </Button>
             ) : (
@@ -260,7 +270,8 @@ export function ImageCropDialog({
                 className="rounded-xl bg-gradient-ember font-semibold text-primary-foreground hover:opacity-90"
               >
                 {busy && <Loader2 className="h-4 w-4 animate-spin" />}
-                {applyLabel ?? (index + 1 < queue.length ? "ใช้รูปนี้ แล้วไปรูปถัดไป" : "ใช้รูปนี้")}
+                {applyLabel ??
+                  (index + 1 < queue.length ? "ใช้รูปนี้ แล้วไปรูปถัดไป" : "ใช้รูปนี้")}
               </Button>
             </div>
           </div>

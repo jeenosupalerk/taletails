@@ -74,7 +74,9 @@ export function ImagePicker({
   };
 
   const addFiles = (list: FileList | File[]) => {
-    const picked = Array.from(list).filter((f) => f.type.startsWith("image/") || /\.(heic|heif)$/i.test(f.name));
+    const picked = Array.from(list).filter(
+      (f) => f.type.startsWith("image/") || /\.(heic|heif)$/i.test(f.name),
+    );
     if (!picked.length) return;
     const room = MAX_IMAGES - items.length;
     if (room <= 0) {
@@ -150,7 +152,9 @@ export function ImagePicker({
         URL.revokeObjectURL(originalUrl);
         return;
       }
-      const next = itemsRef.current.map((i) => (i.id === item.id ? { ...i, original, originalUrl } : i));
+      const next = itemsRef.current.map((i) =>
+        i.id === item.id ? { ...i, original, originalUrl } : i,
+      );
       itemsRef.current = next;
       setItems(next);
       setQueue([{ id: item.id, url: originalUrl, fileName: original.name }]);
@@ -201,7 +205,9 @@ export function ImagePicker({
           <span className="grid h-12 w-12 place-items-center rounded-full bg-primary/10 text-primary">
             <ImagePlus className="h-5 w-5" />
           </span>
-          <span className="text-sm font-semibold text-foreground">ลากรูปมาวาง หรือกดเพื่อเลือก</span>
+          <span className="text-sm font-semibold text-foreground">
+            ลากรูปมาวาง หรือกดเพื่อเลือก
+          </span>
           <span className="text-xs text-muted-foreground">
             JPG, PNG, HEIC · สูงสุด {MAX_IMAGES} รูป · แนะนำถ่ายตรง พื้นเรียบ
           </span>
@@ -235,11 +241,16 @@ export function ImagePicker({
                 }}
                 onDragEnd={() => setDragId(null)}
                 className={cn(
-                  "group relative aspect-[5/7] cursor-grab overflow-hidden rounded-xl bg-tile ring-1 ring-border active:cursor-grabbing",
+                  "group relative aspect-[4/5] cursor-grab overflow-hidden rounded-xl bg-tile ring-1 ring-border active:cursor-grabbing",
                   dragId === item.id && "opacity-50 ring-2 ring-primary",
                 )}
               >
-                <img src={item.url} alt={`รูปที่ ${i + 1}`} className="h-full w-full object-cover" draggable={false} />
+                <img
+                  src={item.url}
+                  alt={`รูปที่ ${i + 1}`}
+                  className="h-full w-full object-cover"
+                  draggable={false}
+                />
                 {i === 0 && (
                   <span className="absolute top-1.5 left-1.5 inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10.5px] font-semibold text-primary-foreground shadow">
                     <Star className="h-3 w-3 fill-current" /> รูปปก
@@ -293,7 +304,7 @@ export function ImagePicker({
               <button
                 type="button"
                 onClick={() => inputRef.current?.click()}
-                className="flex aspect-[5/7] flex-col items-center justify-center gap-1.5 rounded-xl bg-card text-xs font-semibold text-primary ring-2 ring-primary/30 ring-inset transition-colors hover:bg-primary/5"
+                className="flex aspect-[4/5] flex-col items-center justify-center gap-1.5 rounded-xl bg-card text-xs font-semibold text-primary ring-2 ring-primary/30 ring-inset transition-colors hover:bg-primary/5"
               >
                 <span className="grid h-10 w-10 place-items-center rounded-full bg-primary/10">
                   <Plus className="h-5 w-5" />
@@ -306,13 +317,19 @@ export function ImagePicker({
             )}
           </div>
           <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
-            รูปแรกคือรูปปก · ลากหรือกดลูกศรเพื่อเรียงลำดับ · กด ✕ เพื่อลบ · กดไอคอนครอบเพื่อปรับใหม่ ·
-            ระบบย่อขนาดไฟล์ให้อัตโนมัติก่อนอัปโหลด
+            รูปแรกคือรูปปก · ลากหรือกดลูกศรเพื่อเรียงลำดับ · กด ✕ เพื่อลบ · กดไอคอนครอบเพื่อปรับใหม่
+            · ระบบย่อขนาดไฟล์ให้อัตโนมัติก่อนอัปโหลด
           </p>
         </>
       )}
 
-      <ImageCropDialog key={queue[0]?.id ?? "none"} queue={queue} onResult={onCropResult} onClose={() => setQueue([])} />
+      <ImageCropDialog
+        key={queue[0]?.id ?? "none"}
+        queue={queue}
+        onResult={onCropResult}
+        onClose={() => setQueue([])}
+        defaultRatio="portrait"
+      />
     </div>
   );
 }
