@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { useAuthUserId } from "@/hooks/useCardDetail";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { useWelcomePackStatus } from "@/hooks/useWelcomePack";
 
 const askedKey = (userId: string) => `taletails-push-prompt-${userId}`;
 
@@ -23,10 +24,13 @@ export function PushPermissionPrompt() {
   const userId = useAuthUserId();
   const { supported, needsInstall, permission, enabled, busy, waitingPermission, enable } =
     usePushNotifications();
+  const welcome = useWelcomePackStatus(userId);
+  // รอให้เปิดซองต้อนรับเสร็จก่อน ไม่ให้สองหน้าต่างเด้งซ้อนกัน
+  const welcomePending = welcome.isLoading || (welcome.data ? !welcome.data.claimed : false);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if (!userId || !supported || enabled) return;
+    if (!userId || !supported || enabled || welcomePending) return;
     if (permission === "denied") return;
     try {
       if (window.localStorage.getItem(askedKey(userId)) === "1") return;
@@ -35,7 +39,7 @@ export function PushPermissionPrompt() {
     }
     const timer = window.setTimeout(() => setOpen(true), 1500);
     return () => window.clearTimeout(timer);
-  }, [userId, supported, enabled, permission]);
+  }, [userId, supported, enabled, permission, welcomePending]);
 
   const remember = () => {
     if (!userId) return;
@@ -82,8 +86,8 @@ export function PushPermissionPrompt() {
           <p className="flex items-start gap-2 rounded-xl bg-secondary p-3 text-sm">
             <Bell className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
             <span>
-              กด<b className="font-semibold">ไอคอนกระดิ่ง</b>ในแถบที่อยู่ด้านบนของเบราว์เซอร์ แล้วเลือก
-              “อนุญาต” ปิดหน้าต่างนี้ได้เลย
+              กด<b className="font-semibold">ไอคอนกระดิ่ง</b>ในแถบที่อยู่ด้านบนของเบราว์เซอร์
+              แล้วเลือก “อนุญาต” ปิดหน้าต่างนี้ได้เลย
             </span>
           </p>
         )}

@@ -15,6 +15,7 @@ import { MobileBottomNav } from "@/components/site/MobileBottomNav";
 import { NotificationListener } from "@/components/site/NotificationListener";
 import { SplashScreen } from "@/components/ui/SplashScreen";
 import { Toaster } from "@/components/ui/sonner";
+import { WelcomePackIntro } from "@/components/welcome/WelcomePackIntro";
 import { AuthProvider } from "@/lib/auth";
 import { CartProvider } from "@/lib/cart";
 import { WatchlistProvider } from "@/lib/watchlist";
@@ -172,6 +173,7 @@ function RootComponent() {
             <NotificationListener />
             <AuctionWinWatcher />
             <PushPermissionPrompt />
+            <WelcomePackIntro />
 
             <SplashScreen />
             <Toaster position="top-right" richColors closeButton />

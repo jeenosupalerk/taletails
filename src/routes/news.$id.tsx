@@ -17,7 +17,7 @@ const dateFormatter = new Intl.DateTimeFormat("th-TH", {
 export const Route = createFileRoute("/news/$id")({
   // บทความจริงจากฐานข้อมูลก็ต้องมีหัวเรื่อง/รูปแชร์ตอนเรนเดอร์ฝั่งเซิร์ฟเวอร์ ไม่ใช่เฉพาะบทความตัวอย่าง
   loader: async ({ params }) => {
-    const mock = getArticleById(params.id) ?? null;
+    const mock = import.meta.env.DEV ? (getArticleById(params.id) ?? null) : null;
     if (mock) return { article: mock };
     try {
       const { data } = await supabase

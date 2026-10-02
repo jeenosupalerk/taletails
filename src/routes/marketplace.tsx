@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { FeaturedMarketplace } from "@/components/sections/FeaturedMarketplace";
 import { PageShell } from "@/components/site/PageShell";
-import { getFeaturedProducts } from "@/data/products";
 
 const SITE_URL = "https://www.taletails-trade.com";
 const OG_IMAGE = `${SITE_URL}/taletails-logo.jpg`;
@@ -40,29 +39,7 @@ export const Route = createFileRoute("/marketplace")({
               },
             ],
           },
-          {
-            "@context": "https://schema.org",
-            "@type": "ItemList",
-            itemListElement: getFeaturedProducts().map((product, i) => ({
-              "@type": "ListItem",
-              position: i + 1,
-              item: {
-                "@type": "Product",
-                name: product.cardName,
-                image: `${SITE_URL}${product.imageUrl}`,
-                description: `${product.setName} — สภาพ ${product.conditionTag}`,
-                sku: product.cardIdCode,
-                offers: {
-                  "@type": "Offer",
-                  price: product.price,
-                  priceCurrency: "THB",
-                  availability: "https://schema.org/InStock",
-                  url: `${SITE_URL}/marketplace`,
-                  seller: { "@type": "Organization", name: product.storeName },
-                },
-              },
-            })),
-          },
+          // รายการสินค้า/บทความใน SEO เคยใช้ข้อมูลตัวอย่าง (ของปลอม) → เอาออก เหลือแค่ breadcrumb
         ]),
       },
     ],

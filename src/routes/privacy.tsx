@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { EmailLink, LegalPage, type LegalSection } from "@/components/site/LegalPage";
 import { legalHead } from "@/lib/legal-head";
 import { SITE_URL } from "@/lib/seo";
+import { FACEBOOK_LOGIN_ENABLED, MANUAL_ALLOWED } from "@/lib/site-info";
 
 const title = "นโยบายความเป็นส่วนตัว | Taletails";
 const description =
@@ -17,10 +18,10 @@ const sections: LegalSection[] = [
   {
     heading: "ข้อมูลที่เราเก็บ",
     items: [
-      "ข้อมูลบัญชี: อีเมล ชื่อผู้ใช้ ชื่อ และรูปโปรไฟล์ (หากเข้าสู่ระบบด้วย Google หรือ Facebook จะได้ข้อมูลพื้นฐานจากบัญชีนั้น)",
+      `ข้อมูลบัญชี: อีเมล ชื่อผู้ใช้ ชื่อ และรูปโปรไฟล์ (หากเข้าสู่ระบบด้วย Google${FACEBOOK_LOGIN_ENABLED ? " หรือ Facebook" : ""} จะได้ข้อมูลพื้นฐานจากบัญชีนั้น)`,
       "ที่อยู่สำหรับจัดส่ง: ชื่อผู้รับ เบอร์โทรศัพท์ และที่อยู่ ที่คุณบันทึกไว้",
       "ข้อมูลการซื้อและประมูล: คำสั่งซื้อ ราคา การเสนอราคา รายการโปรด และแต้มสะสม",
-      "หลักฐานการโอนเงิน (สลิป) เฉพาะกรณีที่คุณเลือกโอนเอง",
+      ...(MANUAL_ALLOWED ? ["หลักฐานการโอนเงิน (สลิป) เฉพาะกรณีที่คุณเลือกโอนเอง"] : []),
       "ข้อมูลสำหรับส่งการแจ้งเตือนไปยังอุปกรณ์ เฉพาะเมื่อคุณกดอนุญาตรับแจ้งเตือน",
     ],
   },
@@ -41,7 +42,7 @@ const sections: LegalSection[] = [
     items: [
       "ระบบฐานข้อมูลและจัดเก็บไฟล์ของเว็บไซต์ (Supabase)",
       "ระบบชำระเงินออนไลน์ (Stripe) เมื่อคุณเลือกชำระออนไลน์ ข้อมูลบัตรอยู่กับผู้ให้บริการชำระเงิน ร้านไม่เก็บเลขบัตรของคุณ",
-      "Google และ Facebook สำหรับการเข้าสู่ระบบ",
+      `Google${FACEBOOK_LOGIN_ENABLED ? " และ Facebook" : ""} สำหรับการเข้าสู่ระบบ`,
       "ผู้ให้บริการขนส่ง ซึ่งได้รับชื่อผู้รับ เบอร์โทรศัพท์ และที่อยู่ เพื่อจัดส่งสินค้า",
     ],
   },

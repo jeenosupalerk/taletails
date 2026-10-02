@@ -57,7 +57,9 @@ export function usePublishedArticles() {
   });
 
   const rows = query.data ?? [];
-  const articles = rows.length > 0 ? rows.map(toArticle) : getLatestArticles();
+  // บทความตัวอย่างใช้เฉพาะตอนพัฒนา เว็บจริงไม่มีบทความ = หน้าว่าง
+  const articles =
+    rows.length > 0 ? rows.map(toArticle) : import.meta.env.DEV ? getLatestArticles() : [];
   return { ...query, articles };
 }
 

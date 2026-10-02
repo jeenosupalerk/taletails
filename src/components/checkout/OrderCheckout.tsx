@@ -32,9 +32,15 @@ import {
 } from "@/hooks/useAddresses";
 import { useAuthUserId, useCancelOrder, useOrder, useSubmitPayment } from "@/hooks/useCardDetail";
 import { formatCountdownTh, pad, useCountdown } from "@/hooks/useCountdown";
-import { useMyRedemptions, usePointsBalance, useRedeemPoints, useTtSettings } from "@/hooks/usePoints";
+import {
+  useMyRedemptions,
+  usePointsBalance,
+  useRedeemPoints,
+  useTtSettings,
+} from "@/hooks/usePoints";
 import { thb } from "@/lib/cart";
 import { startPromptPayPayment } from "@/lib/payments.functions";
+import { MANUAL_ALLOWED } from "@/lib/site-info";
 import { cn } from "@/lib/utils";
 import { StatusDialog } from "@/components/ui/status-dialog";
 
@@ -78,7 +84,9 @@ function ReservationBanner({ dueAt }: { dueAt: string | null }) {
       <span
         className={cn(
           "grid min-h-9 w-9 shrink-0 place-items-center rounded-full",
-          expired ? "bg-destructive/15 text-destructive" : "bg-gradient-ember text-primary-foreground",
+          expired
+            ? "bg-destructive/15 text-destructive"
+            : "bg-gradient-ember text-primary-foreground",
         )}
       >
         <Lock className="h-4 w-4" />
@@ -252,14 +260,11 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
       const isServerHtml = /<!DOCTYPE|<html|Internal Server Error|500/i.test(raw);
       toast.error(
         isServerHtml
-          ? "เซิร์ฟเวอร์ชำระเงินไม่ตอบสนอง กรุณาลองใหม่ หรือเลือกโอนเอง + แนบสลิป"
+          ? `เซิร์ฟเวอร์ชำระเงินไม่ตอบสนอง กรุณาลองใหม่${MANUAL_ALLOWED ? " หรือเลือกโอนเอง + แนบสลิป" : ""}`
           : raw || "เริ่มการชำระเงินไม่สำเร็จ",
       );
     }
-
   };
-
-
 
   const send = () => {
     if (!userId) {
@@ -300,7 +305,6 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
       },
     );
   };
-
 
   return (
     <div className="min-h-screen bg-background pb-16">
@@ -431,7 +435,9 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                 <PendingRewardsNote userId={userId ?? null} />
                 {/* ที่อยู่จัดส่ง */}
                 <section className="space-y-3 rounded-3xl border border-border/70 bg-card p-4">
-                  <h2 className="font-display text-sm tracking-[0.16em] uppercase">ที่อยู่จัดส่ง</h2>
+                  <h2 className="font-display text-sm tracking-[0.16em] uppercase">
+                    ที่อยู่จัดส่ง
+                  </h2>
 
                   {savedAddresses.length > 0 && (
                     <div className="space-y-2">
@@ -459,9 +465,7 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                                   selected ? "border-primary" : "border-muted-foreground/50",
                                 )}
                               >
-                                {selected && (
-                                  <span className="h-2 w-2 rounded-full bg-primary" />
-                                )}
+                                {selected && <span className="h-2 w-2 rounded-full bg-primary" />}
                               </span>
                               <span className="min-w-0 flex-1">
                                 <span className="flex flex-wrap items-center gap-2">
@@ -631,7 +635,9 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="flex flex-wrap items-center gap-2">
-                        <span className="text-sm font-semibold">ชำระออนไลน์ (บัตร / PromptPay / Apple Pay)</span>
+                        <span className="text-sm font-semibold">
+                          ชำระออนไลน์ (บัตร / PromptPay / Apple Pay)
+                        </span>
                         <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-medium text-primary">
                           แนะนำ
                         </span>
@@ -642,26 +648,28 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                     </span>
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={() => setMethod("manual")}
-                    className={cn(
-                      "flex w-full items-start gap-3 rounded-2xl border p-3 text-left transition-colors",
-                      method === "manual"
-                        ? "border-primary/60 bg-primary/5"
-                        : "border-border/70 hover:border-primary/40",
-                    )}
-                  >
-                    <span className="grid min-h-10 w-10 shrink-0 place-items-center rounded-xl bg-secondary text-foreground">
-                      <QrCode className="h-5 w-5" />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="text-sm font-semibold">โอนเอง + แนบสลิป</span>
-                      <span className="mt-0.5 block text-xs break-words text-muted-foreground">
-                        สแกน QR PromptPay ของร้าน แล้วแนบสลิปให้ทีมงานตรวจสอบ
+                  {MANUAL_ALLOWED && (
+                    <button
+                      type="button"
+                      onClick={() => setMethod("manual")}
+                      className={cn(
+                        "flex w-full items-start gap-3 rounded-2xl border p-3 text-left transition-colors",
+                        method === "manual"
+                          ? "border-primary/60 bg-primary/5"
+                          : "border-border/70 hover:border-primary/40",
+                      )}
+                    >
+                      <span className="grid min-h-10 w-10 shrink-0 place-items-center rounded-xl bg-secondary text-foreground">
+                        <QrCode className="h-5 w-5" />
                       </span>
-                    </span>
-                  </button>
+                      <span className="min-w-0 flex-1">
+                        <span className="text-sm font-semibold">โอนเอง + แนบสลิป</span>
+                        <span className="mt-0.5 block text-xs break-words text-muted-foreground">
+                          สแกน QR PromptPay ของร้าน แล้วแนบสลิปให้ทีมงานตรวจสอบ
+                        </span>
+                      </span>
+                    </button>
+                  )}
                 </section>
 
                 <Button
@@ -784,7 +792,6 @@ export function OrderCheckout({ orderId }: { orderId: string }) {
                 )}
               </>
             )}
-
           </>
         )}
       </main>
@@ -859,7 +866,6 @@ function Field({
     </div>
   );
 }
-
 
 /** ของรางวัล TT ที่แลกไว้และรอส่ง — แจ้งลูกค้าว่าจะส่งไปพร้อมคำสั่งซื้อนี้ (แอดมินแนบตอนแพ็กของ) */
 function PendingRewardsNote({ userId }: { userId: string | null }) {
@@ -974,7 +980,9 @@ function PointsRedeemPanel({
       )}
       <p className="text-[11px] text-muted-foreground">
         1 TT = {thb.format(value)} •{" "}
-        {settings.cash_max_pct >= 100 ? "ส่วนลดไม่เกินราคาสินค้า" : `ใช้ได้ไม่เกิน ${settings.cash_max_pct}% ของยอด`}
+        {settings.cash_max_pct >= 100
+          ? "ส่วนลดไม่เกินราคาสินค้า"
+          : `ใช้ได้ไม่เกิน ${settings.cash_max_pct}% ของยอด`}
         {settings.v2_active && settings.cash_redeem_until
           ? ` • ใช้ลดราคาได้ถึง ${new Date(settings.cash_redeem_until).toLocaleDateString("th-TH", { dateStyle: "medium" })} หลังจากนั้นแลกของรางวัลแทน`
           : ""}

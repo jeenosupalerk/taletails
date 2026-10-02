@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { ArticlesSection } from "@/components/sections/ArticlesSection";
 import { PageShell } from "@/components/site/PageShell";
-import { getLatestArticles } from "@/data/articles";
 
 const SITE_URL = "https://www.taletails-trade.com";
 const OG_IMAGE = `${SITE_URL}/taletails-logo.jpg`;
@@ -35,24 +34,7 @@ export const Route = createFileRoute("/news")({
               { "@type": "ListItem", position: 2, name: "ข่าวสาร", item: `${SITE_URL}/news` },
             ],
           },
-          {
-            "@context": "https://schema.org",
-            "@type": "ItemList",
-            itemListElement: getLatestArticles().map((article, i) => ({
-              "@type": "ListItem",
-              position: i + 1,
-              item: {
-                "@type": "Article",
-                headline: article.title,
-                image: `${SITE_URL}${article.thumbnailUrl}`,
-                datePublished: article.publishedDate,
-                articleSection: article.categoryTag,
-                inLanguage: "th-TH",
-                author: { "@type": "Organization", name: "Taletails" },
-                publisher: { "@type": "Organization", name: "Taletails" },
-              },
-            })),
-          },
+          // รายการสินค้า/บทความใน SEO เคยใช้ข้อมูลตัวอย่าง (ของปลอม) → เอาออก เหลือแค่ breadcrumb
         ]),
       },
     ],

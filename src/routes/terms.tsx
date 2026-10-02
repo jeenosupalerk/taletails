@@ -3,6 +3,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { EmailLink, LegalPage, type LegalSection } from "@/components/site/LegalPage";
 import { legalHead } from "@/lib/legal-head";
 import { SITE_URL } from "@/lib/seo";
+import { FACEBOOK_LOGIN_ENABLED, MANUAL_ALLOWED } from "@/lib/site-info";
 
 const title = "เงื่อนไขการใช้งาน | Taletails";
 const description =
@@ -23,7 +24,7 @@ const sections: LegalSection[] = [
   {
     heading: "บัญชีผู้ใช้",
     items: [
-      "สมัครและเข้าสู่ระบบได้ด้วยอีเมล หรือบัญชี Google / Facebook",
+      `สมัครและเข้าสู่ระบบได้ด้วยอีเมล หรือบัญชี Google${FACEBOOK_LOGIN_ENABLED ? " / Facebook" : ""}`,
       "ให้ข้อมูลที่เป็นจริง โดยเฉพาะชื่อและที่อยู่สำหรับจัดส่ง",
       "คุณรับผิดชอบการใช้งานทั้งหมดที่เกิดขึ้นในบัญชีของคุณ",
     ],
@@ -48,7 +49,10 @@ const sections: LegalSection[] = [
     heading: "การชำระเงิน",
     items: [
       "ชำระออนไลน์ผ่านหน้าชำระเงินของผู้ให้บริการ (บัตร, PromptPay, Apple Pay) ระบบตรวจสอบเงินเข้าเอง",
-      "หรือโอนเองผ่าน QR PromptPay ของร้านแล้วแนบสลิป ทีมงานจะตรวจสอบและยืนยัน",
+      // ช่องโอนเองถูกปิดตอนเปิดร้าน — แสดงข้อนี้เฉพาะเมื่อเปิดใช้จริง
+      ...(MANUAL_ALLOWED
+        ? ["หรือโอนเองผ่าน QR PromptPay ของร้านแล้วแนบสลิป ทีมงานจะตรวจสอบและยืนยัน"]
+        : []),
     ],
   },
   {

@@ -3,11 +3,14 @@
  * Produces the exact string that banking apps expect to see encoded in the QR.
  */
 
-const PROMPTPAY_ID =
-  (import.meta.env['VITE_PROMPTPAY_ID'] as string | undefined)?.trim() || "0812345678";
+// ห้ามมีเลขสำรอง: เคยใช้เลขตัวอย่าง 0812345678 ซึ่งถ้าลูกค้าโอนจริงเงินจะเข้าคนอื่น
+const PROMPTPAY_ID = (import.meta.env["VITE_PROMPTPAY_ID"] as string | undefined)?.trim() || "";
+
+/** มีเลข PromptPay จริงของร้านหรือยัง (ไม่มี = ซ่อนช่องโอนเอง) */
+export const HAS_PROMPTPAY_ID = PROMPTPAY_ID.length > 0;
 
 const PROMPTPAY_NAME =
-  (import.meta.env['VITE_PROMPTPAY_NAME'] as string | undefined)?.trim() || "TALETAILS";
+  (import.meta.env["VITE_PROMPTPAY_NAME"] as string | undefined)?.trim() || "TALETAILS";
 
 function tag(id: string, value: string) {
   return `${id}${String(value.length).padStart(2, "0")}${value}`;

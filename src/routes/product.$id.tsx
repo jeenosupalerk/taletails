@@ -51,7 +51,8 @@ import {
 export const Route = createFileRoute("/product/$id")({
   // demo = การ์ดตัวอย่างในโค้ด, seo = ข้อมูลการ์ดจริงจากฐานข้อมูลไว้ทำหัวเรื่อง/รูปแชร์ตอนเรนเดอร์ฝั่งเซิร์ฟเวอร์
   loader: async ({ params }) => {
-    const demo = getProductById(params.id) ?? null;
+    // สินค้าตัวอย่างในโค้ดเปิดได้เฉพาะตอนพัฒนา — เว็บจริงลิงก์ตัวอย่าง (prd-xxxx) จะเป็น "ไม่พบสินค้า"
+    const demo = import.meta.env.DEV ? (getProductById(params.id) ?? null) : null;
     const seo = demo ? null : await fetchSeoCard(params.id);
     return { demo, seo };
   },

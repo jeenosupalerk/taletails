@@ -240,7 +240,7 @@ export function FeaturedMarketplace({
   showHeading?: boolean;
   showFilter?: boolean;
 }) {
-  const { data: liveCards } = useMarketplaceCards();
+  const { data: liveCards, isLoading: cardsLoading } = useMarketplaceCards();
   const { lookup } = useMarketPriceIndex();
   // จอใหญ่เปิดเป็นแผงด้านขวาเต็มความสูง มือถือเป็นแผ่นล่างจอ — กันแผ่นล่างล้นจอบนโน้ตบุ๊ก
   const isMobile = useIsMobile();
@@ -256,8 +256,14 @@ export function FeaturedMarketplace({
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [sort, setSort] = useState("newest");
-  // Live Supabase rows when available, curated demo listings otherwise.
-  const all = liveCards && liveCards.length > 0 ? liveCards : getFeaturedProducts();
+  // เว็บจริงแสดงเฉพาะสินค้าจริง (ตลาดว่าง = ข้อความว่าง) — สินค้าตัวอย่างใช้เฉพาะตอนพัฒนาบนเครื่อง
+  // เคยโชว์การ์ดตัวอย่าง "ขายแล้ว 12" บนเว็บจริงตอนยังไม่มีของ ซึ่งทำให้ลูกค้าเข้าใจผิด
+  const all =
+    liveCards && liveCards.length > 0
+      ? liveCards
+      : import.meta.env.DEV
+        ? getFeaturedProducts()
+        : (liveCards ?? []);
 
   // ตัวเลือกในแผ่นตัวกรองมาจากสินค้าที่มีจริง ไม่โชว์ตัวเลือกที่กดแล้วได้ 0 ใบ
   const companyOptions = uniq(all.map(companyOf).filter((c) => c !== "RAW"));
@@ -566,7 +572,7 @@ export function FeaturedMarketplace({
             </p>
           </div>
         )}
-        {items.length === 0 && (
+        {items.length === 0 && !cardsLoading && (
           <p className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground">
             {anyFilter ? "ไม่พบการ์ดที่ตรงกับตัวกรอง ลองเอาบางตัวกรองออก" : "ยังไม่มีสินค้าในตลาด"}
           </p>

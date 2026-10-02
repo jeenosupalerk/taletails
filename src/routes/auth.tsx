@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import taletailsLogo from "@/assets/taletails-logo.jpg";
+import { FACEBOOK_LOGIN_ENABLED } from "@/lib/site-info";
 import { supabase } from "@/integrations/supabase/client";
 import { StatusDialog } from "@/components/ui/status-dialog";
 import { useAuth } from "@/lib/auth";
@@ -417,19 +418,21 @@ function AuthPage() {
         )}
         <span className="font-semibold">ดำเนินการต่อด้วย Google</span>
       </Button>
-      <Button
-        type="button"
-        onClick={() => void handleSocialLogin("facebook", "Facebook")}
-        disabled={isLoading || socialLoading !== null}
-        className="min-h-11 w-full gap-3 rounded-2xl bg-[#1877F2] text-white shadow-sm transition-all hover:bg-[#166fe5] hover:shadow-md disabled:opacity-60 disabled:hover:shadow-sm"
-      >
-        {socialLoading === "facebook" ? (
-          <Loader2 className="h-5 w-5 animate-spin" />
-        ) : (
-          <FacebookIcon className="h-5 w-5 shrink-0" />
-        )}
-        <span className="font-semibold">ดำเนินการต่อด้วย Facebook</span>
-      </Button>
+      {FACEBOOK_LOGIN_ENABLED && (
+        <Button
+          type="button"
+          onClick={() => void handleSocialLogin("facebook", "Facebook")}
+          disabled={isLoading || socialLoading !== null}
+          className="min-h-11 w-full gap-3 rounded-2xl bg-[#1877F2] text-white shadow-sm transition-all hover:bg-[#166fe5] hover:shadow-md disabled:opacity-60 disabled:hover:shadow-sm"
+        >
+          {socialLoading === "facebook" ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <FacebookIcon className="h-5 w-5 shrink-0" />
+          )}
+          <span className="font-semibold">ดำเนินการต่อด้วย Facebook</span>
+        </Button>
+      )}
     </div>
   );
 
