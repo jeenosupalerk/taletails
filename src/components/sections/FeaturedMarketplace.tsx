@@ -3,11 +3,9 @@ import {
   ArrowDownWideNarrow,
   ArrowRight,
   BadgeCheck,
-  Check,
   ChevronDown,
   Heart,
   Images,
-  Plus,
   SlidersHorizontal,
 } from "lucide-react";
 import { useState } from "react";
@@ -23,27 +21,30 @@ import {
 } from "@/components/ui/sheet";
 import { getFeaturedProducts, type Product } from "@/data/products";
 import { useMarketplaceCards } from "@/hooks/useSupabaseCatalog";
-import { thb, useCart } from "@/lib/cart";
+import { thb } from "@/lib/cart";
 import { useWatchlist } from "@/lib/watchlist";
-import { GradeBadge, MarketDiffChip } from "@/components/card/CardBits";
+import { GradeTag, MarketDiffChip } from "@/components/card/CardBits";
 import { ProductPhoto } from "@/components/card/ProductPhoto";
-import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useCategories } from "@/hooks/useSiteContent";
 import { useMarketPriceIndex } from "@/hooks/useMarketStats";
 import { diffVsMarket } from "@/lib/market-price";
 
+/**
+ * การ์ดสินค้าในตลาด — ธีมใหม่ 14 ต.ค. 2026 (mockup theme-pro ข้อ 4)
+ * ลำดับตัวหนังสือแบบแอปตลาดของสะสม: เกม·ภาษา (หนา) → ชื่อการ์ด (เทา) → ราคา (ดำหนา) + เทียบราคาตลาด
+ * ตัดปุ่ม + ใส่ตะกร้าออก (กดทั้งใบเข้าหน้าสินค้าแทน) ให้รูปการ์ดเป็นพระเอก และส้มเหลือแค่จุดที่ต้องกด
+ */
 export function ProductGridCard({ product }: { product: Product }) {
   const watchlist = useWatchlist();
   const wished = watchlist.has(product.id);
   const { lookup } = useMarketPriceIndex();
+  const { data: categoryRows } = useCategories();
   const isSold = product.status === "sold";
   const isPending = product.status === "locked";
   const stock = product.stockQuantity ?? null;
   const lowStock = !isSold && stock !== null && stock > 0 && stock <= 3;
   const photoCount = product.images?.length ?? 0;
-  const cart = useCart();
-  const requireAuth = useRequireAuth();
 
   // เทียบราคาที่ตั้งขายกับราคาตลาดของ "การ์ดรุ่นเดียวกัน" (ชื่อ + ชุด + เกรด)
   const market = lookup({
@@ -54,6 +55,27 @@ export function ProductGridCard({ product }: { product: Product }) {
     condition: product.conditionNote,
   });
   const diff = isSold ? null : diffVsMarket(product.price, market?.marketPrice);
+
+  // บรรทัดบน: เกม · ภาษา — ถ้าไม่มีทั้งคู่ใช้ชื่อชุดแทน (ไม่เติมค่าเดา)
+  const gameName = categoryRows?.find((c) => c.id === product.categoryId)?.name;
+  const metaParts = [gameName, isBlank(product.language) ? undefined : product.language].filter(
+    (v): v is string => Boolean(v),
+  );
+  const setName = isBlank(product.setName) ? undefined : product.setName;
+  const metaLine = metaParts.length > 0 ? metaParts.join(" · ") : setName;
+  // บรรทัดชื่อ: ชื่อการ์ด + ชุด (ถ้ายังไม่ได้ขึ้นบรรทัดบน) + เลขการ์ด — ให้คนสะสมแยกใบได้จากหน้าตลาด
+  // ชื่อชุดซ้ำกับชื่อการ์ด (เช่นกล่องบูสเตอร์ "ฟิวชั่นอาร์ต") ไม่ต้องขึ้นซ้ำ
+  const showSet =
+    metaParts.length > 0 &&
+    setName &&
+    setName.trim().toLowerCase() !== product.cardName.trim().toLowerCase();
+  const nameLine = [
+    product.cardName,
+    showSet ? setName : undefined,
+    isBlank(product.cardNo) ? undefined : `#${product.cardNo}`,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   const toggleWish = () => {
     const added = watchlist.toggle({
@@ -70,22 +92,8 @@ export function ProductGridCard({ product }: { product: Product }) {
     );
   };
 
-  // ใส่ตะกร้าจากหน้าตลาดได้เลย (ตะกร้ารับรายการละ 1 ชิ้น กดซ้ำไม่เพิ่ม) — ขายแล้ว/รอชำระไม่มีปุ่ม
-  const canBuy = !isSold && !isPending && (stock === null || stock > 0);
-  const inCart = cart.lines.some((l) => l.id === product.id);
-  const addToCart = () => {
-    if (!requireAuth("กรุณาเข้าสู่ระบบก่อนสั่งซื้อ")) return;
-    cart.add({
-      id: product.id,
-      name: product.cardName,
-      price: product.price,
-      imageUrl: product.imageUrl,
-    });
-    toast.success("เพิ่มลงตะกร้าแล้ว", { description: product.cardName });
-  };
-
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-[20px] bg-card shadow-[0_1px_2px_oklch(0.3_0.03_55/0.05),0_14px_30px_-16px_oklch(0.45_0.12_45/0.3)] transition-[box-shadow,transform] duration-200 hover:shadow-[0_1px_2px_oklch(0.3_0.03_55/0.05),0_20px_40px_-18px_oklch(0.45_0.12_45/0.4)] active:scale-[0.99] dark:ring-1 dark:ring-border/70">
+    <article className="group relative flex flex-col overflow-hidden rounded-[14px] bg-card transition-shadow duration-200 hover:shadow-card active:scale-[0.99] dark:ring-1 dark:ring-border/70">
       <Link
         to="/product/$id"
         params={{ id: product.id }}
@@ -100,87 +108,75 @@ export function ProductGridCard({ product }: { product: Product }) {
             className={isSold ? "opacity-45 grayscale-[40%]" : undefined}
           />
 
-          {(isSold || isPending) && (
-            <span
-              className={`absolute top-2.5 left-2.5 rounded-full px-2.5 py-1 text-[11px] font-semibold shadow-sm ${
-                isSold ? "bg-foreground/85 text-background" : "bg-amber-500 text-white"
-              }`}
-            >
-              {isSold ? "ขายแล้ว" : "รอชำระเงิน"}
-            </span>
-          )}
+          {/* มุมซ้ายบน: เกรด + สถานะ (ขายแล้ว/รอชำระ) เรียงลงมา */}
+          <div className="absolute top-2 left-2 flex max-w-[calc(100%-3.5rem)] flex-col items-start gap-1">
+            <GradeTag
+              grade={product.grade}
+              company={product.gradingCompany}
+              condition={product.conditionNote}
+            />
+            {(isSold || isPending) && (
+              <span
+                className={`inline-flex h-[22px] items-center rounded-md px-1.5 text-[11px] font-semibold ${
+                  isSold ? "bg-foreground/85 text-background" : "bg-amber-500 text-white"
+                }`}
+              >
+                {isSold ? "ขายแล้ว" : "รอชำระเงิน"}
+              </span>
+            )}
+          </div>
 
           {/* บอกว่ามีหลายรูปตั้งแต่หน้าตลาด ไม่ต้องกดเข้าไปถึงจะรู้ */}
           {photoCount > 1 && (
-            <span className="absolute bottom-2.5 left-2.5 inline-flex h-[22px] items-center gap-1 rounded-full bg-foreground/70 px-2 text-[11px] font-semibold text-background backdrop-blur-sm">
+            <span className="absolute bottom-2 left-2 inline-flex h-[22px] items-center gap-1 rounded-md bg-foreground/60 px-1.5 text-[11px] font-semibold text-background backdrop-blur-sm">
               <Images className="h-3 w-3" />
-              {photoCount} รูป
+              {photoCount}
             </span>
           )}
-
-          <GradeBadge
-            grade={product.grade}
-            company={product.gradingCompany}
-            condition={product.conditionNote}
-          />
         </div>
 
-        <div className="flex flex-1 flex-col px-3 pt-2.5 pb-3">
-          <p className="flex min-h-4 items-center gap-1 text-xs text-muted-foreground">
-            <span className="truncate">{product.setName !== "-" ? product.setName : " "}</span>
+        <div className="flex flex-1 flex-col px-2.5 pt-2 pb-3 sm:px-3">
+          <p className="flex min-h-4 items-center gap-1 text-xs font-semibold text-foreground">
+            <span className="truncate">{metaLine ?? " "}</span>
             {product.isVerified && (
               <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-accent" aria-label="ตรวจสอบแล้ว" />
             )}
           </p>
-          <h3 className="mt-0.5 line-clamp-2 min-h-10 text-[15px] leading-snug font-semibold break-words text-foreground sm:text-base">
-            {product.cardName}
+          <h3 className="mt-0.5 line-clamp-2 min-h-9 text-[13px] leading-snug font-normal break-words text-muted-foreground sm:text-sm">
+            {nameLine}
           </h3>
-          {/* เว้นที่ขวาให้ปุ่มใส่ตะกร้า (ปุ่มอยู่นอกลิงก์ ลอยมุมขวาล่าง) */}
-          <div className="mt-1.5 flex min-h-11 flex-col justify-center pr-12">
-            <p
-              className={`truncate font-display text-base font-bold tabular-nums sm:text-lg ${isSold ? "text-muted-foreground" : ""}`}
-            >
-              {thb.format(product.price)}
-            </p>
-            <div className="flex min-h-4 items-center gap-1.5 truncate text-[11px] text-muted-foreground">
-              <MarketDiffChip diff={diff} />
-              {lowStock && <span className="font-semibold text-primary">เหลือ {stock} ชิ้น</span>}
-              {!diff && !lowStock && product.soldCount > 0 && (
-                <span>ขายแล้ว {product.soldCount}</span>
-              )}
-            </div>
+          <p
+            className={`mt-2 truncate text-base font-semibold tabular-nums sm:text-[17px] ${isSold ? "text-muted-foreground" : "text-foreground"}`}
+          >
+            {thb.format(product.price)}
+          </p>
+          <div className="flex min-h-4 items-center gap-1.5 truncate text-[11px] text-muted-foreground">
+            <MarketDiffChip diff={diff} />
+            {lowStock && <span className="font-semibold text-primary">เหลือ {stock} ชิ้น</span>}
+            {!diff && !lowStock && product.soldCount > 0 && (
+              <span>ขายแล้ว {product.soldCount}</span>
+            )}
           </div>
         </div>
       </Link>
 
-      {/* ปุ่มหัวใจลอยมุมรูป แยกจากลิงก์ กดแล้วไม่เปิดหน้าสินค้า */}
-      <button
-        type="button"
-        aria-label={wished ? "นำออกจากรายการที่อยากได้" : "เพิ่มลงรายการที่อยากได้"}
-        aria-pressed={wished}
-        onClick={toggleWish}
-        className="absolute top-2.5 right-2.5 flex h-9 w-9 items-center justify-center rounded-full bg-card/90 shadow-[0_4px_10px_-4px_rgba(0,0,0,0.3)] backdrop-blur transition-transform duration-150 hover:text-primary active:scale-90"
-      >
-        <Heart
-          className={`h-4 w-4 ${wished ? "fill-primary text-primary" : "text-muted-foreground"}`}
-        />
-      </button>
-
-      {canBuy && (
+      {/* ปุ่มหัวใจมุมขวาล่างของรูป แยกจากลิงก์ กดแล้วไม่เปิดหน้าสินค้า
+          ชั้นโปร่งใสสัดส่วน 4:5 ทับตรงกรอบรูปพอดี (ปุ่มซ้อนในลิงก์ไม่ได้) · พื้นที่กด 44px วงกลมที่เห็น 32px */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 aspect-[4/5]">
         <button
           type="button"
-          onClick={addToCart}
-          disabled={inCart}
-          aria-label={inCart ? "อยู่ในตะกร้าแล้ว" : `ใส่ตะกร้า ${product.cardName}`}
-          className={`absolute right-3 bottom-3 flex h-11 w-11 items-center justify-center rounded-[14px] transition-transform duration-150 active:scale-90 ${
-            inCart
-              ? "bg-secondary text-primary"
-              : "bg-primary text-primary-foreground shadow-[0_8px_16px_-8px_color-mix(in_oklch,var(--primary)_80%,transparent)]"
-          }`}
+          aria-label={wished ? "นำออกจากรายการที่อยากได้" : "เพิ่มลงรายการที่อยากได้"}
+          aria-pressed={wished}
+          onClick={toggleWish}
+          className="pointer-events-auto absolute right-0.5 bottom-0.5 grid h-11 w-11 place-items-center"
         >
-          {inCart ? <Check className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
+          <span className="grid h-8 w-8 place-items-center rounded-full bg-card/95 shadow-[0_1px_3px_rgba(0,0,0,0.12)] backdrop-blur transition-transform duration-150 active:scale-90">
+            <Heart
+              className={`h-4 w-4 ${wished ? "fill-primary text-primary" : "text-muted-foreground"}`}
+            />
+          </span>
         </button>
-      )}
+      </div>
     </article>
   );
 }
@@ -577,7 +573,7 @@ export function FeaturedMarketplace({
             {anyFilter ? "ไม่พบการ์ดที่ตรงกับตัวกรอง ลองเอาบางตัวกรองออก" : "ยังไม่มีสินค้าในตลาด"}
           </p>
         )}
-        <div className="grid grid-cols-2 items-start gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 lg:gap-5">
+        <div className="grid grid-cols-2 items-start gap-2.5 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 lg:gap-5">
           {items.map((product, i) => (
             // หน้าแรกบนมือถือแสดง 4 ใบ (จอใหญ่แสดงครบ) ที่เหลือดูได้ที่ปุ่มด้านล่าง
             <div key={product.id} className={showHeading && i >= 4 ? "hidden sm:block" : undefined}>

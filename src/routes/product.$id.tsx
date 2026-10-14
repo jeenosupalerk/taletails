@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { ProductGridCard } from "@/components/sections/FeaturedMarketplace";
 import { PageShell } from "@/components/site/PageShell";
 import { BackButton } from "@/components/site/BackButton";
+import { ShareButton, type ShareTarget } from "@/components/site/ShareButton";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { CardGallery } from "@/components/card/CardGallery";
@@ -330,6 +331,15 @@ function ProductPage() {
       />
     </button>
   );
+  // แชร์: การ์ดย่อในแผ่นแชร์ + ข้อความที่เติมให้ตอนส่ง LINE/X (ใส่ราคาตอนแชร์ได้ เพราะเป็นข้อความ)
+  const shareTarget: ShareTarget = {
+    path: `/product/${product.id}`,
+    title: product.cardName,
+    subtitle: [gradeText, clean(product.setName)].filter(Boolean).join(" · ") || undefined,
+    priceText: thb.format(product.price),
+    imageUrl: product.imageUrl,
+    shareText: `${product.cardName}${gradeText ? ` · ${gradeText}` : ""} — ${thb.format(product.price)} บน Taletails`,
+  };
   const cartButton = (
     <Button
       variant="outline"
@@ -363,7 +373,10 @@ function ProductPage() {
           className="mb-4 flex items-center gap-2 text-xs text-muted-foreground lg:mb-6"
         >
           <BackButton className="lg:hidden" />
-          <div className="ml-auto lg:hidden">{wishButton}</div>
+          <div className="ml-auto flex gap-2 lg:hidden">
+            <ShareButton target={shareTarget} />
+            {wishButton}
+          </div>
           <span className="hidden items-center gap-1.5 lg:flex">
             <Link to="/marketplace" className="hover:text-foreground">
               ตลาดซื้อขาย
@@ -462,6 +475,7 @@ function ProductPage() {
                 {buyButton}
                 {cartButton}
                 {wishButton}
+                <ShareButton target={shareTarget} />
               </div>
 
               <ul className="mt-4 grid gap-3 border-t border-border/70 pt-4 text-[13px] leading-snug sm:grid-cols-3">

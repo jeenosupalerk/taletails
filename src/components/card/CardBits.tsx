@@ -48,12 +48,54 @@ export function GradeBadge({
   );
 }
 
+/**
+ * ป้ายเกรดเล็กมุมซ้ายบนของการ์ดในหน้าตลาด (ธีมใหม่ 14 ต.ค.) — "PSA 10" ในเม็ดสีเข้มบรรทัดเดียว
+ * ใช้แทน GradeBadge ก้อนใหญ่บนการ์ดขนาดเล็ก ไม่ให้บังรูปการ์ด · การ์ดไม่เกรด → ป้ายขาวขอบเทา
+ */
+export function GradeTag({
+  grade,
+  company,
+  condition,
+  className,
+}: {
+  grade?: string | null | undefined;
+  company?: string | null | undefined;
+  condition?: string | null | undefined;
+  className?: string | undefined;
+}) {
+  const { company: co, value } = splitGrade(grade, company, condition);
+  if (!value && !co) return null;
+  const numeric = /^\d+(\.\d+)?$/.test(value);
+  const label = numeric ? [co, value].filter(Boolean).join(" ") : value || co;
+  return (
+    <span
+      aria-label={numeric ? `เกรด ${label}` : label}
+      className={cn(
+        "inline-flex h-[22px] max-w-full items-center truncate rounded-md px-1.5 text-[11px] font-semibold leading-none tabular-nums",
+        numeric ? "bg-foreground text-background" : "bg-card text-foreground ring-1 ring-border",
+        className,
+      )}
+    >
+      {label}
+    </span>
+  );
+}
+
 /** ตัวนับเวลาแผ่นส้มอ่อนขนาดเล็ก สำหรับมุมรูปการ์ดประมูล */
-export function MiniFlipCountdown({ endTime, className }: { endTime: string; className?: string | undefined }) {
+export function MiniFlipCountdown({
+  endTime,
+  className,
+}: {
+  endTime: string;
+  className?: string | undefined;
+}) {
   const c = useCountdown(endTime);
   if (!c || c.isFinished) return null;
   const urgent = c.totalMs < 5 * 60 * 1000;
-  const parts = c.days >= 1 ? [`${c.days}ว`, pad(c.hours), pad(c.minutes)] : [pad(c.hours), pad(c.minutes), pad(c.seconds)];
+  const parts =
+    c.days >= 1
+      ? [`${c.days}ว`, pad(c.hours), pad(c.minutes)]
+      : [pad(c.hours), pad(c.minutes), pad(c.seconds)];
   return (
     <span
       role="timer"
@@ -65,7 +107,9 @@ export function MiniFlipCountdown({ endTime, className }: { endTime: string; cla
     >
       {parts.map((p, i) => (
         <span key={i} className="flex items-center gap-0.5">
-          {i > 0 && <span className="text-[11px] font-extrabold text-[var(--cd-fg)] opacity-50">:</span>}
+          {i > 0 && (
+            <span className="text-[11px] font-extrabold text-[var(--cd-fg)] opacity-50">:</span>
+          )}
           <span
             className={cn(
               "flip-tile rounded-[5px] px-1 py-0.5 font-display text-xs font-extrabold leading-none after:hidden",
@@ -84,13 +128,22 @@ export function MiniFlipCountdown({ endTime, className }: { endTime: string; cla
  * ป้ายเทียบราคาที่ตั้งขายกับราคาตลาด
  * ลบ = ถูกกว่าตลาด (สีเขียว ดีสำหรับผู้ซื้อ) · บวก = สูงกว่าตลาด (สีเทา)
  */
-export function MarketDiffChip({ diff, className }: { diff: number | null; className?: string | undefined }) {
+export function MarketDiffChip({
+  diff,
+  className,
+}: {
+  diff: number | null;
+  className?: string | undefined;
+}) {
   if (diff === null || !Number.isFinite(diff)) return null;
   const pct = Math.abs(diff);
   if (pct < 1) {
     return (
       <span
-        className={cn("shrink-0 rounded-full bg-muted px-1.5 py-0.5 text-[11px] font-semibold text-muted-foreground", className)}
+        className={cn(
+          "shrink-0 rounded-full bg-muted px-1.5 py-0.5 text-[11px] font-semibold text-muted-foreground",
+          className,
+        )}
         title="ใกล้เคียงราคาตลาด (เฉลี่ย 3 ครั้งล่าสุดที่ขายได้)"
       >
         ≈ ราคาตลาด

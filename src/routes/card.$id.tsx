@@ -19,6 +19,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { BackButton } from "@/components/site/BackButton";
+import { ShareButton, type ShareTarget } from "@/components/site/ShareButton";
 import {
   SITE_URL,
   absoluteImage,
@@ -296,12 +297,47 @@ function CardDetailPage() {
   };
 
   const price = isAuction ? Number(auction?.current_price ?? card.price) : Number(card.price);
+  // แชร์ประมูล: บอกราคาตอนนี้ + เวลาปิด ในข้อความ (ข้อความไม่ค้างเก่าเหมือนรูปที่แอปเก็บไว้)
+  const gradeLabel = card.grade
+    ? `${card.grading_company ? `${card.grading_company} ` : ""}${card.grade}`
+    : "";
+  const endLabel =
+    isAuction && auction?.end_time
+      ? new Date(auction.end_time).toLocaleString("th-TH", {
+          day: "numeric",
+          month: "short",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : "";
+  const liveNow = isAuction && Boolean(auction) && !closed && !upcoming;
+  // ยังไม่มีคนบิด → บอกราคาเริ่ม (หรือ "ยังไม่มีคนบิด" ถ้าเริ่ม ฿0) แทน "ราคาตอนนี้ ฿0" ที่ชวนงง
+  const startPrice = Number(auction?.starting_price ?? 0);
+  const priceWord =
+    Number(auction?.bid_count ?? 0) > 0
+      ? `ราคาตอนนี้ ${thb.format(price)}`
+      : startPrice > 0
+        ? `เริ่มต้น ${thb.format(startPrice)}`
+        : "ยังไม่มีคนบิด";
+  const shareTarget: ShareTarget = {
+    path: `/card/${card.id}`,
+    title: card.name,
+    subtitle: [gradeLabel, card.set_name ?? ""].filter(Boolean).join(" · ") || undefined,
+    priceText: liveNow ? `${priceWord}${endLabel ? ` · ปิด ${endLabel} น.` : ""}` : undefined,
+    imageUrl: images[0],
+    shareText: liveNow
+      ? `🔨 ประมูล ${card.name}${gradeLabel ? ` · ${gradeLabel}` : ""} ${priceWord}${endLabel ? ` ปิด ${endLabel} น.` : ""} มาบิดกัน!`
+      : `${card.name}${gradeLabel ? ` · ${gradeLabel}` : ""} บน Taletails`,
+  };
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader />
 
       <main className="mx-auto max-w-6xl px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
-        <BackButton className="mb-3 sm:mb-4" />
+        <div className="mb-3 flex items-center justify-between gap-2 sm:mb-4">
+          <BackButton />
+          <ShareButton target={shareTarget} />
+        </div>
 
         <div className="grid gap-5 sm:gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-16">
           {/* Gallery */}
