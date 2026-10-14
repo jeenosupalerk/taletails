@@ -50,6 +50,7 @@ import { Route as ProductIdRouteImport } from './routes/product.$id'
 import { Route as PurchasesIndexRouteImport } from './routes/purchases.index'
 import { Route as PurchasesIdRouteImport } from './routes/purchases.$id'
 import { Route as ApiPublicCronAuctionsRouteImport } from './routes/api/public/cron.auctions'
+import { Route as ApiPublicOgIdRouteImport } from './routes/api/public/og.$id'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicPushDispatchRouteImport } from './routes/api/public/push.dispatch'
 
@@ -258,6 +259,11 @@ const ApiPublicCronAuctionsRoute = ApiPublicCronAuctionsRouteImport.update({
   path: '/api/public/cron/auctions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicOgIdRoute = ApiPublicOgIdRouteImport.update({
+  id: '/api/public/og/$id',
+  path: '/api/public/og/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
     id: '/api/public/payments/webhook',
@@ -312,6 +318,7 @@ export interface FileRoutesByFullPath {
   '/market/': typeof MarketIndexRoute
   '/purchases/': typeof PurchasesIndexRoute
   '/api/public/cron/auctions': typeof ApiPublicCronAuctionsRoute
+  '/api/public/og/$id': typeof ApiPublicOgIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/push/dispatch': typeof ApiPublicPushDispatchRoute
 }
@@ -355,6 +362,7 @@ export interface FileRoutesByTo {
   '/market': typeof MarketIndexRoute
   '/purchases': typeof PurchasesIndexRoute
   '/api/public/cron/auctions': typeof ApiPublicCronAuctionsRoute
+  '/api/public/og/$id': typeof ApiPublicOgIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/push/dispatch': typeof ApiPublicPushDispatchRoute
 }
@@ -401,6 +409,7 @@ export interface FileRoutesById {
   '/market/': typeof MarketIndexRoute
   '/purchases/': typeof PurchasesIndexRoute
   '/api/public/cron/auctions': typeof ApiPublicCronAuctionsRoute
+  '/api/public/og/$id': typeof ApiPublicOgIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/push/dispatch': typeof ApiPublicPushDispatchRoute
 }
@@ -448,6 +457,7 @@ export interface FileRouteTypes {
     | '/market/'
     | '/purchases/'
     | '/api/public/cron/auctions'
+    | '/api/public/og/$id'
     | '/api/public/payments/webhook'
     | '/api/public/push/dispatch'
   fileRoutesByTo: FileRoutesByTo
@@ -491,6 +501,7 @@ export interface FileRouteTypes {
     | '/market'
     | '/purchases'
     | '/api/public/cron/auctions'
+    | '/api/public/og/$id'
     | '/api/public/payments/webhook'
     | '/api/public/push/dispatch'
   id:
@@ -536,6 +547,7 @@ export interface FileRouteTypes {
     | '/market/'
     | '/purchases/'
     | '/api/public/cron/auctions'
+    | '/api/public/og/$id'
     | '/api/public/payments/webhook'
     | '/api/public/push/dispatch'
   fileRoutesById: FileRoutesById
@@ -571,6 +583,7 @@ export interface RootRouteChildren {
   CheckoutIndexRoute: typeof CheckoutIndexRoute
   PurchasesIndexRoute: typeof PurchasesIndexRoute
   ApiPublicCronAuctionsRoute: typeof ApiPublicCronAuctionsRoute
+  ApiPublicOgIdRoute: typeof ApiPublicOgIdRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiPublicPushDispatchRoute: typeof ApiPublicPushDispatchRoute
 }
@@ -864,6 +877,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronAuctionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/og/$id': {
+      id: '/api/public/og/$id'
+      path: '/api/public/og/$id'
+      fullPath: '/api/public/og/$id'
+      preLoaderRoute: typeof ApiPublicOgIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
       path: '/api/public/payments/webhook'
@@ -959,6 +979,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutIndexRoute: CheckoutIndexRoute,
   PurchasesIndexRoute: PurchasesIndexRoute,
   ApiPublicCronAuctionsRoute: ApiPublicCronAuctionsRoute,
+  ApiPublicOgIdRoute: ApiPublicOgIdRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiPublicPushDispatchRoute: ApiPublicPushDispatchRoute,
 }

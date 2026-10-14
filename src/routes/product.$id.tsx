@@ -46,6 +46,7 @@ import {
   clip,
   fetchSeoCard,
   gradeLabel,
+  ogImageUrl,
   productJsonLd,
 } from "@/lib/seo";
 
@@ -86,6 +87,13 @@ export const Route = createFileRoute("/product/$id")({
     const description = clip(
       `ซื้อ ${title} ราคา ${price.toLocaleString("th-TH")} บาท จากร้านที่ยืนยันตัวตนแล้วบน Taletails ตรวจสอบรหัสการ์ดย้อนหลังได้ จ่ายผ่าน PromptPay มีเลขพัสดุติดตามทุกขั้น`,
     );
+    // ลิงก์แชร์: หัวข้อสั้น มีราคาท้ายหัวข้อ (แอปบางตัวโชว์แค่หัวข้อ) + รูปแนวนอนที่สร้างเอง (mockup share-feature)
+    const shareTitle = `${name}${grade ? ` · ${grade}` : ""} — ฿${price.toLocaleString("th-TH")}`;
+    const shareDescription =
+      seo?.status === "sold"
+        ? "ขายแล้ว · ดูการ์ดใบอื่นและราคากลางได้บน Taletails"
+        : "ขายตายตัว · ร้านยืนยันตัวตนแล้ว · จ่ายผ่าน PromptPay · มีเลขพัสดุติดตามทุกขั้น";
+    const shareImage = seo ? ogImageUrl(seo) : image;
     const card = seo ?? {
       id: params.id,
       name,
@@ -103,13 +111,20 @@ export const Route = createFileRoute("/product/$id")({
       meta: [
         { title: fullTitle },
         { name: "description", content: description },
-        { property: "og:title", content: fullTitle },
-        { property: "og:description", content: description },
+        { property: "og:title", content: shareTitle },
+        { property: "og:description", content: shareDescription },
         { property: "og:type", content: "product" },
         { property: "og:url", content: url },
-        { property: "og:image", content: image },
+        { property: "og:image", content: shareImage },
+        ...(seo
+          ? [
+              { property: "og:image:width", content: "1200" },
+              { property: "og:image:height", content: "630" },
+              { property: "og:image:alt", content: shareTitle },
+            ]
+          : []),
         { name: "twitter:card", content: "summary_large_image" },
-        { name: "twitter:image", content: image },
+        { name: "twitter:image", content: shareImage },
         ...(seo && !seo.isPublished ? [{ name: "robots", content: "noindex" }] : []),
       ],
       links: [{ rel: "canonical", href: url }],

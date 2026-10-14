@@ -76,6 +76,50 @@ export async function fetchSeoCard(id: string): Promise<SeoCard | null> {
   }
 }
 
+/**
+ * เวลาจบของรอบประมูลที่เปิดอยู่ (ผู้เยี่ยมชมอ่านได้เฉพาะรอบ active ตาม RLS) — ไม่มีรอบเปิด = null
+ * ใช้ทำหัวข้อลิงก์ / รูปแชร์ของหน้าประมูล
+ */
+export async function fetchSeoAuctionEnd(cardId: string): Promise<string | null> {
+  if (!UUID_RE.test(cardId)) return null;
+  try {
+    const { data } = await supabase
+      .from("auctions")
+      .select("end_time")
+      .eq("card_id", cardId)
+      .eq("status", "active")
+      .order("end_time", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    const end = (data as { end_time: string | null } | null)?.end_time ?? null;
+    return end && new Date(end).getTime() > Date.now() ? end : null;
+  } catch {
+    return null;
+  }
+}
+
+/** เวลาไทยเสมอ (เซิร์ฟเวอร์อาจตั้งเป็น UTC) เช่น "15 ต.ค. · 21:00 น." */
+export function thaiEndLabel(iso: string): string {
+  const d = new Date(iso);
+  const day = new Intl.DateTimeFormat("th-TH", {
+    timeZone: "Asia/Bangkok",
+    day: "numeric",
+    month: "short",
+  }).format(d);
+  const time = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Bangkok",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(d);
+  return `${day} · ${time} น.`;
+}
+
+/** URL รูปแชร์แนวนอน — ต่อท้ายสถานะ/ราคา ให้แอปโหลดรูปใหม่เมื่อข้อมูลเปลี่ยน (แอปเก็บรูปตาม URL) */
+export function ogImageUrl(card: Pick<SeoCard, "id" | "status" | "price">, extra = ""): string {
+  const v = encodeURIComponent(`${card.status}-${card.price}${extra ? `-${extra}` : ""}`);
+  return `${SITE_URL}/api/public/og/${card.id}?v=${v}`;
+}
+
 /** ชื่อเรียกเกรดสั้น ๆ เช่น "SQC 10" / "PSA 9" / "RAW" */
 export function gradeLabel(c: Pick<SeoCard, "grade" | "gradingCompany">): string {
   const g = (c.grade ?? "").trim();

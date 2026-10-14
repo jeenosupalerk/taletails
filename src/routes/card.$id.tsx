@@ -22,11 +22,13 @@ import { BackButton } from "@/components/site/BackButton";
 import { ShareButton, type ShareTarget } from "@/components/site/ShareButton";
 import {
   SITE_URL,
-  absoluteImage,
   breadcrumbJsonLd,
   clip,
+  fetchSeoAuctionEnd,
   fetchSeoCard,
   gradeLabel,
+  ogImageUrl,
+  thaiEndLabel,
 } from "@/lib/seo";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
@@ -56,7 +58,13 @@ import { cn } from "@/lib/utils";
 const FAR_FUTURE = "2999-01-01T00:00:00.000Z";
 const PAST = "1970-01-01T00:00:00.000Z";
 export const Route = createFileRoute("/card/$id")({
-  loader: async ({ params }) => ({ seo: await fetchSeoCard(params.id) }),
+  loader: async ({ params }) => {
+    const [seo, auctionEnd] = await Promise.all([
+      fetchSeoCard(params.id),
+      fetchSeoAuctionEnd(params.id),
+    ]);
+    return { seo, auctionEnd };
+  },
   head: ({ loaderData, params }) => {
     const url = `${SITE_URL}/card/${params.id}`;
     const seo = loaderData?.seo ?? null;
@@ -73,18 +81,28 @@ export const Route = createFileRoute("/card/$id")({
     const description = clip(
       `ร่วมประมูล ${title} บน Taletails ดูราคาปัจจุบันแบบเรียลไทม์ ตรวจสอบเกรดและใบรับรอง จ่ายผ่าน PromptPay และมีเลขพัสดุติดตาม`,
     );
-    const image = absoluteImage(seo.image);
+    // ลิงก์แชร์ประมูล: ใส่ "เวลาจบ" ที่ไม่เปลี่ยน แทนราคาปัจจุบัน (แอปเก็บหัวข้อ/รูปค้าง ราคาจะเก่า)
+    const end = loaderData?.auctionEnd ?? null;
+    const endLabel = end ? thaiEndLabel(end) : null;
+    const shareTitle = `ประมูล ${seo.name}${grade ? ` · ${grade}` : ""}${endLabel ? ` — ปิด ${endLabel}` : " — ประมูลจบแล้ว"}`;
+    const shareDescription = endLabel
+      ? "ร่วมประมูลบน Taletails ดูราคาปัจจุบันได้ในหน้าประมูล · ร้านยืนยันตัวตนแล้ว · จ่ายผ่าน PromptPay"
+      : "รอบนี้ปิดแล้ว · ดูผลประมูลและการ์ดใบอื่นได้บน Taletails";
+    const shareImage = ogImageUrl(seo, end ?? "closed");
     return {
       meta: [
         { title: fullTitle },
         { name: "description", content: description },
-        { property: "og:title", content: fullTitle },
-        { property: "og:description", content: description },
+        { property: "og:title", content: shareTitle },
+        { property: "og:description", content: shareDescription },
         { property: "og:type", content: "product" },
         { property: "og:url", content: url },
-        { property: "og:image", content: image },
+        { property: "og:image", content: shareImage },
+        { property: "og:image:width", content: "1200" },
+        { property: "og:image:height", content: "630" },
+        { property: "og:image:alt", content: shareTitle },
         { name: "twitter:card", content: "summary_large_image" },
-        { name: "twitter:image", content: image },
+        { name: "twitter:image", content: shareImage },
       ],
       links: [{ rel: "canonical", href: url }],
       scripts: [
@@ -302,14 +320,7 @@ function CardDetailPage() {
     ? `${card.grading_company ? `${card.grading_company} ` : ""}${card.grade}`
     : "";
   const endLabel =
-    isAuction && auction?.end_time
-      ? new Date(auction.end_time).toLocaleString("th-TH", {
-          day: "numeric",
-          month: "short",
-          hour: "2-digit",
-          minute: "2-digit",
-        })
-      : "";
+    isAuction && auction?.end_time ? thaiEndLabel(auction.end_time).replace(/ น\.$/, "") : "";
   const liveNow = isAuction && Boolean(auction) && !closed && !upcoming;
   // ยังไม่มีคนบิด → บอกราคาเริ่ม (หรือ "ยังไม่มีคนบิด" ถ้าเริ่ม ฿0) แทน "ราคาตอนนี้ ฿0" ที่ชวนงง
   const startPrice = Number(auction?.starting_price ?? 0);
